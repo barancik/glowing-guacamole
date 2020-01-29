@@ -1,7 +1,22 @@
-\chapter{Kolena}
+\chapter{Related Work}
 
-An~example citation: \cite{Andel07}
 
-\section{Title of the first subchapter of the first chapter}
+\section{Machine Translation Evaluation Metrics}
+\subsection{Traditional}
 
-\section{Title of the second subchapter of the first chapter}
+
+
+\subsection{With paraphrase support}
+
+
+
+
+\section{Targeted Paraphrasing}
+Targeted paraphrasing for MT evaluation is introduced in~\citet{kauchak}. They 
+focus on lexical substitution in Chinese-to-English translations. 
+They select all pairs of words for which one word appears in a reference sentence,
+second word in a hypothesis (the MT output), but none of them in both. They keep 
+only pairs of synonymous words, i.e. words appearing in the same WordNet 
+\cite{wordnet} synset. Each such a pair of words was further contextually evaluated. 
+For every confirmed synonym, a new reference sentence is created by placing it to the
+reference sentence on the position of its synonym.

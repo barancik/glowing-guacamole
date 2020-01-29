@@ -1,3 +1,143 @@
 \chapter*{Introduction}
 \addcontentsline{toc}{chapter}{Introduction}
 
+Since the very first appearance of machine translation (MT) systems, a 
+necessity for their objective evaluation and comparison has appeared. The 
+traditional human evaluation while being the most reliable has serious 
+drawbacks -- it is time-consuming and expensive.
+
+However, the main problem of human evaluation is that it is highly dependent on 
+the person annotating and there is generally low inter-annotator agreement 
+\cite{wmt13}. Moreover, it is practically impossible to repeat the evaluation 
+with the same results \cite{bojar-kniha}. \todo{updatovat citace}
+
+Due to being slow and unreproducible, it is impossible to use human evaluation
+for tuning and development of MT systems. Well-performing automatic MT 
+evaluation metrics are essential not only for measuring the quality of translations 
+and comparing different systems and approaches, but mainly for the development 
+of the translation systems themselves. 
+
+The pioneer metrics correlating well with human judgment were BLEU \cite{bleu} 
+and NIST \citep{nist}. They are computed based on n-gram overlap between the 
+MT output (hypothesis) and one or more corresponding reference sentences, i.e., 
+translations made by a human translator.
+
+Due to its simplicity and language independence, BLEU still remains de facto
+standard metric for MT evaluation and tuning, even though other, 
+better-performing metrics exist (\cite{wmt13-metrics}, \cite{wmt14}). 
+\cite{callison2006re} shows that correlation of BLUE with human judgment is 
+not as high as previously thought. Also commonly used comparing MT systems
+based on their BLEU score turned out to be much rather problematic \cite{tenMattPost}
+
+%Due to its simplicity and language independence, BLEU remains widely used, even 
+%though its correlation with human judgment is not as high as previously thought
+%(\cite{callison2006re},\cite{koehn-monz:2006:WMT}??). This is particular valid 
+%at a sentence level (Blatz et al. 2003).
+
+Furthermore, obtaining reference sentences is labour intensive and 
+expensive,\footnote{For example, production of reference translation  at~the 
+Linguistic Data Consortium is complicated process involving translation 
+by~professional agencies based on elaborate guidelines and detailed quality 
+control \cite{strassel}.} thus the standard practice is using only one 
+reference sentence and BLEU then tends to perform badly. 
+
+As there are many translations of a single sentence, even a perfectly correct 
+hypothesis might get a low score due different wording and disregarding 
+synonymous expressions (see \Fref{example_of_BLEU_malfunction}). This is 
+especially valid for morphologically rich languages with free word order 
+like the Czech language. \cite{bojar-tackling-sparse-data}
+
+
+\begin{figure*}[tb]
+\begin{center}
+\begin{tabular}{ll}
+ Original sentence &  \begin{tabular}{l}
+  	\textit{Banks are testing payment by mobile telephone} \\
+	\end{tabular}  \\
+ \hline
+ 
+ MT output & \begin{tabular}{llllll}
+ 			\textit{Banky} & \textit{zkou\v sej\'i} & \textit{platbu} & \textit{pomoc\'i} & \textit{mobiln\'iho} & \textit{telefonu} \\
+ 			Banks & are testing & payment & with help & mobile & phone \\
+			\end{tabular} \\
+ & \begin{tabular}{l}
+  	Banks are testing payment by mobile phone \\
+	\end{tabular} \\
+
+ \hline
+ Reference sentence & \begin{tabular}{llll}
+ 			\textit{Banky} & \textit{testuj\'i} & \textit{placen\'i} & \textit{mobilem} \\
+ 			Banks & are testing & paying & by mobile phone \\
+			\end{tabular} \\
+ &  \begin{tabular}{l}
+  	Banks are testing paying by mobile phone \\
+	\end{tabular}
+ 
+\end{tabular}
+\caption{Example from WMT12 - Even though the translation is grammatically 
+correct and the meaning of both sentences is very similar, it doesn't contribute 
+to the BLEU score. There is only one unigram overlapping.}
+\end{center}
+\label{example_of_BLEU_malfunction}
+\end{figure*}
+
+As the main task of an MT metric is essentially to decide whether a reference
+sentence is a paraphrase of a given hypothesis, our goal is to achieve higher 
+accuracy of MT evaluation by targeted paraphrasing of reference sentences., 
+i.e. creating a new synthetic reference sentence that is still correct and 
+keeps the meaning of the original sentence but at the same time it is closer in 
+wording to the MT output. BLEU and other string-based metrics performs more 
+reliable using these new references. %(TODO: nejak preformulovat)
+
+The structure of the thesis is as follows: in the next section, we present 
+other work in paraphrasing for MT evaluation. In \Sref{Data}, we introduced
+the data we use for our experiments. In sections \ref{lrec} and \ref{MT}, 
+we show paraphrasing based on phrase substitutions and machine translation 
+itself. Finally, we conclude with avenues for further work.
+
+
+
+
+
+BLEU \cite{bleu} remains the most common metric for MT evaluation, even
+though other, better-performing metrics exist \cite{wmt13-metrics}. BLEU is 
+computed from the number of phrase overlaps between the translated sentence and 
+the corresponding reference sentences, i.e., translations made by a professional 
+human translator. 
+
+The advantage of BLEU is its simplicity and language independence. But it performs 
+very badly for morphologically rich languages %with free word order 
+like the Czech language \cite{bojar-tackling-sparse-data}, especially when only a 
+single reference sentence is used.
+
+One of the reasons is that BLEU %(and other commonly used metrics - NIST \cite{nist}, 
+%TER \cite{ter} etc.) 
+disregards synonymous phrases and word form variants. One way 
+how to  alleviate this drawback is to include paraphrases to the evaluation metric 
+(e.g. METEOR \cite{meteor}). 
+
+But this often awards even sentences with paraphrases that are not grammatically correct. 
+We take a different approach by transforming a reference translation into a sentence that 
+is closer to the MT output and keeps its original meaning and correctness.
+
+
+
+------------
+
+
+%, although there were recently successful attempts to overcome this problem 
+%using crowdsourcing techniques. [\markcite{{\it Callison-Burch}, 2009]} and 
+%[\markcite{{\it Bentivogli et al.}, 2011]} demonstrate that the average score of 
+%high number of non-expert low-paid annotators shows high agreement with gold 
+%standards provided by expert annotators in various natural language processing 
+%(NLP) tasks including machine translation evaluation.
+
+%Pioneer measures such as BLEU and NIST measure MT quality cheaply and objectively
+%through the strong correlation between human judgement and the n-gram overlap
+%betweeen  aa system translation and one or more reference translation. 
+
+%The first metric correlating well with human judgment was BLEU \cite{bleu}.
+%Due to its simplicity and language-independence, it still remains the most 
+%common metric for MT evaluation, even though other, better-performing metrics 
+%exist. \cite{wmt14} 
+

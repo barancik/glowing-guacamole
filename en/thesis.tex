@@ -25,6 +25,18 @@
 % \setlength\headheight{0mm}
 % \let\openright=\cleardoublepage
 
+
+
+\def\xxx#1{\textbf{\textcolor{red}{xxx: #1}}}
+\def\todo#1{\textbf{\textcolor{red}{todo: #1}}}
+\def\equo#1{``#1''}
+
+\def\Tref#1{Table~\ref{#1}}
+\def\Fref#1{Figure~\ref{#1}}
+\def\Sref#1{Section~\ref{#1}}
+\def\footurl#1{\footnote{\url{#1}}}
+
+
 %% Generate PDF/A-2u
 \usepackage[a-2u]{pdfx}
 
@@ -51,6 +63,7 @@
 \usepackage{paralist}       % improved enumerate and itemize
 \usepackage[usenames]{xcolor}  % typesetting in color
 
+\usepackage{multirow}
 %%% Basic information on the thesis
 
 % Thesis title in English (exactly as in the formal assignment)
@@ -117,7 +130,8 @@ Abstract.
 \include{preface}
 \include{chap01}
 \include{chap02}
-
+\include{data}
+\include{substitution}
 \include{epilog}
 
 %%% Bibliography
@@ -133,6 +147,7 @@ Abstract.
 %%% Abbreviations used in the thesis, if any, including their explanation
 %%% In mathematical theses, it could be better to move the list of abbreviations to the beginning of the thesis.
 \chapwithtoc{List of Abbreviations}
+MT - Machine Translation
 
 %%% Doctoral theses must contain a list of author's publications
 \chapwithtoc{List of publications}
