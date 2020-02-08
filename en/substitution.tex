@@ -1,36 +1,41 @@
 \chapter{Simple substitution method}
 \addcontentsline{toc}{chapter}{Simple substitution method}
 
-In this chapter\footnote{This chapter is based on the article \citep{barancikova:2014},
-joint work with Rudolf Rosa and Ale\v{s} Tamchyna.\todo{ Rudolf did all experiments with 
-Depfix and Ale\v{s} was in charge of alignments}}, we present a basic algorithm 
-for lexical (one-word) and phrase substitution based on phrasal alignment and tables 
-of~synonymous expressions. \todo{Further, we apply Depfix -- the system originally designed 
-for automatic correction of~grammatical errors that appear often in English-to-Czech 
-MT outputs, on newly created paraphrases.} 
+In this chapter,\footnote{This chapter is based on the article 
+\citep{barancikova:2014} joint work with Rudolf Rosa and Ale\v{s} Tamchyna.
+Rudolf was in charge of Depfix and Ale\v{s} performed all experiments with 
+alignments} we present a basic method for lexical (one-word) and phrase 
+substitution based on phrasal alignment and tables of~synonymous 
+expressions. The algorithm is described in \Sref{algorithm}.
+
+%\todo{Further, we apply Depfix -- the system originally designed 
+%for automatic correction of~grammatical errors that appear often in English-to-Czech 
+%MT outputs, on newly created paraphrases.} 
 
 This method is independent on the evaluation metric. We use BLEU score in our 
-experiments because of its common usage. Using our new reference sentences, 
-BLEU achieves  significant improvement of its correlation with human judgment.
+experiments because of its common usage.  We show that in spite of the 
+simplicity of the method, BLEU achieves significant improvement of its 
+correlation with human judgment using our new reference sentences (\Sref{results}).
 
-The algorithm is inspired by \cite{kauchak}, however, it differs in several aspects. 
-As Czech belongs among~inflective languages with rich morphology, a Czech 
-word has typically many forms and the correct form depends heavily on its 
+The algorithm is inspired by \cite{kauchak}, however, it differs in several 
+aspects. As Czech belongs among~inflective languages with rich morphology, a 
+Czech word has typically many forms and the correct form depends heavily on its 
 context, e.g., cases of nouns depend on verb valency frames. Therefore, we do 
 not attempt to~change a~single word in~a~reference sentence but we focus 
 on~creating one single correct reference sentence.
 
-Instead of the contextual evaluation, we focus on keeping grammatical correctness 
-and the original meaning by using Depfix \citep{depfix} -- an automatic post-editing 
-system which is able to fix Czech sentences containing grammatical errors.
-\todo{Depfix was originally designed for post-editing outputs of English-to-Czech 
-phrase-based machine translation. We adapted it to fit our setting.}
+Instead of the contextual evaluation, we focus on keeping grammatical 
+correctness and the original meaning by using Depfix \citep{depfix} -- an 
+automatic post-editing system which is able to fix Czech sentences containing 
+grammatical errors. Depfix was originally designed for post-editing outputs of 
+English-to-Czech phrase-based machine translation. We adapted it to fit our 
+setting (\Sref{depfix}).
 
 Furthermore, \cite{kauchak} use English WordNet as their source of paraphrases.
-As~the Czech WordNet \citep{czech-wordnet,} is substantially smaller, we exploit --  
-in~addition to~this language source --  Czech Meteor tables \citep{meteor07}. Because
+As~the Czech WordNet \citep{czech-wordnet} is substantially smaller, we exploit --  
+in~addition to~this language source --  Czech Meteor tables \citep{meteor-tables}. Because
 of the noise in Czech Meteor tables, we experiment with adding alignment between 
-the hypothesis and the corresponding reference sentence.
+the hypothesis and the corresponding reference sentence \Sref{filtering-section}.
 
 \begin{table}[t]
 \begin{center}
@@ -48,6 +53,7 @@ a~MT output and a~corresponding reference sentence according to~their source.}
 \end{table}
 
 \section{Algorithm}
+\label{algorithm}
 We experiment with several algorithms for paraphrasing reference sentences. 
 They differ in the method for selecting potential paraphrase pairs and in the 
 length of paraphrases.
@@ -153,7 +159,7 @@ unchanged words with the \textit{One-word only} method.
 \end{description}
 
 \subsection{Depfix}
-
+\label{depfix}
 Depfix is an automatic post-editing system, originally designed for improving quality
 of phrase-based English-to-Czech machine translation outputs. It consists of a
 set of~linguistically-motivated rules and a statistical component that correct
@@ -299,7 +305,7 @@ cannot hope to achieve a higher score without a~more fine-grained grip on what
 a~good multi-word paraphrase is.
 
 \section{Results}
-
+\label{results}
 
 \begin{table}[t]
 \begin{center}
@@ -331,53 +337,52 @@ Multi-word first & 1.04 & 0.68 & 0.74 & 0.24 \\
 \end{center}
 \end{table}
 
-
-\begin{table*}[tb]
+\begin{table*}[htb]
 \begin{center}
+\scalebox{0.99}{
 \begin{tabular}{l|ccc|ccc}
-\multirow{2}{*}{Method} & \multicolumn{3}{c|}{Greedy selection} & \multicolumn{3}{c}{Word alignment} \\
-& No Depfix & Full Depfix & Limited Depfix & No Depfix & Full Depfix & Limited Depfix\\
+\multicolumn{7}{c}{\textbf{WMT12}}\\
 \hline
-One-word only     & 0.802 & 0.827 & \textbf{0.832} & 0.792 & 0.813 & 0.810 \\
-One-word first    & 0.785 & 0.822 & 0.816 & 0.767 & 0.792 & 0.798 \\
-Multi-word first & 0.768 & 0.810 & 0.804 & 0.761 & 0.781 & 0.778 \\
-\end{tabular}
-
+Method & \multicolumn{3}{c|}{Greedy selection} & \multicolumn{3}{c}{Word alignment} \\
+\hline
+Depfix & No  & Full  & Limited & No  & Full  & Limited\\
+\hline
+One-word only     & 0.80 & \textbf{0.83} & \textbf{0.83} & 0.79 & 0.81 & 0.81 \\
+One-word first    & 0.79 & 0.82 & 0.82 & 0.77 & 0.79 & 0.80 \\
+Multi-word first & 0.77 & 0.81 & 0.80 & 0.76 & 0.78 & 0.78 \\
+\end{tabular}}
+\vspace{10pt}
+Baseline~correlation: \textbf{0.75}
 \vspace{10pt}
 
-Baseline~correlation: \textbf{0.749}
-\caption{Correlation of the human judgment and BLEU computed with the data from WMT12}
-\label{corrs12}
+\scalebox{0.99}{
+\begin{tabular}{l|ccc|ccc}
+\multicolumn{7}{c}{\textbf{WMT13}}\\
+\hline
+Method & \multicolumn{3}{c|}{Greedy selection} & \multicolumn{3}{c}{Word alignment} \\
+\hline
+Depfix & No  & Full  & Limited & No  & Full  & Limited\\
+\hline
+One-word only   & 0.86 & \textbf{0.89} & 0.88 & 0.86 & 0.88 & 0.87 \\
+One-word first   & 0.85 & 0.88 & 0.88 & 0.83 & 0.87 & 0.86 \\
+Multi-word first  & 0.84 & 0.87 & 0.86 & 0.83 & 0.87 & 0.86 \\
+\end{tabular}}
+Baseline~correlation: \textbf{0.83}
+
+
+\caption{Pearson's correlation of BLEU and the silver standard.}
+\label{corrs:12:13}
 \end{center}
 \end{table*}
 
-\begin{table*}[tb]
-\begin{center}
-\begin{tabular}{l|ccc|ccc}
-\multirow{2}{*}{Method} & \multicolumn{3}{c|}{Greedy selection} & \multicolumn{3}{c}{Word alignment} \\
-& No Depfix & Full Depfix & Limited Depfix & No Depfix & Full Depfix & Limited Depfix\\
-\hline
-One-word only     & 0.861 & \textbf{0.887} & 0.883 & 0.856 & 0.877 & 0.872 \\
-One-word first    & 0.851 & 0.880 & 0.875 & 0.833 & 0.871 & 0.863 \\
-Multi-word first  & 0.838 & 0.870 & 0.864 & 0.833 & 0.868 & 0.861 \\
-\end{tabular}
 
-\vspace{10pt}
 
-Baseline~correlation: \textbf{0.829}
-\caption{Correlation of the human judgment and BLEU computed with the data from WMT13.}
-\label{corrs13}
-\end{center}
-\end{table*}
- 
-
-Results of our method are presented in Tables \ref{corrs12} and \ref{corrs13}. The~baseline 
-(i.e., using the original reference sentences) has a correlation of 0.749, 0.829 
+Results of our method are presented in \Tref{corrs:12:13}. The~baseline 
+(i.e., using the original reference sentences) has a correlation of 0.75, 0.83
 respectively. All evaluated approaches outperform it, the simplest one \textit{One-word only}
-performs best (\Fref{example} shows an example of this method).
+performs the best (\Fref{example} shows an example of this method).
 
-We use a freely available
-implementation\footurl{http://www.cnts.ua.ac.be/~vincent/scripts/rtest.py} of
+We use yest for comparing correlated correlation coefficients 
 \citep{meng1992comparing} to determine whether the difference in correlation
 coefficients is statistically significant. The test shows that BLEU performs
 better with our reference sentences with 99\% certainty. 
