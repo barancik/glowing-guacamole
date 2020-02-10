@@ -4,7 +4,7 @@
 In this chapter,\footnote{This chapter is based on the article 
 \citep{barancikova:2014} joint work with Rudolf Rosa and Ale\v{s} Tamchyna.
 Rudolf was in charge of Depfix and Ale\v{s} performed all experiments with 
-alignments} we present a basic method for lexical (one-word) and phrase 
+alignments.} we present a basic method for lexical (one-word) and phrase 
 substitution based on phrasal alignment and tables of~synonymous 
 expressions. The algorithm is described in \Sref{algorithm}.
 
@@ -33,9 +33,12 @@ setting (\Sref{depfix}).
 
 Furthermore, \cite{kauchak} use English WordNet as their source of paraphrases.
 As~the Czech WordNet \citep{czech-wordnet} is substantially smaller, we exploit --  
-in~addition to~this language source --  Czech Meteor tables \citep{meteor-tables}. Because
-of the noise in Czech Meteor tables, we experiment with adding alignment between 
-the hypothesis and the corresponding reference sentence \Sref{filtering-section}.
+in~addition to~this language source --  Czech Meteor tables \citep{meteor-tables}. 
+Because of the noise in Czech Meteor tables, we experiment with adding alignment 
+between the hypothesis and the corresponding reference sentence \Sref{filtering-section}.
+
+Adding larger paraphrase tables was necessary -- Czech WordNet identified a
+paraphrase in every fifth sentence on average (See \TrefP{number_of_substitutions}).
 
 \begin{table}[t]
 \begin{center}
@@ -51,7 +54,6 @@ a~MT output and a~corresponding reference sentence according to~their source.}
 \label{number_of_substitutions}
 \end{center}
 \end{table}
-
 \section{Algorithm}
 \label{algorithm}
 We experiment with several algorithms for paraphrasing reference sentences. 
@@ -65,8 +67,9 @@ alignment for selecting corresponding segments of~the reference sentence and the
 hypothesis.
 
 \subsubsection{Simple Greedy Method}
-We perform morphological analysis and tagging of the MT outputs and
-the reference sentences using Morče \cite{morce:2007}. \todo{premistit, kam se hodi}
+First, we perform morphological analysis and tagging of the MT outputs and the 
+reference sentences using Morče \cite{morce:2007}. \todo{je to kvuli tomu, ze 
+WordNet je lemmatizovany a soucasne nechceme vybrat jako kandidaty jine formy tehoz lemma}
 
 Let $ W_{L} $, $ R_{L} $ be sets of lemmas
 from the hypothesis (MT output) and the reference sentence, respectively. Then, one-word
