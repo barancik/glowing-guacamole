@@ -38,7 +38,7 @@ Because of the noise in Czech Meteor tables, we experiment with adding alignment
 between the hypothesis and the corresponding reference sentence \Sref{filtering-section}.
 
 Adding larger paraphrase tables was necessary -- Czech WordNet identified a
-paraphrase in every fifth sentence on average (See \TrefP{number_of_substitutions}).
+paraphrase in every fifth sentence on average (See \Tref{number_of_substitutions}).
 
 \begin{table}[t]
 \begin{center}
@@ -234,38 +234,37 @@ Negation translation}
 
 We try to remove the noise from the data with two different methods. The first
 one is based on manual error analysis and it is applied to~one-word pairs only.
-The second one is fully automatic and can be applied on all data, but its results are inconclusive.
-Therefore, we employ only the first method in the rest of our experiments.
+The second one is fully automatic and can be applied on all data, but its 
+results are inconclusive. Therefore, we employ only the first method in the rest 
+of our experiments.
 
 \subsection{Error-analysis Based Filtering}
-
-We manually examine sentences after paraphrasing using only Meteor tables. Based on
-our observation, we perform the following operations on pairs of one-word paraphrases 
-from the Meteor tables:
+We manually examine sentences after paraphrasing using only Meteor tables. 
+Based on our observation, we perform the following operations on pairs of 
+one-word paraphrases from the Meteor tables:
 
 \begin{itemize}
-\item morphological analysis using Morče \citep{morce:2007} and replacing of word forms with their lemmas; 
+\item morphological analysis using Morče \citep{morce:2007} and replacing of 
+word forms with their lemmas; 
 \item removing pairs of identical lemmas;
 \item removing pairs with different part of speech;
 \item removing pairs of unknown words (typically foreign words).
 \end{itemize}
 
-The last two rules have a single exception -- paraphrases consisting of numeral and 
-corresponding digits, e.g., \textit{osmnáct} (eighteen) and \textit{18}.\footnote{
+The last two rules have a single exception -- paraphrases consisting of numeral 
+and corresponding digits, e.g., \textit{osmnáct} (eighteen) and \textit{18}.\footnote{
 \textit{0smnáct} has the part of speech \textit{C}, which is designated for numerals, 
-\textit{18} is marked with \textit{X} meaning it is an unknown word for the morphological
-analyzer.}
-These paraphrases are very common in the data. 
+\textit{18} is marked with \textit{X} meaning it is an unknown word for the 
+morphological analyzer.} These paraphrases are very common in the data. 
 
-This way we reduce more than 160 000 pairs of one word paraphrases to only 32 154
-couples of lemmas. All examples of bad one-word paraphrases from Subsection \ref{meteori} 
-are removed.
+This way we reduce more than 160,000 pairs of one word paraphrases to only 
+32,154 couples of lemmas. \todo{BUD VYMAZAT, NEBO SPRAVNE NALINKOVAT:
+All examples of bad one-word paraphrases from Subsection \ref{meteori} are removed. }
 
 \subsection{Automatic Filtering}
-
-Filtering strategies described in~this section are based on assigning a score to
-each paraphrase pair. We then gradually remove paraphrases with low scores and
-measure the effect on~the final correlation of~our metric.
+Filtering strategies described in~this section are based on assigning a score 
+to~each paraphrase pair. We then gradually remove paraphrases with low scores 
+and measure the effect on~the final correlation of~our metric.
 
 The first, straightforward approach is to use the paraphrase scores already
 provided in Meteor. They are based on~phrasal translation probabilities
@@ -283,8 +282,8 @@ estimation from single best word alignment computed on CzEng 1.0
 \citep{czeng10:lrec2012}. We refer to this score as \emph{lexical
 pivoting}.
 
-We use random selection as the baseline -- paraphrases are simply shuffled and we
-then use the first 10, 20,$\ldots$ percent of them.
+We use random selection as the baseline -- paraphrases are simply shuffled and 
+we then use the first 10, 20,$\ldots$ percent of them.
 
 We only evaluate the filtering techniques on the WMT12 data. First, we attempt
 to filter one-word paraphrases and use the cleaner paraphrase table in the
@@ -293,8 +292,8 @@ already been filtered using the error-analysis based filtering described above.
 
 \Fref{fig:filtering-lexical} shows the performance of different filtering
 techniques for one-word paraphrases. Relying on Meteor scores proves worse than
-random selection. Using lexical pivoting, we can keep a high correlation even if we
-throw away as much as 90\% of the paraphrases, however we do not improve 
+random selection. Using lexical pivoting, we can keep a high correlation even 
+if we throw away as much as 90\% of the paraphrases, however we do not improve
 (by~a~relevant margin) upon the baseline correlation of 0.802 achieved by
 \emph{one-word-only} paraphrasing with the full paraphrase table.
 
@@ -309,36 +308,6 @@ a~good multi-word paraphrase is.
 
 \section{Results}
 \label{results}
-
-\begin{table}[t]
-\begin{center}
-\begin{tabular}{l|cc|cc}
-\multirow{2}{*}{Method} & \multicolumn{2}{c|}{Greedy selection} & \multicolumn{2}{c}{Word alignment} \\
-& Words & Phrases & Words & Phrases \\
-\hline
-One-word only     & 1.59 & --   & 0.86 &  --  \\
-One-word first    & 1.59 & 0.23 & 0.86 & 0.22 \\
-Multi-word first  & 1.38 & 0.31 & 0.81 & 0.27 \\
-\end{tabular}
-\caption{Average number of replaced words/phrases per~sentence for each method on data from WMT12.}
-\label{replaced12}
-\end{center}
-\end{table}
-
-\begin{table}[t]
-\begin{center}
-\begin{tabular}{l|cc|cc}
-\multirow{2}{*}{Method} & \multicolumn{2}{c|}{Greedy selection} & \multicolumn{2}{c}{Word alignment} \\
-& Words & Phrases & Words & Phrases \\
-\hline
-One-word only    & 1.33 &  --  & 0.76 & --   \\
-One-word first   & 1.33 & 0.20 & 0.76 & 0.20 \\
-Multi-word first & 1.04 & 0.68 & 0.74 & 0.24 \\
-\end{tabular}
-\caption{Average number of replaced words/phrases per~sentence for each method on data from WMT13.}
-\label{replaced13}
-\end{center}
-\end{table}
 
 \begin{table*}[htb]
 \begin{center}
@@ -372,20 +341,19 @@ Multi-word first  & 0.84 & 0.87 & 0.86 & 0.83 & 0.87 & 0.86 \\
 \end{tabular}}
 Baseline~correlation: \textbf{0.83}
 
-
 \caption{Pearson's correlation of BLEU and the silver standard.}
 \label{corrs:12:13}
 \end{center}
 \end{table*}
 
 
-
 Results of our method are presented in \Tref{corrs:12:13}. The~baseline 
 (i.e., using the original reference sentences) has a correlation of 0.75, 0.83
-respectively. All evaluated approaches outperform it, the simplest one \textit{One-word only}
-performs the best (\Fref{example} shows an example of this method).
+respectively. All evaluated approaches outperform it, the simplest one 
+\textit{One-word only} performs the best (\Fref{example} shows an example of 
+this method).
 
-We use yest for comparing correlated correlation coefficients 
+We use a test for comparing correlated correlation coefficients 
 \citep{meng1992comparing} to determine whether the difference in correlation
 coefficients is statistically significant. The test shows that BLEU performs
 better with our reference sentences with 99\% certainty. 
@@ -435,56 +403,88 @@ better with our reference sentences with 99\% certainty.
  \hline  
  
 \end{tabular}
-\caption{Example of the \textit{One-word only} method. The~hypothesis is grammatically 
-correct and has very similar meaning as the reference sentence. The new reference is closer 
-in wording to the hypothesis, but there is no agreement between the noun and adjective. 
-Depfix resolves the error and the final reference is correct and much similar to~the hypothesis.}
+\caption{Example of the \textit{One-word only} method. The~hypothesis is 
+grammatically  correct and has very similar meaning as the reference sentence. 
+The new reference is closer in wording to the hypothesis, but there is no 
+agreement between the noun and adjective. Depfix resolves the error and the 
+final reference is correct and much more similar to~the hypothesis.}
 \label{example}
 \end{center}
 \end{figure}
 
-Multi-word paraphrases are very noisy and while they do bring the system outputs closer to the 
-reference (the average BLEU score of the systems increases), they often propose non-equivalent 
-translations or violate the correctness of the sentence, thus blurring the differences between 
-systems.
+Multi-word paraphrases are very noisy and while they do bring the system 
+outputs closer to the reference (the average BLEU score of the systems 
+increases), they often propose non-equivalent translations or violate the 
+correctness of the sentence, thus blurring the differences between systems.
 
-When paraphrasing is restricted by word alignment, all methods perform worse. As
-Tables \ref{replaced12} 
-and \ref{replaced13} show, the number of applied paraphrases is much lower: while the proportion of correct 
-paraphrases is higher, their amount is reduced too much and overall, our technique is harmed by 
-this restriction. 
+When paraphrasing is restricted by word alignment, all methods perform worse. 
+As \Tref{substitutions:12:13} shows, the number of applied paraphrases is much
+lower: while the proportion of correct paraphrases is higher, their amount is 
+reduced too much and overall, our technique is harmed by this restriction. 
 
-On the other hand, applying Depfix is always beneficial, with the positive effects ranging 
-from 0.017 up to 0.042. This supports our assumption of the importance of grammatical correctness 
-of the created references. However, the \textit{limited} version is not optimally chosen and
-performs worse than the \textit{full} version in most cases.
+\begin{table*}[htb]
+\begin{center}
+\begin{tabular}{l|cc|cc}
+\multicolumn{5}{c}{\textbf{WMT12}}\\
+\hline
+\multirow{2}{*}{Method} & \multicolumn{2}{c|}{Greedy selection} & \multicolumn{2}{c}{Word alignment} \\
+& Words & Phrases & Words & Phrases \\
+\hline
+One-word only     & 1.59 & --   & 0.86 &  --  \\
+One-word first    & 1.59 & 0.23 & 0.86 & 0.22 \\
+Multi-word first  & 1.38 & 0.31 & 0.81 & 0.27 \\
+\end{tabular}
+\vspace{10pt}
+\begin{tabular}{l|cc|cc}
+\multicolumn{5}{c}{\textbf{WMT13}}\\
+\hline
+\multirow{2}{*}{Method} & \multicolumn{2}{c|}{Greedy selection} & \multicolumn{2}{c}{Word alignment} \\
+& Words & Phrases & Words & Phrases \\
+\hline
+One-word only    & 1.33 &  --  & 0.76 & --   \\
+One-word first   & 1.33 & 0.20 & 0.76 & 0.20 \\
+Multi-word first & 1.04 & 0.68 & 0.74 & 0.24 \\
+\end{tabular}
 
-Results on the data from WMT13 and WMT12 are very similar. Again, paraphrasing helps to increase
-the accuracy of the evaluation, even though the differences on the WMT13 data are not as~big due 
-to much higher baseline. This is also reflected in~the smaller amount of substitutions (see \Tref{replaced13}).
+\caption{Average number of replaced words/phrases per~sentence for each method 
+on data from WMT12 and WMT13.}
+\label{substitutions:12:13}
+\end{center}
+\end{table*}
 
-\section{Conclusion and Future Work}
+On the other hand, applying Depfix is always beneficial, with the positive 
+effects ranging from 0.02 up to 0.04. This supports our assumption of the 
+importance of grammatical correctness of the created references. However, 
+the \textit{limited} version is not optimally chosen and shows no improvement
+over the \textit{full} version in most cases.
+
+Results on the data from WMT13 and WMT12 are very similar. Again, paraphrasing 
+helps to increase the accuracy of the evaluation, even though the differences on 
+the WMT13 data are not as~big due to much higher baseline. This is also reflected 
+in~the smaller amount of substitutions (see \Tref{substitutions:12:13}).
+
+\section{Conclusion}
 %Big difference in meteor (mozna zkusit jeste nejakou statistiku, jak casto dochazelo
 %k substituci z meteoru a jak casto dochazi k substituci z meteoru x wordnetu? aby bylo
 %opravdu mozne, ze ta filtrace vyznamne prispela??
-Our results confirm the positive impact of paraphrasing a~reference sentence on the
-performance of the BLEU score. We~evaluate a number of approaches to paraphrasing.
-The best results are achieved by the \textit{one-word only} greedy substitution method.
-We achieve a statistically significant improvement in the evaluation of 
-English-to-Czech MT. 
+Our results confirm the positive impact of paraphrasing a~reference sentence 
+on~the performance of~the BLEU score. We~evaluate a number of approaches 
+to~paraphrasing. The best results are achieved by the \textit{one-word only} 
+greedy substitution method. We achieve a statistically significant improvement 
+in the evaluation of English-to-Czech MT. 
 
 We illustrate several methods for reducing noise in a paraphrase corpus and
 we confirm importance of grammar correctness of reference sentences in MT 
 evaluation by the improvement of correlation after applying Depfix.
 
-In the future, we plan to further increase the correlation by creating our own 
-Czech paraphrase tables that would be larger than Czech WordNet, but less noisy 
-than Czech Meteor Tables.
+%In the future, we plan to further increase the correlation by creating our own 
+%Czech paraphrase tables that would be larger than Czech WordNet, but less noisy 
+%than Czech Meteor Tables.
 
-Another way to improve the performance of our system which we want to follow
-is a further adaptation of the Depfix system to our task. We intend to
-tune existing Depfix corrections, as well as to add new corrections specific
-to our task. We would also like to devise a way of~informing Depfix which parts
-of the sentences come from the reference and which come from the paraphrasing
-to eliminate \equo{false positives}, i.e. Depfix attempting to correct words
-that are unlikely to be incorrect.
+%Another way to improve the performance of our system which we want to follow
+%is a further adaptation of the Depfix system to our task. We intend to
+%tune existing Depfix corrections, as well as to add new corrections specific
+%to our task. We would also like to devise a way of~informing Depfix which parts
+%of the sentences come from the reference and which come from the paraphrasing
+%to eliminate \equo{false positives}, i.e. Depfix attempting to correct words
+%that are unlikely to be incorrect.
