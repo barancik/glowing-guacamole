@@ -2,28 +2,68 @@
 \addcontentsline{toc}{chapter}{Simple substitution method}
 
 In this chapter,\footnote{This chapter is based on the article 
-\citep{barancikova:2014} joint work with Rudolf Rosa and Ale\v{s} Tamchyna.
+\citep{barancikova:2014} he joint work with Rudolf Rosa and Ale\v{s} Tamchyna.
 Rudolf was in charge of Depfix and Ale\v{s} performed all experiments with 
 alignments. \diff{I did all experiments with paraphrasing, filtering and evaluation.}} 
-we present a basic method for lexical (one-word) and phrase 
+\diff{we present a simple method of sentence paraphrasing directly inspired by
+\cite{kauchak}.} 
+
+Our algorithm, however, differs in several crucial aspects. As Czech belongs 
+among~inflective languages with rich morphology, a Czech word has typically 
+many forms and the correct form depends heavily on its context, e.g., cases 
+of nouns depend on verb valency frames. Therefore, we do not attempt to~change 
+a~single word in~a~reference sentence but we focus on~creating one single correct 
+reference sentence.
+
+Furthermore, \citet{kauchak} use English WordNet as their source of paraphrases.
+The Czech WordNet \citep{czech-wordnet} is substantially smaller, it identifies a
+paraphrase in every fifth sentence in our data on average (See \Tref{number_of_substitutions}).
+Adding larger paraphrase tables is thus necessary. We exploit --  in~addition 
+to~the Czech WordNet --  the~Czech Meteor tables \citep{meteor-tables}.  
+Because of noise in the Czech Meteor tables, we experiment with adding alignment
+between the hypothesis and the corresponding reference sentence \Sref{filtering-section}.
+
+The method is evaluated on WMT12 a WMT13 data.
+
+In \Sref{algorithm}, we present several algorithms for lexical and phrase 
+substitutions. They consists of three steps:
+
+\begin{itemize}
+\item selecting possible paraphrase candidates, 
+\item paraphrasing, i.e. the substitution of the paraphrase candidates,
+\item application of Depfix to fix grammatical errors caused by the paraphrasing.
+\end{itemize}
+
+These algorithms are used in \Sref{filtering-section} in an experiment with
+automatic filtering of the Meteor Tables.
+
+First, the algorithm for lexical and phrase substitutions is described in \Sref{algorithm}.
+It consists of three parts -- a paraphrase candidate selection (greedy or using an alignment),
+the substitution itself
+
+
+
+We first present algorithm for lexical and phrase substitutions. It includes two methods
+for paraphrase candidate selection, three method of paraphrasing differing in the order
+of substitutions
+
+
+or lexical (one-word) and phrase 
 substitution based on phrasal alignment and tables of~synonymous 
-expressions. The algorithm is described in \Sref{algorithm}.
+expressions. 
+
+The algorithm is described in \Sref{algorithm}.
 
 %\todo{Further, we apply Depfix -- the system originally designed 
 %for automatic correction of~grammatical errors that appear often in English-to-Czech 
 %MT outputs, on newly created paraphrases.} 
 \todo{uvod zcela preformulovat a rozsirit, smysluplne v nem popsat cely experiment}
-This method is independent on the evaluation metric. We use BLEU score in our 
+This method is independent of an evaluation metric. We use BLEU score in our 
 experiments because of its widespread application.  We show that in spite of the 
-simplicity of the method, BLEU achieves significant improvement of its 
+simplicity of the method, BLEU achieves a significant improvement in its 
 correlation with human judgment using our new reference sentences (\Sref{results}).
 
-The algorithm is inspired by \cite{kauchak}, however, it differs in several 
-aspects. As Czech belongs among~inflective languages with rich morphology, a 
-Czech word has typically many forms and the correct form depends heavily on its 
-context, e.g., cases of nouns depend on verb valency frames. Therefore, we do 
-not attempt to~change a~single word in~a~reference sentence but we focus 
-on~creating one single correct reference sentence.
+
 
 Instead of the contextual evaluation, we focus on keeping grammatical 
 correctness and the original meaning by using Depfix \citep{depfix} -- an 
@@ -33,14 +73,13 @@ English-to-Czech phrase-based machine translation. We adapted it to fit our
 setting (\Sref{depfix}).
 
 Furthermore, \citet{kauchak} use English WordNet as their source of paraphrases.
-The Czech WordNet \citep{czech-wordnet} is substantially smaller, it identified a
+The Czech WordNet \citep{czech-wordnet} is substantially smaller, it identifies a
 paraphrase in every fifth sentence in our data on average (See 
 \Tref{number_of_substitutions}). Adding larger paraphrase tables was thus necessary.
 We exploit --  in~addition to~the Czech WordNet --  Czech Meteor tables 
-\citep{meteor-tables}.  Because of a noise in Czech Meteor tables, we 
+\citep{meteor-tables}.  Because of noise in the Czech Meteor tables, we 
 experiment with adding alignment between the hypothesis and the corresponding 
 reference sentence \Sref{filtering-section}.
-
 
 
 \begin{table}[t]
@@ -71,15 +110,15 @@ alignment for selecting corresponding segments of~the reference sentence and the
 hypothesis.
 
 \subsubsection{Simple Greedy Method}
-First, we perform morphological analysis and tagging of the MT outputs and the 
-reference sentences using Morče \cite{morce:2007}. We need the sentences in
-lemmatized forms for two reasons -- we do not want to select as paraphrases 
-different word forms of a single lemma and paraphrases in the Czech WordNet 
-are also represented in form of lemmas.
+First, we perform morphological analysis and tagging of hypotheses and 
+reference sentences from WMT12 a WMT13 using Morče \citep{morce:2007}. 
+We need all sentences in lemmatized forms for two reasons -- we do not want 
+to select as paraphrases different word forms of a single lemma and second, 
+paraphrases in the Czech WordNet and the filtered Czech Meteor tables are 
+represented in form of lemmas too.
 
-Let $ W_{L} $, $ R_{L} $ be sets of lemmas
-from the hypothesis (MT output) and the reference sentence, respectively. Then, one-word
-paraphrase candidates are chosen as:
+Let $ W_{L} $, $ R_{L} $ be sets of lemmas from a hypothesis and a reference 
+sentence, respectively. Then, one-word paraphrase candidates are chosen as:
 
 \begin{equation*}
 C_{L} = \{(r,w) \, | \, r \in R_{L} \setminus W_{L} \wedge w \in W_{L} \setminus R_{L} \} 
@@ -97,6 +136,7 @@ way:
     \: 1~\leq~j \leq m-y  \: \wedge \: 0 \leq x,y \leq 6 \: \wedge \: (x \neq 0 \vee y \neq 0) \}
   \end{align*}
 
+\todo{vleky priklad vseho}
 Maximum phrase length is seven words, which corresponds to the length of~the 
 longest paraphrases in the paraphrase tables used in this experiment.
 

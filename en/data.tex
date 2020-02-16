@@ -4,10 +4,10 @@
 \section{Test Data}
 
 We use data sets from the English-to-Czech Translation Task of the Workshop on
-Statistical Machine Translation (WMT) from years 2011 to 2014.
+Statistical Machine Translation (WMT) from the years 2011 to 2014.
 
 All of these datasets consist of \diff{one file with the original English source sentences,
-several files with Czech outputs of MT systems and one file with corresponding 
+several files with Czech hypotheses (outputs of MT systems) and one file with corresponding 
 reference sentences. Data from each year of the WMT competition} differ in the 
 number of MT systems and the length of the source files (see \Tref{wmt-data}). 
 
@@ -33,9 +33,9 @@ judgement score.}
 \end{table}
 
 During the manual evaluation of WMT competitions, human judges fluent in both
-the source and the target language scores five MT outputs from the best to
-the worst translation. Thus, the human evaluation of MT system outputs is
-available as a relative ranking of performance of five systems for~a~sentence. 
+the source and the target language scores five hypotheses from the best to
+the worst translation. Thus, the human evaluation of hypotheses is available 
+as~a~relative ranking of performance of five systems for~a~sentence. 
 
 There are many ways to compute the absolute system score from this relative
 ranking. The official methods for each year are presented in \Tref{wmt-data} 
@@ -46,7 +46,7 @@ consistent, we also compute another absolute score for every year using the
 score. This score is computed simply as $\frac{wins}{wins+loses} $, i.e., the 
 score is~based on~how frequently the system is judged to be better than 
 another system. Ties among several systems are ignored. We refer to this 
-interpretation of the human judgments as \textit{silver standard} to distinguish
+interpretation of human judgments as \textit{silver standard} to distinguish
 it from the official system scores. % chcu to tu jeste zduvodnit, proc > others??
 
 \diff{The performance of an evaluation metric in MT is usually computed as Pearson 
