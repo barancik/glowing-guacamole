@@ -4,14 +4,15 @@
 In this chapter,\footnote{This chapter is based on the article 
 \citep{barancikova:2014} joint work with Rudolf Rosa and Ale\v{s} Tamchyna.
 Rudolf was in charge of Depfix and Ale\v{s} performed all experiments with 
-alignments.} we present a basic method for lexical (one-word) and phrase 
+alignments. \diff{I did all experiments with paraphrasing, filtering and evaluation.}} 
+we present a basic method for lexical (one-word) and phrase 
 substitution based on phrasal alignment and tables of~synonymous 
 expressions. The algorithm is described in \Sref{algorithm}.
 
 %\todo{Further, we apply Depfix -- the system originally designed 
 %for automatic correction of~grammatical errors that appear often in English-to-Czech 
 %MT outputs, on newly created paraphrases.} 
-
+\todo{uvod zcela preformulovat a rozsirit, smysluplne v nem popsat cely experiment}
 This method is independent on the evaluation metric. We use BLEU score in our 
 experiments because of its widespread application.  We show that in spite of the 
 simplicity of the method, BLEU achieves significant improvement of its 
@@ -41,6 +42,7 @@ experiment with adding alignment between the hypothesis and the corresponding
 reference sentence \Sref{filtering-section}.
 
 
+
 \begin{table}[t]
 \begin{center}
 \begin{tabular}{l|cc}
@@ -55,7 +57,8 @@ a~MT output and a~corresponding reference sentence according to~their source.}
 \label{number_of_substitutions}
 \end{center}
 \end{table}
-\section{Algorithm}
+
+\section{Algorithms}
 \label{algorithm}
 We experiment with several algorithms for paraphrasing reference sentences. 
 They differ in the method for selecting potential paraphrase pairs and in the 

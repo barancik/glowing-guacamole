@@ -6,10 +6,10 @@
 We use data sets from the English-to-Czech Translation Task of the Workshop on
 Statistical Machine Translation (WMT) from years 2011 to 2014.
 
-All of these datasets consist of files with (Czech) outputs of MT systems, one
-file with corresponding reference sentences and one file with the original
-English source sentences. They differ in the number of MT systems and the 
-length of the source files (see \Tref{wmt-data}). 
+All of these datasets consist of \diff{one file with the original English source sentences,
+several files with Czech outputs of MT systems and one file with corresponding 
+reference sentences. Data from each year of the WMT competition} differ in the 
+number of MT systems and the length of the source files (see \Tref{wmt-data}). 
 
 %We perform morphological 
 %analysis and tagging of the MT outputs and the reference sentences using 
@@ -49,14 +49,47 @@ another system. Ties among several systems are ignored. We refer to this
 interpretation of the human judgments as \textit{silver standard} to distinguish
 it from the official system scores. % chcu to tu jeste zduvodnit, proc > others??
 
-The performance of an evaluation metric in MT is usually computed as Pearson 
+\diff{The performance of an evaluation metric in MT is usually computed as Pearson 
 correlation coefficient or alternatively Spearman rank correlation between the 
-automatic metric and human judgment. Both~correlations estimate the linear 
-dependency between two sets of values and range from -1 (perfect negative 
-linear relationship) to 1 (perfect linear correlation). In our experiments, we use
-Pearson as it takes into account the distances between the system scores, thus 
-it should be more reliable for similarly evaluated systems 
-\citep{machacek-bojar-2014-results}.
+automatic metric and human judgment. }
+
+\diff{The Pearson correlation coefficient $\rho$ is defined:}
+
+\begin{equation*}
+\rho(H,M) = \frac{ \sum_{i=1}^{n}{(H_i - \tilde{H})(M_i - \tilde{M})}}{ \sqrt{ \sum_{i=1}^{n}{(H_i - \tilde{H})^2} }  \sqrt{ \sum_{i=1}^{n}{(M_i - \tilde{M})^2} } } 
+\end{equation*}
+
+\diff{where $H$ is the vector of human scores (i.e. gold or silver standard here) and 
+$M$ is the vector of corresponding scores predicted by a certain metric. 
+$\tilde{H}$ a $\tilde{M}$ are their means, respectively. }
+
+\diff{The Spearman correlation coefficient $r_{s} $ is defined as the Pearson 
+correlation coefficient between the rank variables -- all human scores and  
+metric’s scores of MT systems are converted into ranks $r(H)$ and $r(M)$.}
+
+\begin{equation*}
+r_{s}(H,M) = \rho(r(H),r(M))
+\end{equation*}
+
+Both~correlations estimate the linear dependency between two sets of values and 
+range from -1 (perfect negative linear relationship) to 1 (perfect linear correlation). 
+In our experiments, we use Pearson as it takes into account the distances between 
+the system scores, thus it should be more reliable for similarly evaluated systems 
+\citep{machacek-bojar-2014-results}. \todo{tu to jeste trochu rozsirit, kdyz uz
+to tu je vysvetleny}
+
+%
+%WMT13
+%We measured the quality of system-level metrics’ scores using the Spearman’s rank correlation coefficient $\rho$. For each direction of translation we converted the official human scores into ranks. For each metric, we converted the metric’s scores of systems in a given direction into ranks. Since there were no ties in the rankings, we used the simplified formula to compute the Spearman’s $\rho$. 
+%
+%\begin{equation*}
+%r_{s} = 1 -  \frac{6\sum{d_i^{2}}}{n(n^{2}-1)} 
+%\end{equation*}
+%where $d_{i}$ is the difference between the rank for system$_{i}$ and n is the number of systems. The possible values of range between 1 (where all systems are ranked in the same order) and -1 (where the systems are ranked in the reverse order). 
+%
+%\begin{equation*}
+%r_{s} = r_{p}(r(H_{i}),r(M_{i}))
+%\end{equation*}
 
 \section{Sources of Czech Paraphrases}
 We use the following available sources of Czech paraphrases.
