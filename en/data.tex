@@ -49,7 +49,7 @@ another system. Ties among several systems are ignored. We refer to this
 interpretation of human judgments as \textit{silver standard} to distinguish
 it from the official system scores. % chcu to tu jeste zduvodnit, proc > others??
 
-\diff{The performance of an evaluation metric in MT is usually computed as Pearson 
+\diff{The performance of an evaluation metric in MT is commonly computed as Pearson 
 correlation coefficient or alternatively Spearman rank correlation between the 
 automatic metric and human judgment. }
 
@@ -73,10 +73,11 @@ r_{s}(H,M) = \rho(r(H),r(M))
 
 Both~correlations estimate the linear dependency between two sets of values and 
 range from -1 (perfect negative linear relationship) to 1 (perfect linear correlation). 
+
 In our experiments, we use Pearson as it takes into account the distances between 
 the system scores, thus it should be more reliable for similarly evaluated systems 
 \citep{machacek-bojar-2014-results}. \todo{tu to jeste trochu rozsirit, kdyz uz
-to tu je vysvetleny}
+to tu je vysvetleny - ze Spearman ignoruje jak moc jsou systemy od sebe vzdaleny}
 
 %
 %WMT13

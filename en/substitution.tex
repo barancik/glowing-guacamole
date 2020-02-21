@@ -63,8 +63,6 @@ experiments because of its widespread application.  We show that in spite of the
 simplicity of the method, BLEU achieves a significant improvement in its 
 correlation with human judgment using our new reference sentences (\Sref{results}).
 
-
-
 Instead of the contextual evaluation, we focus on keeping grammatical 
 correctness and the original meaning by using Depfix \citep{depfix} -- an 
 automatic post-editing system which is able to fix Czech sentences containing 
@@ -117,28 +115,81 @@ to select as paraphrases different word forms of a single lemma and second,
 paraphrases in the Czech WordNet and the filtered Czech Meteor tables are 
 represented in form of lemmas too.
 
-Let $ W_{L} $, $ R_{L} $ be sets of lemmas from a hypothesis and a reference 
+Let $ H_{L} $, $ R_{L} $ be sets of lemmas from a hypothesis and a reference 
 sentence, respectively. Then, one-word paraphrase candidates are chosen as:
 
 \begin{equation*}
-C_{L} = \{(r,w) \, | \, r \in R_{L} \setminus W_{L} \wedge w \in W_{L} \setminus R_{L} \} 
+C_{L} = \{(r,h) \, | \, r \in R_{L} \setminus H_{L} \wedge h \in H_{L} \setminus R_{L} \} 
 \end{equation*}
 
 Multi-words candidates $ C_M $ are selected as the Cartesian product of all sequences
-from the reference sentence and all sequences from the hypothesis. Formally:
+from the reference sentence and all sequences from the hypothesis. \diff{In contrast to $C_{L}$,
+$ C_M $ is chosen directly from sequences of word forms, not lemmas.} Formally:
 
-Let $ r_1,..., r_n $, $ w_1,...,w_m $ be the hypothesis and the reference sentence,
+Let $ h_1,...,h_m $, $ r_1,..., r_n $  be a hypothesis and a reference sentence,
 respectively. Then the set of multi-word paraphrase candidates is selected the following
 way:
 
 \begin{align*}
-  C_{M} = \{ (<r_i,..,r_{i+x}>,<w_j,...,w_{j+y}>) \, | \, 1 \leq i \leq n-x \, \wedge \\ 
+  C_{M} = \{ (<r_i,..,r_{i+x}>,<h_j,...,h_{j+y}>) \, | \, 1 \leq i \leq n-x \, \wedge \\ 
     \: 1~\leq~j \leq m-y  \: \wedge \: 0 \leq x,y \leq 6 \: \wedge \: (x \neq 0 \vee y \neq 0) \}
   \end{align*}
+  
+ Maximum phrase length is seven words, which corresponds to the length of~the 
+longest paraphrases in the paraphrase tables used in this experiment.
 
 \todo{vleky priklad vseho}
-Maximum phrase length is seven words, which corresponds to the length of~the 
-longest paraphrases in the paraphrase tables used in this experiment.
+\begin{figure}[t]
+
+\begin{center}
+\begin{tabular}{ll}
+ Source sentence &  \begin{tabular}{l}
+  	\textit{The location alone is classic.} \\
+	\end{tabular} \\
+ \hline
+ 
+ Hypothesis & \begin{tabular}{llll}
+ 			\textit{Samotné} & \textit{místo} & \textit{je} & \textit{klasické.} \\
+ 			Actual & place & is & classic \\
+			\end{tabular} \\
+ &  \begin{tabular}{l}
+  	The place alone is classic. \\
+	\end{tabular} \\
+
+ \hline
+ Reference & \begin{tabular}{llll}
+ 			\textit{Už} & \textit{poloha} & \textit{je} & \textit{klasická.} \\
+ 			Already & position & is & classic. \\
+			\end{tabular} \\
+ &  \begin{tabular}{l}
+  	The position itself is classic. \\
+	\end{tabular}  \\ 
+
+ \hline
+  $ H_{L} $ &  {samotný, místo, být, klasický} \\
+ \hline 
+   $ R_{L} $ & {už, poloha, být, klasický} \\
+ \hline  
+   $C_{L} $  &  {(už,samotný), (už,místo),(poloha,samotný),(poloha,místo)} \\
+ \hline  
+   $C_{M} $  & {(už, samotné místo), (už, samotné místo je),
+ (už, samotné místo je klasické),  (už poloha, samotné), ... ,
+ (klasická, samotné místo je klasické),  (klasická, místo je),
+ (klasická, místo je klasické),  (klasická, je klasické)}  \\
+ \hline
+ 
+\end{tabular}
+\caption{Example of the \textit{One-word only} method. The~hypothesis is 
+grammatically  correct and has very similar meaning as the reference sentence. 
+The new reference is closer in wording to the hypothesis, but there is no 
+agreement between the noun and adjective. Depfix resolves the error and the 
+final reference is correct and much more similar to~the hypothesis.
+$C_{M} $ - 84 possibilities, mostly omitted}
+\label{candidates_example}
+\end{center}
+\end{figure}
+
+
 
 \subsubsection{Word and Phrase Alignments}
 
