@@ -89,8 +89,8 @@ WordNet            &  780 & 650 \\
 filtered Meteor    & 4588 & 3877 \\
 their union        & 4766 & 4013 \\
 \end{tabular}
-\caption{Average number of~pairs of~words identified as~a~paraphrase between 
-a~MT output and a~corresponding reference sentence according to~their source.}
+\caption{Average number of words pairs identified as~paraphrases between 
+a~hypothesis and a~corresponding reference sentence according to~their source.}
 \label{number_of_substitutions}
 \end{center}
 \end{table}
@@ -122,21 +122,20 @@ sentence, respectively. Then, one-word paraphrase candidates are chosen as:
 C_{L} = \{(r,h) \, | \, r \in R_{L} \setminus H_{L} \wedge h \in H_{L} \setminus R_{L} \} 
 \end{equation*}
 
-Multi-words candidates $ C_M $ are selected as the Cartesian product of all sequences
-from the reference sentence and all sequences from the hypothesis. \diff{In contrast to $C_{L}$,
+\diff{Multi-words candidates $ C_M $ are selected as the Cartesian product of all 
+sequences from the reference sentence and all sequences from the hypothesis. 
+The maximum sequence length is seven words, which corresponds to the length 
+of~the longest paraphrases in~the Czech Meteor tables. In~contrast to $C_{L}$, 
 $ C_M $ is chosen directly from sequences of word forms, not lemmas.} Formally:
 
 Let $ h_1,...,h_m $, $ r_1,..., r_n $  be a hypothesis and a reference sentence,
-respectively. Then the set of multi-word paraphrase candidates is selected the following
-way:
+respectively. Then the set of multi-word paraphrase candidates is selected the 
+following way:
 
 \begin{align*}
   C_{M} = \{ (<r_i,..,r_{i+x}>,<h_j,...,h_{j+y}>) \, | \, 1 \leq i \leq n-x \, \wedge \\ 
     \: 1~\leq~j \leq m-y  \: \wedge \: 0 \leq x,y \leq 6 \: \wedge \: (x \neq 0 \vee y \neq 0) \}
   \end{align*}
-  
- Maximum phrase length is seven words, which corresponds to the length of~the 
-longest paraphrases in the paraphrase tables used in this experiment.
 
 \todo{vleky priklad vseho}
 \begin{figure}[t]
@@ -179,12 +178,7 @@ longest paraphrases in the paraphrase tables used in this experiment.
  \hline
  
 \end{tabular}
-\caption{Example of the \textit{One-word only} method. The~hypothesis is 
-grammatically  correct and has very similar meaning as the reference sentence. 
-The new reference is closer in wording to the hypothesis, but there is no 
-agreement between the noun and adjective. Depfix resolves the error and the 
-final reference is correct and much more similar to~the hypothesis.
-$C_{M} $ - 84 possibilities, mostly omitted}
+\caption{Example of the candidate selection methods.}
 \label{candidates_example}
 \end{center}
 \end{figure}
@@ -195,11 +189,13 @@ $C_{M} $ - 84 possibilities, mostly omitted}
 
 One possible way to make the algorithm more reliable is to restrict the
 application of paraphrases to words/phrases which are aligned to each other. 
-We compute word alignment between the reference translation and MT system
-outputs using GIZA++ \citep{gizapp}.
+We compute word alignment between the reference translation and sets of
+hypotheses using GIZA++ \citep{gizapp}.
 
-If we used only our test data to create the alignment (13 x 3003 + 12 x 3000 
-= 75039 sentence pairs), the alignment quality would be insufficient. In order 
+If we used only hypotheses with corresponding reference sentences to create the 
+alignment, the alignment quality would be insufficient.\footnote{13 MT systems x 
+3003 sentences from WMT12 + 12 MT systems x 3000 sentences from WMT12
+=only  75039 sentence pairs)} In order 
 to make the training data for word alignment larger, we take advantage of the 
 fact that all outputs are translations of the same data and also add all pairs 
 of system outputs to our data, creating over 1,000,000 \equo{artificial} sentence
