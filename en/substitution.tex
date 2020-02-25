@@ -82,18 +82,22 @@ reference sentence \Sref{filtering-section}.
 
 \begin{table}[t]
 \begin{center}
-\begin{tabular}{l|cc}
-& WMT12 & WMT13 \\
+\begin{tabular}{lcc}
+& \textbf{WMT12} & \textbf{WMT13} \\
 \hline
-WordNet            &  780 & 650 \\
-filtered Meteor    & 4588 & 3877 \\
-their union        & 4766 & 4013 \\
+\multicolumn{1}{l|}{WordNet}      &  \multicolumn{1}{c|}{780} & 650 \\
+\multicolumn{1}{l|}{filtered Meteor}   & \multicolumn{1}{c|}{4,588} & 3,877 \\
+\hline
+\multicolumn{3}{c}{} \\[-14pt]
+\hline
+\multicolumn{1}{l|}{their union}       & \multicolumn{1}{c|}{4,766} & 4,013 \\
 \end{tabular}
-\caption{Average number of words pairs identified as~paraphrases between 
+\caption{The average number of words pairs identified as~paraphrases between 
 a~hypothesis and a~corresponding reference sentence according to~their source.}
 \label{number_of_substitutions}
 \end{center}
 \end{table}
+
 
 \section{Algorithms}
 \label{algorithm}
@@ -108,12 +112,12 @@ alignment for selecting corresponding segments of~the reference sentence and the
 hypothesis.
 
 \subsubsection{Simple Greedy Method}
-First, we perform morphological analysis and tagging of hypotheses and 
+\diff{First, we perform morphological analysis and tagging of hypotheses and 
 reference sentences from WMT12 a WMT13 using Morče \citep{morce:2007}. 
 We need all sentences in lemmatized forms for two reasons -- we do not want 
 to select as paraphrases different word forms of a single lemma and second, 
 paraphrases in the Czech WordNet and the filtered Czech Meteor tables are 
-represented in form of lemmas too.
+represented in form of lemmas too.}
 
 Let $ H_{L} $, $ R_{L} $ be sets of lemmas from a hypothesis and a reference 
 sentence, respectively. Then, one-word paraphrase candidates are chosen as:
@@ -136,13 +140,14 @@ following way:
   C_{M} = \{ (<r_i,..,r_{i+x}>,<h_j,...,h_{j+y}>) \, | \, 1 \leq i \leq n-x \, \wedge \\ 
     \: 1~\leq~j \leq m-y  \: \wedge \: 0 \leq x,y \leq 6 \: \wedge \: (x \neq 0 \vee y \neq 0) \}
   \end{align*}
+  
+\diff{Example of one-word a multiword candidates are presented in \Fref{candidates_example}.}
 
-\todo{vleky priklad vseho}
 \begin{figure}[t]
 
 \begin{center}
-\begin{tabular}{ll}
- Source sentence &  \begin{tabular}{l}
+\begin{tabular}{r|l}
+ Source &  \begin{tabular}{l}
   	\textit{The location alone is classic.} \\
 	\end{tabular} \\
  \hline
@@ -165,20 +170,23 @@ following way:
 	\end{tabular}  \\ 
 
  \hline
-  $ H_{L} $ &  {samotný, místo, být, klasický} \\
+  $ H_{L} $ &  \{samotný, místo, být, klasický\}   \\
  \hline 
-   $ R_{L} $ & {už, poloha, být, klasický} \\
+   $ R_{L} $ & \{už, poloha, být, klasický\}  \\
  \hline  
-   $C_{L} $  &  {(už,samotný), (už,místo),(poloha,samotný),(poloha,místo)} \\
+   $C_{L} $  &  \{(už,samotný), (už,místo), (poloha,samotný), (poloha,místo)\} \\
  \hline  
-   $C_{M} $  & {(už, samotné místo), (už, samotné místo je),
- (už, samotné místo je klasické),  (už poloha, samotné), ... ,
- (klasická, samotné místo je klasické),  (klasická, místo je),
- (klasická, místo je klasické),  (klasická, je klasické)}  \\
+    & \{(už, samotné místo), (už, samotné místo je), \\
+  & (už, samotné místo je klasické),  (už poloha, samotné), \\
+   $C_{M} $ &  \multicolumn{1}{c}{...}\\
+ & (klasická, samotné místo je klasické),  (klasická, místo je), \\
+ & (klasická, místo je klasické),  (klasická, je klasické)\}  \\
  \hline
  
 \end{tabular}
-\caption{Example of the candidate selection methods.}
+\caption{\diff{Example of the candidate selection methods on a hypothesis and a 
+reference sentence from WMT11. Note that $C_{M}$ is substantially shortened --
+there are 84 sequence pairs in the full version of $C_{M}$.}}
 \label{candidates_example}
 \end{center}
 \end{figure}
@@ -189,38 +197,37 @@ following way:
 
 One possible way to make the algorithm more reliable is to restrict the
 application of paraphrases to words/phrases which are aligned to each other. 
-We compute word alignment between the reference translation and sets of
+We compute word alignment between reference translations and the sets of
 hypotheses using GIZA++ \citep{gizapp}.
 
 If we used only hypotheses with corresponding reference sentences to create the 
 alignment, the alignment quality would be insufficient.\footnote{13 MT systems x 
-3003 sentences from WMT12 + 12 MT systems x 3000 sentences from WMT12
-=only  75039 sentence pairs)} In order 
-to make the training data for word alignment larger, we take advantage of the 
-fact that all outputs are translations of the same data and also add all pairs 
-of system outputs to our data, creating over 1,000,000 \equo{artificial} sentence
-pairs. For example, the parallel data for WMT12 then looks as follows:
+3003 sentences from WMT12 + 12 MT systems x 3000 sentences from WMT13
+= only 75039 sentence pairs)} In order to make the training data for word 
+alignment larger, we take advantage of the fact that all outputs are 
+translations of the same data and also add all pairs of system outputs to our 
+data, creating over 1,000,000 \equo{artificial} sentence pairs.\footnote{We 
+also experiment with adding much larger synthetic parallel data created by 
+machine translation (note that we need Czech-Czech data) but there was no 
+impact on the quality of paraphrasing so we follow the outlined approach which 
+requires no additional data or processing.} For example, the parallel data for 
+WMT12 then looks as follows:
 
 \begin{center}
 \begin{tabular}{ll}
 Source & Target \\
 \hline
+system 1 & reference \\
 system 1 & system 2 \\
-system 1 & system 3 \\
 ... & ...\\
 system 1 & system 13 \\
-system 1 & reference \\
+system 2 & reference \\
 system 2 & system 1 \\
 system 2 & system 3 \\
 ... & ... \\
-system 13 & reference \\
+system 13 & system 12 \\
 \end{tabular}
 \end{center}
-
-We also experiment with adding much larger synthetic parallel data created by
-machine translation (note that we need Czech-Czech data) but there was no impact
-on the quality of paraphrasing so we follow the outlined approach which requires
-no additional data or processing.
 
 The set of~one-word candidates $C_L$ is then simply the set of all word pairs such
 that there exists an alignment link between them. The set $C_M$ is extracted
@@ -228,11 +235,14 @@ using phrase extraction for phrase-based MT, the standard consistency criterion
 is~applied \citep{Och99improvedalignment}.
 
 \subsection{Paraphrasing}
-We reduce the set $ C_{L} $ to pairs appearing in our paraphrase tables in the 
-following way. If a word appears in several synonymous pairs we give preference 
-to those found in~WordNet or even better in the intersection of paraphrases 
-from WordNet and filtered Meteor. Similarly, we filter $ C_{M} $ to pairs also 
-contained in the multi-word Meteor tables.
+\diff{We reduce the set of one-word candidates $ C_{L} $ to pairs appearing in the 
+Czech WordNet and in the filtered Czech Meteor tables\footnote{The process of 
+filtering the Meteor tables is described later in \Sref{filtering-section} as it uses
+the paraphrasing methods described in this section.} in the following way. 
+If~a~word appears in several synonymous pairs we give preference 
+to those found in~the WordNet or even better in the intersection of paraphrases 
+from the WordNet and the filtered Meteor. Similarly, we filter multi-word 
+candidates $ C_{M} $ to pairs contained in the Meteor tables.}
 
 We evaluate three different paraphrasing methods which differ in the order of
 substitution.
@@ -240,13 +250,14 @@ substitution.
 \begin{description}
 \item[One-word only] We proceed word by word from the beginning of the 
 reference sentence to~its end. If a~lemma of~a~word appears as~the first member 
-of~a~pair in reduced $ C_{L} $, it is replaced by~the word from hypothesis that has 
-its lemma as the second element of~that pair, i.e., paraphrase from the hypothesis. 
-Otherwise, we keep the original word from the reference sentence.
+of~a~pair in reduced $ C_{L} $, it is replaced by~the word form from the 
+hypothesis that has its lemma as the second element of~that pair, i.e., 
+paraphrase from the hypothesis. Otherwise, we keep the original word from the 
+reference sentence.
 \item[One-word first] We use \textit{One-word only} and then we apply longer 
 paraphrases. In that case we move ahead from the longest paraphrases to the 
-shortest. That is because Meteor contains often even components of~phrases 
-and we could substitute, instead of~whole phrase, only part of~it. We do not 
+shortest. That is because Meteor contains often even subsequences of~phrases 
+and we could substitute, instead of~whole phrase, only a part of~it. We do not 
 attempt to replace any word that was already changed before.
 \item[Multi-word first] We substitute the longest confirmed paraphrases from
 $ C_{M} $ and move to the shorter ones. We replace again only sequences that 
@@ -256,33 +267,22 @@ unchanged words with the \textit{One-word only} method.
 
 \subsection{Depfix}
 \label{depfix}
-Depfix is an automatic post-editing system, originally designed for improving quality
-of phrase-based English-to-Czech machine translation outputs. It consists of a
-set of~linguistically-motivated rules and a statistical component that correct
-various kinds of errors, especially in grammar (e.g. morphological agreement),
-using a range of natural language processing tools to provide analyses of the
-input sentences. \todo{tato cast bude nekde nahore mezi Nastroji}
-% Tady bych src vlastně asi vůbec nepotřeboval, ty opravy co dělám ho přímo
-% nevyužívaj, spíš jen pro kontrolu toho jestli analýza češtiny je rozumná;
-% ale to by nebylo potřeba kontrolovat kdyby se analyzovala ta reference
-% předtim než ji Petra zparafrázuje.
-%It relies heavily on the availability of the source English
-%sentences, which provide additional information both for the analyses and for
-%the error correction.
+Depfix is an automatic post-editing system, originally designed for improving 
+the quality of phrase-based English-to-Czech machine translation outputs. For
+more details see \Sref{depfix}.
 
-We observe that the errors that appear in the outputs of our paraphrasing
-algorithm are often similar to some errors appearing in outputs of phrase-based
-machine translation systems, e.g errors in morphological agreement are very common.
-This makes Depfix a good fit for fixing the errors, since typical
+We observe that errors that appear in outputs of our paraphrasing algorithms 
+are often similar to errors appearing in outputs of phrase-based machine 
+translation systems, e.g. errors in morphological agreement are very common.
+This makes Depfix a valuable tool for fixing \diff{substitution} errors, since typical
 grammar correcting tools, such as a grammar-checker in a word processor,
 focus on errors that are typical for humans, not for machines.
 
-Also, the fact that Depfix exploits the source English sentences is an advantage 
-in our case, as opposed to other grammar correcting tools, such as a 
-grammar-checker in a word processor, which typically do not have access to an 
-English translation and therefore can not use it to improve their performance.
-For this reason, we apply Depfix post-editing to fix the errors in grammar that 
-frequently appear in our outputs.
+Also, the fact that Depfix exploits English source sentences is an advantage 
+in our case, as opposed to other grammar correcting tools, which typically do 
+not have access to an English source and therefore, can not use it to improve 
+their performance. For this reason, we apply Depfix post-editing to fix the 
+errors in grammar that frequently appear in our outputs.
 
 However, some error types that are common in phrase-based machine translation, 
 such as errors in preserving the correct verb tense, do not frequently emerge in the 
@@ -291,19 +291,23 @@ Therefore, we experiment with two Depfix configurations in this work:
 \begin{description}
 \item[full] the original Depfix system with all 33 fixing blocks,
 as~described in \cite{rosa:mgr}
-\item[limited] Depfix adapted for fixing paraphrasing errors by~disabling 10 of
-the fixing blocks\footnote{%
-The following fixing blocks are disabled in limited Depfix:
-Fixing reflexive tantum,
-Fixing morphological number of nouns,
-Translation of \equo{by}, 
-Translation of \equo{of}, 
-Translation of present continuous,
-Subject categories projection,
-Missing reflexive verbs,
-Subject personal pronouns dropping,
-Tense translation,
-Negation translation}
+\item[limited] after analyzing 50 randomly selected sentences, we find out that 
+Depfix not only fixes errors but also introduces new ones. Most of these errors 
+include changes that are essential while translating from English (such as 
+adding negation); however, they appear redundant for paraphrasing. After 
+manual examination, we adapted Depfix for fixing paraphrasing errors by 
+disabling 10 fixing blocks\footnote{The following fixing blocks are disabled
+in limited Depfix: Fixing reflexive tantum, Fixing morphological number of 
+nouns, Translation of \equo{by}, Translation of \equo{of}, Translation of 
+present continuous, Subject categories projection, Missing reflexive verbs, 
+Subject personal pronouns dropping, Tense translation, Negation translation}
+that cause the majority of incorrect alterations.
+
+%onkretne na 50 nahodne vybranejch vetach to udelalo 22 dobrych zmen a 47 spatnych.
+% Je ale fakt, ze hodne tech zmen se tyka chyb, ktery jsou asi nutny u prekladu z anglictiny,
+% ale tu nemaji smysl - to je treba pridavani negace (u sloves i adjektiv), nebo zmeny v case u sloves.
+
+
 \end{description}
 
 \begin{figure}[ht]
@@ -325,7 +329,7 @@ Negation translation}
 \section{Filtering the Meteor Tables}
 \label{filtering-section}
 
-We try to remove the noise from the data with two different methods. The first
+We try to remove the noise from the Czech Meteor tables with two different methods. The first
 one is based on manual error analysis and it is applied to~one-word pairs only.
 The second one is fully automatic and can be applied on all data, but its 
 results are inconclusive. Therefore, we employ only the first method in the rest 
