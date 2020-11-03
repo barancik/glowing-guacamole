@@ -6,9 +6,9 @@
 We use data sets from the English-to-Czech Translation Task of the Workshop on
 Statistical Machine Translation (WMT) from the years 2011 to 2014.
 
-All of these datasets consist of \diff{one file with the original English source sentences,
+All of these datasets consist of one file with the original English source sentences,
 several files with Czech hypotheses (outputs of MT systems) and one file with corresponding 
-reference sentences. Data from each year of the WMT competition} differ in the 
+reference sentences. Data from each year of the WMT competition differ in the 
 number of MT systems and the length of the source files (see \Tref{wmt-data}). 
 
 %We perform morphological 
@@ -45,27 +45,27 @@ consistent, we also compute another absolute score for every year using the
 “$ >$ others” method \citep{bojar-grains}, which was the WMT12 official system
 score. This score is computed simply as $\frac{wins}{wins+loses} $, i.e., the 
 score is~based on~how frequently the system is judged to be better than 
-another system. Ties among several systems are ignored. We refer to this 
-interpretation of human judgments as \textit{silver standard} to distinguish
-it from the official system scores. % chcu to tu jeste zduvodnit, proc > others??
+other systems, ties among several systems are ignored. We refer to this 
+interpretation of human judgments as a \textit{silver standard} to distinguish
+it from the official system scores. % todo: chcu to tu jeste zduvodnit, proc > others??
 
-\diff{The performance of an evaluation metric in MT is commonly computed as Pearson 
-correlation coefficient or alternatively Spearman rank correlation between the 
-automatic metric and human judgment. }
+The performance of an evaluation metric in MT is commonly computed as the
+Pearson correlation coefficient or alternatively as the Spearman rank 
+correlation between the automatic metric and human judgment. 
 
-\diff{The Pearson correlation coefficient $\rho$ is defined:}
+The Pearson correlation coefficient $\rho$ is defined by the following formula:
 
 \begin{equation*}
 \rho(H,M) = \frac{ \sum_{i=1}^{n}{(H_i - \tilde{H})(M_i - \tilde{M})}}{ \sqrt{ \sum_{i=1}^{n}{(H_i - \tilde{H})^2} }  \sqrt{ \sum_{i=1}^{n}{(M_i - \tilde{M})^2} } } 
 \end{equation*}
 
-\diff{where $H$ is the vector of human scores (i.e. gold or silver standard here) and 
+where $H$ is the vector of human scores (i.e. gold or silver standard here) and 
 $M$ is the vector of corresponding scores predicted by a certain metric. 
-$\tilde{H}$ a $\tilde{M}$ are their means, respectively. }
+$\tilde{H}$ a $\tilde{M}$ are their means, respectively. 
 
-\diff{The Spearman correlation coefficient $r_{s} $ is defined as the Pearson 
+The Spearman correlation coefficient $r_{s} $ is defined as the Pearson 
 correlation coefficient between the rank variables -- all human scores and  
-metric’s scores of MT systems are converted into ranks $r(H)$ and $r(M)$.}
+metric’s scores of MT systems are converted into ranks $r(H)$ and $r(M)$.
 
 \begin{equation*}
 r_{s}(H,M) = \rho(r(H),r(M))
@@ -74,9 +74,10 @@ r_{s}(H,M) = \rho(r(H),r(M))
 Both~correlations estimate the linear dependency between two sets of values and 
 range from -1 (perfect negative linear relationship) to 1 (perfect linear correlation). 
 
-In our experiments, we use Pearson as it takes into account the distances between 
-the system scores, thus it should be more reliable for similarly evaluated systems 
-\citep{machacek-bojar-2014-results}. \todo{tu to jeste trochu rozsirit, kdyz uz
+In our experiments, we use the Pearson correlation coefficient as it takes into 
+account the distances between the system scores, thus it should be more 
+reliable for similarly evaluated systems \citep{machacek-bojar-2014-results}. 
+\todo{tu to jeste trochu rozsirit, kdyz uz
 to tu je vysvetleny - ze Spearman ignoruje jak moc jsou systemy od sebe vzdaleny}
 
 %
