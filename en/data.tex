@@ -106,14 +106,30 @@ their amount is~insufficient for our purposes (see \todo{tabulka s velikostmi}).
 
 \subsection{Meteor tables} %two large-scale collections of paraphrases
 \label{meteori}
-Meteor tables \citep{meteor-tables} are an additional source of paraphrases. 
-They are large in~size, but they contain a lot of noise as they are constructed automatically 
-from parallel data via pivoting \citep{pivoting}. 
+Meteor tables were constructed as a for machine translation evaluation metric 
+METEOR-NEXT \citep{meteor-tables}. They are available in four languages - 
+English, German, French, Spanish and Czech. 
 
-The noise is particularly apparent among the multiword paraphrases -- for 
-example: \textit{svého názoru}  (its opinion) and \textit{šermovat rukama a 
+They were constructed automatically from parallel data via a pivot phrase 
+method \citep{pivoting}. Czech Meteor Paraphrase tables contain 756,113 phrase 
+pairs, they all were acquired pivoting through English on Europarl and CzEng 
+\citep{czeng}.
+
+Compared to Czech Wordnet, the Meteor tables are large in~size, but they 
+contain a lot of noise. The noise is particularly apparent among paraphrases 
+with low pivot score
+
+\textit{svého názoru}  (its opinion) and \textit{šermovat rukama a 
 mlátit neviditelného} (to flail one's arms and to beat the invisible one) are 
-selected as a paraphrase. 
+selected as a paraphrase. \todo{tu to rozsirit do nejake pekne tabulky}
+
+vědecký pracovník v     z vnitřku almary ozval zvuk:4
+12 milionů      deseti dny vytahoval holýma rukama
+podle svého názoru      dnes kapitán vyhlásil bezpečnostní cvičení pro
+.010100989898999999    nemoudré        okrouhlá skla
+
+0.4    důsledků takového       implications of such an
+0.4	 qprostředí a vodohospodářství    eaux et
 
 Among one-word paraphrases the noise is sparser, but there are still pairs like 
 \textit{1873} - \textit{pijavice} (a leech) or \textit{afgh\'{a}nci} (Afghans) - 
