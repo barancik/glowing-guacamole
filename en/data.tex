@@ -97,6 +97,7 @@ to tu je vysvetleny - ze Spearman ignoruje jak moc jsou systemy od sebe vzdaleny
 We use the following available sources of Czech paraphrases.
 
 \subsection{Czech WordNet 1.9 PDT}
+% http://hdl.handle.net/11858/00-097C-0000-0001-4880-3
 The first one is the Czech WordNet 1.9 PDT \citep{czech-wordnet}. It is derived 
 from the WordNet \cite{wordnet} by automatic translation followed by manual 
 control. It~contains rather high quality lemmatized paraphrases. Unfortunately, 
@@ -106,12 +107,15 @@ their amount is~insufficient for our purposes (see \todo{tabulka s velikostmi}).
 
 \subsection{Meteor tables} %two large-scale collections of paraphrases
 \label{meteori}
-Meteor tables were constructed as a for machine translation evaluation metric 
-METEOR-NEXT \citep{meteor-tables}. They are available in four languages - 
-English, German, French, Spanish and Czech. 
+Meteor tables were constructed as a part of machine translation evaluation 
+metric METEOR-NEXT \citep{meteor-tables}. Apart from Czech, they are available 
+in other four languages - English, German, French and Spanish. 
+They all were constructed automatically from parallel data via a pivot phrase 
+method \citep{pivoting}, i.e, to put it simply -  the more often two phrases 
+translate to a same foreign phrase often, the more likely they are paraphrases 
+of each other.
 
-They were constructed automatically from parallel data via a pivot phrase 
-method \citep{pivoting}. Czech Meteor Paraphrase tables contain 756,113 phrase 
+Czech Meteor Paraphrase tables contain 756,113 phrase 
 pairs, they all were acquired pivoting through English on Europarl and CzEng 
 \citep{czeng}.
 
