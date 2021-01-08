@@ -23,19 +23,78 @@ For every confirmed synonym, a new reference sentence is created by placing it t
 reference sentence on the position of its synonym.
 
 
-\subsection{Machine Translation}
-\cite{yoshimura_2019a} shows that metric correlation can be improved by using
-off-the-shelf MT systems (here Google Translate, Bing Translate). The 
-source sentences are translated and the translation filtered using BERT-based classifier
-trained on Microsoft Research Paraphrase Corpus (MRPC) \citep{dolan_2005}.  SentBLEU calculated using the original reference sentence + unfiltered 
-pseudo-references outperforms baseline (using  only the original reference sentence) 
-for majority of language pairs (XX->EN).
-
-\cite{albrecht_2008} use translations from off-the-shelf MT systems (Systran, 
-GoogleMT, Moses) as pseudo-references. MT systems are then evaluated directly
-(by adding the pseudo-references and computing BLEU and METEOR) and using
-newly leared metric (extracting features based on similarity with reference translation
- and monolingual fluency and training SVM to predict sentence score). This learned 
- metrics performs better than BLEU/METEOR with single references for all languages 
-but German and adding new references generally improves correlation of the standard
- evaluation metrics for most of language pairs.
+%\subsection{Machine Translation}
+%\cite{yoshimura_2019a} shows that metric correlation can be improved by using
+%off-the-shelf MT systems (here Google Translate, Bing Translate). The 
+%source sentences are translated and the translation filtered using BERT-based classifier
+%trained on Microsoft Research Paraphrase Corpus (MRPC) \citep{dolan_2005}.  SentBLEU calculated using the original reference sentence + unfiltered 
+%pseudo-references outperforms baseline (using  only the original reference sentence) 
+%for majority of language pairs (XX->EN).
+%
+%\cite{albrecht_2008} use translations from off-the-shelf MT systems (Systran, 
+%GoogleMT, Moses) as pseudo-references. MT systems are then evaluated directly
+%(by adding the pseudo-references and computing BLEU and METEOR) and using
+%newly leared metric (extracting features based on similarity with reference translation
+% and monolingual fluency and training SVM to predict sentence score). This learned 
+% metrics performs better than BLEU/METEOR with single references for all languages 
+%but German and adding new references generally improves correlation of the standard
+% evaluation metrics for most of language pairs.
+% 
+% Second generation metrics Meteor \cite{meteor-wmt:2014}, TERp \cite{terp} and 
+%ParaEval \cite{paraeval2} still largely focus on an n-gram overlap while 
+%including other linguistically motivated resources. They utilize paraphrase 
+%support in form of their own paraphrase tables (i.e. collection of synonymous 
+%expressions) and show higher correlation with human judgment than BLEU.
+%
+%Meteor supports several languages including Czech. However, its Czech 
+%paraphrase tables are so noisy (i.e. they contain pairs of non-paraphrastic 
+%expressions) that they actually harm the performance of the 
+%metric, as it can reward mistranslated and even untranslated 
+%words \cite{parmesan:2014}.
+%
+%String matching is hardly discriminative enough to reflect the human perception
+%and there is growing number of metrics that compute their score based on rich
+%linguistic features %TODO What are those?
+%and matching based on parse trees, POS tagging or textual 
+%entailment (e.g. \newcite{liu:2005}, \newcite{owczarzak:2007}, 
+%\newcite{amigo:2009}, \newcite{Pado09}, \newcite{machacek:2011}). 
+%
+%These metrics shows better correlation with human judgment, but their wide 
+%usage is limited by being complex and language-dependent. As a result, there is
+%a trade-off between linguistic-rich strategy for better performance and 
+%applicability of simple string level matching.
+%
+%Our approach makes use of linguistic tools for creating new reference 
+%sentences. The advantage of this method is that we can choose among many 
+%traditional metrics for evaluation on our new references while eliminating
+%some shortcomings of these metrics. % In addition, we generate paraphrased 
+%%sentences applicable not only for MT evaluation. - toto mozna uz neni nutne
+%
+%Targeted paraphrasing for MT evaluation was introduced by \newcite{kauchak}. 
+%Their algorithm creates new reference sentences by one-word substitution 
+%based on WordNet \cite{wordnet} synonymy and contextual evaluation. This 
+%solution is not readily applicable to the Czech language -- a Czech word 
+%has typically many forms and the correct form depends heavily on its context,
+%e.g., morphological cases of nouns depend on verb valency frames. Changing a 
+%single word may result in an ungrammatical sentence. Therefore, we do not 
+%attempt to~change a~single word in~a~reference sentence but we focus 
+%on~creating one single correct reference sentence.
+%
+%In \newcite{barancikova:itat2014}, we experimented with targeted
+%paraphrasing using the freely available SMT system Moses \cite{moses}. 
+%We adapted Moses for 
+%targeted monolingual phrase-based translation. However, results of this 
+%method was inconclusive. It was mainly due to a high amount of noise in the 
+%translation tables and unbalanced targeting feature. %TODO explain, ale to by zabralo strasne moc prostoru. Mozna jen footnote, nebo poznamenat, ze vysvetlovani by zabralo moc prostoru a pro zajemce at se podivaj do toho clanku
+%
+%As a result, we rather chose to employ rule-based translation system. This 
+%approach has many advantages, e.g. there is no need for creating a targeting 
+%feature and we can change only parts of a sentence and thus create more 
+%conservative paraphrases. We utilize Treex \cite{treex}, highly modular NLP 
+%software system developed for machine translation system TectoMT \cite{tectomt} 
+%that translates on a deep syntactic layer. We performed our experiment on the 
+%Czech language, however, we plan to extend it to more languages, including 
+%English and Spanish. 
+%
+%Treex is open-source and is available on GitHub,\footurl{https://github.com/ufal/treex} 
+%including the two blocks that we contributed. In the rest of the paper, we describe the implementation of our approach.

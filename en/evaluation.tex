@@ -1,6 +1,69 @@
 \chapter{Background: Machine Translation Evaluation}
 \addcontentsline{toc}{chapter}{Evaluation}
 
+
+%Since the very first appearance of machine translation (MT) systems, a
+%necessity for their objective evaluation and comparison has emerged. The 
+%traditional human evaluation is slow and unreproducible; thus, it cannot be 
+%used for tasks like tuning and development of MT systems. Well-performing 
+%automatic MT evaluation metrics are essential precisely for these tasks.
+%
+%The pioneer metrics correlating well with human judgment were BLEU \cite{bleu} 
+%and NIST \cite{nist}. They are computed from an n-gram overlap between the 
+%translated sentence (hypothesis) and one or more corresponding reference 
+%sentences, i.e., translations made by a human translator.
+%
+%Due to its simplicity and language independence, BLEU still remains the de 
+%facto standard metric for MT evaluation and tuning, even though other, 
+%better-performing metrics exist (\newcite{wmt13-metrics}, \newcite{wmt14}).
+%
+%\begin{figure*}[tb]
+%\begin{center}
+%\begin{tabular}{ll}
+% Original sentence &  \begin{tabular}{l}
+%  	\textit{Banks are testing payment by mobile telephone} \\
+%	\end{tabular}  \\
+% \hline
+% 
+% Hypothesis & \begin{tabular}{llllll}
+% 			\textit{Banky} & \textit{zkou\v sej\'i} & \textit{platbu} & 
+% 			\textit{pomoc\'i} & \textit{mobiln\'iho} & \textit{telefonu} \\
+% 			Banks & are testing & payment & with help & mobile & phone \\
+%			\end{tabular} \\
+% & \begin{tabular}{l}
+%  	Banks are testing payment by mobile phone \\
+%	\end{tabular} \\
+%
+%% MT output & \textit{Banky zkou\v sej\'i platbu pomoc\'i mobiln\'iho telefonu} \\
+%% 					 & Banks testing payment help mobile phone \\
+%% 					 & Banks are testing payment by mobile telephone \\
+% \hline
+% Reference sentence & \begin{tabular}{llll}
+% 			\textit{Banky} & \textit{testuj\'i} & \textit{placen\'i} & 
+% 			\textit{mobilem} \\
+% 			Banks & are testing & paying & by mobile phone \\
+%			\end{tabular} \\
+% &  \begin{tabular}{l}
+%  	Banks are testing paying by mobile phone \\
+%	\end{tabular}
+% 
+%\end{tabular}
+%\caption{Example from WMT12 - Even though the hypothesis is grammatically
+%correct and the meaning of both sentences is the same, it doesn't 
+%contribute to the BLEU score. There is only one unigram overlapping.}
+%\end{center}
+%\label{example_of_BLEU_malfunction}
+%\end{figure*}
+%
+%Furthermore, the standard practice is using only one reference sentence and 
+%BLEU  then tends to~perform badly. There are many translations of a single 
+%sentence and even a perfectly correct translation might get a low score 
+%as BLEU disregards synonymous expressions and word order variants (see \Fref{example_of_BLEU_malfunction}). This is especially valid 
+%for~morphologically rich languages with free word order like the Czech 
+%language \cite{bojar-tackling-sparse-data}.
+
+
+
 The need for quality machine translation evaluation is as old as the machine 
 translation itself. The hypothesis can be evaluated in two ways - either 
 directly by a human judge or by an automatic MT evaluation metric.

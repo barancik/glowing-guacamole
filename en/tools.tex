@@ -15,4 +15,29 @@ sentences. \todo{tato cast bude nekde nahore mezi Nastroji}
 %sentences, which provide additional information both for the analyses and for
 %the error correction.
 
-\section{Title of the second subchapter of the second chapter}
+\section{Treex}
+\label{treex}
+
+Treex \cite{treex} is highly modular NLP software system developed for machine translation system TectoMT \cite{tectomt} that translates on a deep syntactic layer. 
+
+Treex is open-source and is available on GitHub,\footurl{https://github.com/ufal/treex} including the two blocks for paraphrasing and reordering that we contributed. 
+
+Treex implements a stratificational approach to language, adopted from the Functional Generative Description theory \cite{FGP} and its later extension by the Prague Dependency Treebank \cite{PDT3.0}. 
+It represents sentences at four layers:
+
+\begin{itemize}
+\item \textbf{w-layer:} word layer; no linguistic annotation
+\item \textbf{m-layer:} morphological layer; sequence of tagged and lemmatized 
+tokens
+\item \textbf{a-layer:} shallow-syntax/analytical layer; sentence is 
+represented as a surface syntactic dependency tree
+\item \textbf{t-layer:} deep-syntax/tectogrammatical layer; sentence is 
+represented as a deep-syntactic dependency tree, where autosemantic words (i.e.
+semantically full lexical units) only have their own nodes; t-nodes consist of
+a~t-lemma and a~set of~attributes -- a \textit{formeme} (information about the original syntactic form) and a set of \textit{grammatemes} 
+(essential morphological features).
+\end{itemize} 
+
+In our experiment with rule based paraphrase generation, we take the analysis and generation pipeline from the TectoTM system. 
+We transfer both a hypothesis and its corresponding reference sentence to the t-layer, where we integrate a module for t-lemma paraphrasing. 
+After paraphrasing, we perform synthesis to a-layer, where we plug in a reordering module and continue with synthesis to the w-layer.
