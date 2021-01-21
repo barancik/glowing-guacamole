@@ -155,16 +155,16 @@ The very next year this method was replaced by relative ranking method (RR) \cit
 %The reason why the judge is offered 5 translations to rank instead of just 2 is because judging ranks of 5 translations at the same time gives 10 pairwise rankings. Because this causes more cognitive effort and less reliable rankings some other translation tasks present only 2 translations to the judges (Braslavski et al., 2013).
 %In recent years there have been a few publications that recommend using a more modern version of absolute scoring of translation instead of relative scoring. Graham et al. (2013) propose usage of a continuous scale that can assign integer numbers between 1 and 100 which gives a much higher granularity to the judgment than the previous 5 integers scale. Together with large number of judges per sentence, the average of the these absolute scores can give more reliable judgments than relative ranking approach. This method of directly assigning the absolute adequacy score to the system, named direct assessment (DA), was used in parallel with RR method in human evaluation on WMT16 shared translation task (Bojar et al., 2016).
 %Human judges judge only individual sentences. The procedure for generalizing the judgments of individual sentences to the judgments of systems that generated these sentences is varies depending on the type of judgments that are collected. In the case of DA judgments the procedure is easy: we just need to take the average of the absolute scores assigned by human judges to the sentences produced by the system.
-In case RR judgments there are several possible procedures that were changing over the years. Initial measures counted the number of wins of one system versus any other system that was compared against it. The formula for computing system’s score is given bellow where win(Si, Sj ) is the number of judgments in which system Si was ranked as better than system Sj and the ties are ignored:
-􏰇j,j̸=i win(Si,Sj)
-score(Si)= 􏰇j,j̸=iwin(Si,Sj)+win(Sj,Si) (2.32)
-This method was used in the initial WMT tasks, but it was changed because it suffers from the problems of luck-of-the-draw — system that is less “lucky” might always get compared to the strong MT systems and unfairly get a low score.
-To account for this a new scoring method called expected wins (Koehn, 2012) was used instead:
+%In case RR judgments there are several possible procedures that were changing over the years. Initial measures counted the number of wins of one system versus any other system that was compared against it. The formula for computing system’s score is given bellow where win(Si, Sj ) is the number of judgments in which system Si was ranked as better than system Sj and the ties are ignored:
+%􏰇j,j̸=i win(Si,Sj)
+%score(Si)= 􏰇j,j̸=iwin(Si,Sj)+win(Sj,Si) (2.32)
+%This method was used in the initial WMT tasks, but it was changed because it suffers from the problems of luck-of-the-draw — system that is less “lucky” might always get compared to the strong MT systems and unfairly get a low score.
+%To account for this a new scoring method called expected wins (Koehn, 2012) was used instead:
  
-30 Chapter 2. Background: Statistical Machine Translation
-score(Si) = 1 􏰉 win(Si,Sj) (2.33) |{Sj}|j,j̸=i win(Si,Sj)+win(Sj,Si)
-This method computes the expectation that the system in question Si will have a win over any other system randomly drawn from the set of systems it was compared against.
-Recent WMT tasks use more sophisticated measures such as TrueSkill (Sakaguchi et al., 2014), which give more reliable system scores (Bojar et al., 2014) but are much more complicated and computationally involved than Expected Wins scoring.
+%30 Chapter 2. Background: Statistical Machine Translation
+%score(Si) = 1 􏰉 win(Si,Sj) (2.33) |{Sj}|j,j̸=i win(Si,Sj)+win(Sj,Si)
+%This method computes the expectation that the system in question Si will have a win over any other system randomly drawn from the set of systems it was compared against.
+%Recent WMT tasks use more sophisticated measures such as TrueSkill (Sakaguchi et al., 2014), which give more reliable system scores (Bojar et al., 2014) but are much more complicated and computationally involved than Expected Wins scoring.
 
 \section{Automatic Evaluation}
 The main objective of automatic evaluation metrics is to calculate a numerical 
@@ -275,57 +275,3 @@ to tu je vysvetleny - ze Spearman ignoruje jak moc jsou systemy od sebe vzdaleny
 %r_{s} = r_{p}(r(H_{i}),r(M_{i}))
 %\end{equation*}
 
-\section{Sources of Czech Paraphrases}
-We use the following available sources of Czech paraphrases.
-
-\subsection{Czech WordNet 1.9 PDT}
-The first one is the Czech WordNet 1.9 PDT \citep{czech-wordnet}. It is derived 
-from the WordNet \cite{wordnet} by automatic translation followed by manual 
-control. It~contains rather high quality lemmatized paraphrases. Unfortunately, 
-their amount is~insufficient for our purposes (see \todo{tabulka s velikostmi}). 
-
-\todo{A modified version of the Czech Wordnet used to annotate "The Lexico-Semantic Annotation of PDT using Czech WordNet". The Czech WordNet was developed by the Centre of Natural Language Processing at the Faculty of Informatics, Masaryk University, Czech Republic. The Czech WordNet captures nouns, verbs, adjectives, and partly adverbs, and contains 23,094 word senses (synsets). 203 of these were created or modified by UFAL during correction of annotations. This version of WordNet was used to annotate word senses in PDT.}
-
-\subsection{Meteor tables} %two large-scale collections of paraphrases
-\label{meteori}
-Meteor tables were constructed as a part of machine translation evaluation 
-metric METEOR-NEXT \citep{meteor-tables}. Apart from Czech, they are available 
-in other four languages - English, German, French and Spanish. 
-They all were constructed automatically from parallel data via a pivot phrase 
-method \citep{pivoting}, i.e, to put it simply -  the more often two phrases 
-translate to a same foreign phrase often, the more likely they are paraphrases 
-of each other.
-
-Czech Meteor Paraphrase tables contain 756,113 phrase 
-pairs, they all were acquired pivoting through English on Europarl and CzEng 
-\citep{czeng}.
-
-Compared to Czech Wordnet, the Meteor tables are large in~size, but they 
-contain a lot of noise. The noise is particularly apparent among paraphrases 
-with low pivot score
-
-\textit{svého názoru}  (its opinion) and \textit{šermovat rukama a 
-mlátit neviditelného} (to flail one's arms and to beat the invisible one) are 
-selected as a paraphrase. \todo{tu to rozsirit do nejake pekne tabulky}
-
-vědecký pracovník v     z vnitřku almary ozval zvuk:4
-12 milionů      deseti dny vytahoval holýma rukama
-podle svého názoru      dnes kapitán vyhlásil bezpečnostní cvičení pro
-.010100989898999999    nemoudré        okrouhlá skla
-
-0.4    důsledků takového       implications of such an
-0.4	 qprostředí a vodohospodářství    eaux et
-
-Among one-word paraphrases the noise is sparser, but there are still pairs like 
-\textit{1873} - \textit{pijavice} (a leech) or \textit{afgh\'{a}nci} (Afghans) - 
-\textit{š\v{t}astně} (happily) identified as synonyms. 
-
-\todo{However, the biggest problem is that most of synonymous pairs were just 
-different word forms of the same lemma. We therefore attempt to automatically 
-filter the Meteor table, the methods are described in Section \ref{filtering-section}}
-
-\todo{zminit skore, ktere je tam prirazeno, pouziva se dale - The first, straightforward approach is to use the paraphrase scores already 
-provided in~Meteor. They are based on~phrasal translation probabilities which 
-correspond to~a~paraphrase probability in~the pivoting model.}
-
-\subsection{PPDB} 

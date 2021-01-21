@@ -96,17 +96,91 @@ to tu je vysvetleny - ze Spearman ignoruje jak moc jsou systemy od sebe vzdaleny
 \section{Sources of Czech Paraphrases}
 We use the following available sources of Czech paraphrases.
 
-\subsection{Czech WordNet 1.9 PDT}
-% http://hdl.handle.net/11858/00-097C-0000-0001-4880-3
-The first one is the Czech WordNet 1.9 PDT \citep{czech-wordnet}. It is derived 
-from the WordNet \cite{wordnet} by automatic translation followed by manual 
-control. It~contains rather high quality lemmatized paraphrases. Unfortunately, 
-their amount is~insufficient for our purposes (see \todo{tabulka s velikostmi}). 
+\subsection{Czech WordNet}
+Czech WordNet \citep{czech-wordnet} was created (by NLP Centre at the faculty of Informatics, Masaryk University ) as part of the EuroWordNet project \todo{citace}. 
+It's aim was to build a semantic network in several languages that share one common core structure.
 
-\todo{A modified version of the Czech Wordnet used to annotate "The Lexico-Semantic Annotation of PDT using Czech WordNet". The Czech WordNet was developed by the Centre of Natural Language Processing at the Faculty of Informatics, Masaryk University, Czech Republic. The Czech WordNet captures nouns, verbs, adjectives, and partly adverbs, and contains 23,094 word senses (synsets). 203 of these were created or modified by UFAL during correction of annotations. This version of WordNet was used to annotate word senses in PDT.}
+It contains 28,201 synsets, each synset represents a word sense and lists words and phrases which can be used to express the meaning. 
+Synsets can include a definition of its meaning but only few have it filled.
+Recently, linguistic students were asked to write missing definitions, however they are not included in the Czech WordNet yet. \citep{Rambousek:2017}
 
+Unfortunately, this original, larger version of Czech Wordnet is only available under closed and paid licence through the ELDA/ELRA agency. 
+Therefore, we adapted slightly smaller and corrected version  -- Czech WordNet 1.9 PDT \citep{czech_wordnet_pdt}, which is publicly available is the LINDAT/CLARIN repository.\footnote{http://hdl.handle.net/11858/00-097C-0000-0001-4880-3} It contains 23,094 synset with nouns, verbs, adjectives, and partly adverbs, 7028 of them contains several entries - paraphrases.
+
+Czech WordNet was derived from the Princeton WordNet \citep{wordnet,fellbaum98wordnet} by automatic translation followed by manual control. 
+This method has several disadvantages \citep{1489838} -- even though most of the paraphrases it contains are very high quality, there are also multiword expressions that are not fixed phrases. Next to commonly used words, there are many  paraphrases rarely used in the Czech language and several synsets 
+(with names of apostles) were left untranslated for some reason.
+\Fref{divny_wordnet} shows examples of such synsets.
+
+\begin{figure*}[tb]
+\begin{center}
+
+ \begin{tabular}{ll}
+ambulance (798'), sanitka (1295), pohotovost (1304*vetsina s jinym vyznamem), záchranka (957), sanita (138) 
+ 
+very rarely used: (syn2020)
+kukuřičný cukr (0) , celeróza (0) 
+cheeseburger (59), smažený sýr v housce (1) 
+vrtulník (1911), vírník (28), autogyra (0), gyroplán (0)
+\end{tabular}
+
+plněná rajčata (4), plněná rajčata na studeno (0)
+piezoelektrická přenoska (0), krystalová přenoska (0)
+Andrew, Saint Andrew, Saint Andrew the Apostle, St Andrew
+želví polévka (4), pravá želví polévka (0) 
+monocykl (0), jednokolový velocipéd (0)
+topinambur (39), jeruzalémský artyčok (2)
+sponka (329), hřebíček na papír (0) 
+
+\caption{Example of the paraphrases in the Czech WordNet. The~hypothesis is grammatically correct 
+and has the same meaning as the reference sentence. We analyse both 
+sentences to t-layer, where we create a new reference sentence by substituting
+synonyms from hypothesis to the reference. In the next step, we will change also
+the word order to better reflect the hypothesis.}
+\label{divny_wordnet}
+\end{center}
+\end{figure*}
+
+ 
 \subsection{Meteor tables} %two large-scale collections of paraphrases
 \label{meteori}
+Meteor tables were constructed as a part of machine translation evaluation metric METEOR-NEXT \citep{meteor-tables}. 
+Apart from Czech, they are available in other four languages - English, German, French and Spanish. 
+They all were constructed automatically from parallel data via a pivot phrase method \citep{pivoting}, i.e, to put it simply --  
+the more often two phrases translate to a same foreign phrase often, the more likely they are paraphrases of each other.
+%they all were acquired pivoting through English on Europarl and CzEng \citep{czeng}.
+
+Compared to Czech Wordnet, the Meteor tables are large in~size, they contain 756,113 phrase pairs. 
+However, due to the automatic method of construction, they contain a lot of noise. 
+\todo{ukazat jak vznikaji chybne parafraze diky pivot metode}
+The noise is particularly apparent among paraphrases with low pivot score.
+
+\textit{svého názoru}  (its opinion) and \textit{šermovat rukama a 
+mlátit neviditelného} (to flail one's arms and to beat the invisible one) are 
+selected as a paraphrase. \todo{tu to rozsirit do nejake pekne tabulky}
+
+vědecký pracovník v     z vnitřku almary ozval zvuk:4
+12 milionů      deseti dny vytahoval holýma rukama
+podle svého názoru      dnes kapitán vyhlásil bezpečnostní cvičení pro
+.010100989898999999    nemoudré        okrouhlá skla
+
+0.4    důsledků takového       implications of such an
+0.4	 qprostředí a vodohospodářství    eaux et
+
+Among one-word paraphrases the noise is sparser, but there are still pairs like 
+\textit{1873} - \textit{pijavice} (a leech) or \textit{afgh\'{a}nci} (Afghans) - 
+\textit{š\v{t}astně} (happily) identified as synonyms. 
+
+\todo{However, the biggest problem is that most of synonymous pairs were just 
+different word forms of the same lemma. We therefore attempt to automatically 
+filter the Meteor table, the methods are described in Section \ref{filtering-section}}
+
+\todo{zminit skore, ktere je tam prirazeno, pouziva se dale - The first, straightforward approach is to use the paraphrase scores already 
+provided in~Meteor. They are based on~phrasal translation probabilities which 
+correspond to~a~paraphrase probability in~the pivoting model.}
+
+
+
 Meteor tables were constructed as a part of machine translation evaluation 
 metric METEOR-NEXT \citep{meteor-tables}. Apart from Czech, they are available 
 in other four languages - English, German, French and Spanish. 
@@ -146,5 +220,6 @@ filter the Meteor table, the methods are described in Section \ref{filtering-sec
 \todo{zminit skore, ktere je tam prirazeno, pouziva se dale - The first, straightforward approach is to use the paraphrase scores already 
 provided in~Meteor. They are based on~phrasal translation probabilities which 
 correspond to~a~paraphrase probability in~the pivoting model.}
+
 
 \subsection{PPDB} 

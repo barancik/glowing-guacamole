@@ -1,16 +1,12 @@
-\chapter{Targeted Paraphrasing on Deep Syntactic Layer}
+\chapter{Paraphrasing on Deep Syntactic Layer}
 \addcontentsline{toc}{chapter}{treex}
 
 
-In this chapter,\footnote{This chapter is based on the article 
-\citep{barancikova-rosa-2015-targeted}, which is a joint work with Rudolf Rosa. 
-Rudolf ... My responsibilities included 
-paraphrasing, filtering the noisy paraphrase tables and evaluating of 
-experiments.} we present a method of targeted paraphrasing of reference sentences 
-on a deep syntactic layer. For this purpose, we employ NLP framework Treex and 
-extend it with modules for targeted paraphrasing and word order changes. Automatic scores 
-computed using these paraphrased reference sentences show higher correlation with human 
-judgment than scores computed on the original reference sentences.
+In this chapter,\footnote{This chapter is based on the article \citep{barancikova-rosa-2015-targeted}, which is a joint work with Rudolf Rosa. 
+Rudolf wrote the two new Treex blocks. My responsibilities included data preparation, paraphrasing and evaluation of experiments.} 
+we present a method of targeted paraphrasing of reference sentences on a deep syntactic layer. 
+For this purpose, we employ NLP framework Treex and extend it with modules for targeted paraphrasing and word order changes. 
+Automatic scores computed using these paraphrased reference sentences show improvement in correlation with human judgment to the original reference sentences.
 
 
 \section{Introduction}
@@ -69,7 +65,7 @@ Treex is open-source and is available on GitHub,\footurl{https://github.com/ufal
 
 \vspace{20pt}
 
-\includegraphics[scale=0.4]{example.png} 
+\includegraphics[scale=0.4]{../img/treex_paraphrasing_example.png} 
 
 \caption{Example of the paraphrasing. The~hypothesis is grammatically correct 
 and has the same meaning as the reference sentence. We analyse both 
@@ -106,7 +102,7 @@ module and continue with synthesis to the w-layer.
 \subsection{Analysis from w-layer to t-layer}
 The analysis from the w-layer the to a-layer includes tokenization, POS-tagging and 
 lemmatization using MorphoDiTa \cite{morphodita}, dependency parsing using the 
-MSTParser \cite{McDonald:2005} adapted by \newcite{Novak:2007}, trained on PDT.
+MSTParser \citep{McDonald:2005} adapted by \cite{Novak:2007}, trained on PDT.
 
 In the next step, a surface-syntax a-tree is converted into a deep-syntax 
 t-tree. Auxiliary 
@@ -127,7 +123,7 @@ paraphrase tables, do not appear here.
 
 \begin{figure*}[tb]
 \begin{center}
-\includegraphics[scale=0.32]{reordering.png} 
+\includegraphics[scale=0.32]{../img/treex_paraphrasing_reordering.png} 
 \caption{Continuation of \Fref{example}, reordering of the paraphrased reference
 sentence.}
 \label{reordering}
@@ -249,11 +245,11 @@ wording to the hypothesis.
 %final: Internet vyvolal boom těchto spekulací.
 
 \section{Data}
-We perform our experiments on data sets from the English-to-Czech 
-translation  task of WMT12 \cite{wmt12}, WMT13 \cite{wmt13}. The data 
-sets contain 13/14\footnote{We use only 12 of them because two of them (FDA.2878 
-and online-G) have no human judgments.} files with Czech outputs of MT systems.
-Each data set also contains one file with corresponding reference sentences.
+%We perform our experiments on data sets from the English-to-Czech 
+%translation  task of WMT12 \cite{wmt12}, WMT13 \cite{wmt13}. The data 
+%sets contain 13/14\footnote{We use only 12 of them because two of them (FDA.2878 
+%and online-G) have no human judgments.} files with Czech outputs of MT systems.
+%Each data set also contains one file with corresponding reference sentences.
 
 Our database of t-lemma paraphrases was created from two existing sources of 
 Czech paraphrases -- the Czech WordNet 1.9 PDT \cite{czech-wordnet} and the 
@@ -263,10 +259,7 @@ MorphoDiTa \cite{morphodita}.
 
 We also performed fitering of the lemmatized Meteor Paraphrase tables based on 
 coarse POS, as they contained a lot of noise due to being constructed 
-automatically.% via \textit{pivoting} \cite{pivoting}. The pivot method is an 
-%inexpensive way of acquiring paraphrases from large parallel corpora. It is 
-%based on the assumption that two phrases that share a meaning may have a same 
-%translation in a foreign language \cite{dyvik}.
+automatically.
 
 \section{Results}
 \begin{table*}[tb]
@@ -292,7 +285,7 @@ support).}
 \end{center}
 \end{table*}
 
-The performance of an evaluation metric in MT is usually computed as the
+%The performance of an evaluation metric in MT is usually computed as the
 Pearson correlation between the automatic metric and human judgment \cite{bleu}. 
 The~correlation estimates the linear dependency between two sets of values. 
 It ranges from -1 (perfect negative linear relationship) to 1 (perfect linear 
