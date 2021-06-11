@@ -1,107 +1,86 @@
 \chapter{Background: Machine Translation Evaluation}
 \addcontentsline{toc}{chapter}{Evaluation}
 
+Since the very first appearance of machine translation (MT) systems, a necessity for their objective evaluation and comparison has emerged.
 
-%Since the very first appearance of machine translation (MT) systems, a
-%necessity for their objective evaluation and comparison has emerged. The 
-%traditional human evaluation is slow and unreproducible; thus, it cannot be 
-%used for tasks like tuning and development of MT systems. Well-performing 
-%automatic MT evaluation metrics are essential precisely for these tasks.
-%
-%The pioneer metrics correlating well with human judgment were BLEU \cite{bleu} 
-%and NIST \cite{nist}. They are computed from an n-gram overlap between the 
-%translated sentence (hypothesis) and one or more corresponding reference 
-%sentences, i.e., translations made by a human translator.
-%
-%Due to its simplicity and language independence, BLEU still remains the de 
-%facto standard metric for MT evaluation and tuning, even though other, 
-%better-performing metrics exist (\newcite{wmt13-metrics}, \newcite{wmt14}).
-%
-%\begin{figure*}[tb]
-%\begin{center}
-%\begin{tabular}{ll}
-% Original sentence &  \begin{tabular}{l}
-%  	\textit{Banks are testing payment by mobile telephone} \\
-%	\end{tabular}  \\
-% \hline
-% 
-% Hypothesis & \begin{tabular}{llllll}
-% 			\textit{Banky} & \textit{zkou\v sej\'i} & \textit{platbu} & 
-% 			\textit{pomoc\'i} & \textit{mobiln\'iho} & \textit{telefonu} \\
-% 			Banks & are testing & payment & with help & mobile & phone \\
-%			\end{tabular} \\
-% & \begin{tabular}{l}
-%  	Banks are testing payment by mobile phone \\
-%	\end{tabular} \\
-%
-%% MT output & \textit{Banky zkou\v sej\'i platbu pomoc\'i mobiln\'iho telefonu} \\
-%% 					 & Banks testing payment help mobile phone \\
-%% 					 & Banks are testing payment by mobile telephone \\
-% \hline
-% Reference sentence & \begin{tabular}{llll}
-% 			\textit{Banky} & \textit{testuj\'i} & \textit{placen\'i} & 
-% 			\textit{mobilem} \\
-% 			Banks & are testing & paying & by mobile phone \\
-%			\end{tabular} \\
-% &  \begin{tabular}{l}
-%  	Banks are testing paying by mobile phone \\
-%	\end{tabular}
-% 
-%\end{tabular}
-%\caption{Example from WMT12 - Even though the hypothesis is grammatically
-%correct and the meaning of both sentences is the same, it doesn't 
-%contribute to the BLEU score. There is only one unigram overlapping.}
-%\end{center}
-%\label{example_of_BLEU_malfunction}
-%\end{figure*}
-%
-%Furthermore, the standard practice is using only one reference sentence and 
-%BLEU  then tends to~perform badly. There are many translations of a single 
-%sentence and even a perfectly correct translation might get a low score 
-%as BLEU disregards synonymous expressions and word order variants (see \Fref{example_of_BLEU_malfunction}). This is especially valid 
-%for~morphologically rich languages with free word order like the Czech 
-%language \cite{bojar-tackling-sparse-data}.
+The hypothesis can be evaluated in two ways - either directly by a human judge or by an automatic MT evaluation metric.
+
+The direct human approach is considered most reliable and it is what MT developers want in the end. However, it has serious drawbacks - it is slow and expensive in comparison to its automatic alternative.
+
+Furthermore, its complicated. Consider the following example from WMT15 Russian to English task. A sentence ... was translated differently by all 14 competing systems.   -- imagine comparing the following sentences: \todo{tu by to chtelo priklad - co je horsi nesmyslna veta, neprelozene slovo...}
+
+WMT15 ru-en
+\begin{enumerate}
+\item The meeting ended with the laying of flowers of the chapel stone.
+\item The meeting ended with the laying of flowers to stone.
+\item Rally ended Bill of sale laying flowers to stone.
+\item The meeting ended with the laying on of colours to stone.
+\item The rally ended with laying flowers to the zakladnomu stone.
+\item The meeting ended with the laying of flowers to the foundation stone.
+\item Meeting ended with the placing of colors to the mortgage stone.
+\item The rally ended with laying flowers to the memorial stone.
+\item Meeting ended with flower-laying to the foundation stone.
+\item The meeting ended with laying flowers to clad stone.
+\item The rally ended laying flowers to slaid stone.
+\item Rally ended laying flowers to закладному stone.
+\item The meeting was laying flowers to закладному stone.
+\end{enumerate}
 
 
 
-The need for quality machine translation evaluation is as old as the machine 
-translation itself. The hypothesis can be evaluated in two ways - either 
-directly by a human judge or by an automatic MT evaluation metric.
 
-The direct human approach is considered most reliable and it is what MT 
-developers want in the end. However, it has serious drawbacks - it is slow
-and expensive in comparison to its automatic alternative.
+What is worse -- non-sensical sentence, untranslated words, grammatical errors,...? 
 
-It is essential for objective evaluation during development 
-of a MT system as well as comparison of different MT systems.
+\todo{There are no exact methodology how to evaluate... ze to kazdy citi jinak, souteze to nemaji, CCB}
+
+\todo{And after seeing several such a bad translations and making the difficult choice in their comparison, it is literally impossible to remember its own choices which causes also low intra-annotator agreement}
+%Moreover, it is practically impossible to repeat the evaluation with the same results \cite{bojar-kniha}. 
+\todo{updatovat citace}
+This complexity of translation evaluation causes low inter-annotator agreement \cite{wmt13}. 
+It is highly dependent on the person annotating and the inter-annotator 
+agreement is generally low  \cite{wmt13}. Moreover, it is practically 
+impossible to repeat the evaluation with the same results \cite{bojar-kniha}.
+
+
+Due to being slow and unreproducible, it is impossible to use human evaluation for tuning and development of MT systems. 
+Well-performing automatic MT evaluation metrics are essential precisely for these tasks. 
+The pioneer metrics correlating well with human judgment were BLEU \cite{bleu} and NIST \cite{nist}. 
+They are computed based on n-gram overlap between the hypothesis and one or more corresponding reference sentences, i.e., translations made by a human translator.
+
+For this reasons, automatic evaluation metrics are essential for objective evaluation during development of a MT system as well as comparison of different MT systems.
+
+
+
+
+
+
+
+
+Due to its simplicity and language independence, BLEU still remains the de facto standard metric for MT evaluation and tuning, even though other, better-performing metrics exist (\cite{wmt13-metrics}, \cite{wmt14}).
+Even though its correlation with human judgment is not as high as previously thought (\cite{callison2006re},\cite{koehn-monz:2006:WMT}??). 
+This is particular valid at a sentence level (Blatz et al. 2003).
+
+Furthermore, the standard practice is using only one reference sentence and BLEU  then tends to~perform badly. 
+There are many translations of a single sentence and even a perfectly correct translation might get a low score as BLEU disregards synonymous expressions and word order variants.
+This is especially valid for~morphologically rich languages with free word order like the Czech language \cite{bojar-tackling-sparse-data}.
+
+
+%Nowadays, automatic evaluation methods play a very important role in the development cycle of Machine Translation (MT) systems. They are used during error analysis to obtain preliminary translation quality reports over individual test cases. They are also a key ingredient in the process of system optimization, guiding the adjustment of internal system parameters. Finally, they allow for system comparison, both from the perspective of system improvement (i.e. comparison of different versions of the same system) and system competitiveness (i.e. comparison of different systems).
+
+\cite{callison2006re} shows that correlation of BLUE with human judgment is not as high as previously thought. 
+Also commonly used comparing MT systems based on their BLEU score turned out to be much rather problematic \cite{tenMattPost}
+
+Furthermore, obtaining reference sentences is labour intensive and expensive,\footnote{For example, production of reference translation at~the Linguistic Data Consortium is complicated process involving translation by~professional agencies based on elaborate guidelines and detailed quality control \cite{strassel}.} thus the standard practice is using only one reference sentence and BLEU then tends to perform badly. 
+
+As there are many translations of a single sentence, even a perfectly correct hypothesis might get a low score due different wording and disregarding synonymous expressions (see \Fref{example_of_BLEU_malfunction}). 
+This is especially valid for morphologically rich languages with free word order like the Czech language. \cite{bojar-tackling-sparse-data}
+
+
+
 
 
 %The output of machine translation systems can be evaluated in two ways. First is by directly asking humans to assess the quality of the MT output. This is what MT developers want in the end. However, this process of evaluation is very slow and expensive compared to its alternative: automatic evaluation. Automatic evaluation metrics are just an approximation to the human judgment, but because of its speed very useful in the process of development of an MT system.
 
-
-The need for quality automatic machine translation (MT) evaluation is as old as
-the machine translation itself. It is essential for objective evaluation during
-development of a MT system as well as comparison of different MT systems.
-
-The traditional human evaluation while being the most reliable has serious 
-drawbacks. Not only it is time-consuming and expensive, but more importantly
-it is highly dependent on the person annotating and the inter-annotator 
-agreement is generally low  \cite{wmt13}. Moreover, it is practically 
-impossible to repeat the evaluation with the same results \cite{bojar-kniha}.
-%, although there were recently successful attempts to overcome this problem 
-%using crowdsourcing techniques. [\markcite{{\it Callison-Burch}, 2009]} and 
-%[\markcite{{\it Bentivogli et al.}, 2011]} demonstrate that the average score of 
-%high number of non-expert low-paid annotators shows high agreement with gold 
-%standards provided by expert annotators in various natural language processing 
-%(NLP) tasks including machine translation evaluation.
-
-Due to being slow and unreproducible, it is impossible to use human evaluation
-for tuning and development of MT systems. Well-performing automatic MT 
-evaluation metrics are essential precisely for these tasks. The pioneer metrics 
-correlating well with human judgment were BLEU \cite{bleu} and NIST \cite{nist}. 
-They are computed based on n-gram overlap between the MT output (hypothesis) and 
-one or more corresponding reference sentences, i.e., translations made by a human 
-translator.
 
 
 
