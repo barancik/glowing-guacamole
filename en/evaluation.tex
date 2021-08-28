@@ -7,7 +7,7 @@ The hypothesis can be evaluated in two ways - either directly by a human judge o
 
 The direct human approach is considered most reliable and it is what MT developers want in the end. However, it has serious drawbacks - it is slow and expensive in comparison to its automatic alternative.
 
-Furthermore, its complicated. Consider the following example from WMT15 Russian to English task. A sentence ... was translated differently by all 14 competing systems.   -- imagine comparing the following sentences: \todo{tu by to chtelo priklad - co je horsi nesmyslna veta, neprelozene slovo...}
+Furthermore, its complicated. Consider the following example from WMT15 Russian to English task. A sentence ... was translated differently by all 14 competing systems.   
 
 WMT15 ru-en
 \begin{enumerate}
@@ -26,55 +26,15 @@ WMT15 ru-en
 \item The meeting was laying flowers to закладному stone.
 \end{enumerate}
 
+Imagine comparing the previous sentences. What is worse -- non-sensical sentence, untranslated words, badly translated words, grammatical errors, missing articles? 
+There are no exact methodology how to evaluate. 
+\todo{.. ze to kazdy citi jinak, souteze to nemaji, CCB}
 
-
-
-What is worse -- non-sensical sentence, untranslated words, grammatical errors,...? 
-
-\todo{There are no exact methodology how to evaluate... ze to kazdy citi jinak, souteze to nemaji, CCB}
-
-\todo{And after seeing several such a bad translations and making the difficult choice in their comparison, it is literally impossible to remember its own choices which causes also low intra-annotator agreement}
-%Moreover, it is practically impossible to repeat the evaluation with the same results \cite{bojar-kniha}. 
-\todo{updatovat citace}
-This complexity of translation evaluation causes low inter-annotator agreement \cite{wmt13}. 
-It is highly dependent on the person annotating and the inter-annotator 
-agreement is generally low  \cite{wmt13}. Moreover, it is practically 
-impossible to repeat the evaluation with the same results \cite{bojar-kniha}.
-
+This complexity of translation evaluation leads to low inter-annotator agreement \cite{wmt13}. \todo{updatovat citace}
+Furthermore, after seeing several such a bad translations and making the difficult choice in their comparison, it is literally impossible to remember its own choices which causes also low intra-annotator agreement.
 
 Due to being slow and unreproducible, it is impossible to use human evaluation for tuning and development of MT systems. 
 Well-performing automatic MT evaluation metrics are essential precisely for these tasks. 
-The pioneer metrics correlating well with human judgment were BLEU \cite{bleu} and NIST \cite{nist}. 
-They are computed based on n-gram overlap between the hypothesis and one or more corresponding reference sentences, i.e., translations made by a human translator.
-
-For this reasons, automatic evaluation metrics are essential for objective evaluation during development of a MT system as well as comparison of different MT systems.
-
-
-
-
-
-
-
-
-Due to its simplicity and language independence, BLEU still remains the de facto standard metric for MT evaluation and tuning, even though other, better-performing metrics exist (\cite{wmt13-metrics}, \cite{wmt14}).
-Even though its correlation with human judgment is not as high as previously thought (\cite{callison2006re},\cite{koehn-monz:2006:WMT}??). 
-This is particular valid at a sentence level (Blatz et al. 2003).
-
-Furthermore, the standard practice is using only one reference sentence and BLEU  then tends to~perform badly. 
-There are many translations of a single sentence and even a perfectly correct translation might get a low score as BLEU disregards synonymous expressions and word order variants.
-This is especially valid for~morphologically rich languages with free word order like the Czech language \cite{bojar-tackling-sparse-data}.
-
-
-%Nowadays, automatic evaluation methods play a very important role in the development cycle of Machine Translation (MT) systems. They are used during error analysis to obtain preliminary translation quality reports over individual test cases. They are also a key ingredient in the process of system optimization, guiding the adjustment of internal system parameters. Finally, they allow for system comparison, both from the perspective of system improvement (i.e. comparison of different versions of the same system) and system competitiveness (i.e. comparison of different systems).
-
-\cite{callison2006re} shows that correlation of BLUE with human judgment is not as high as previously thought. 
-Also commonly used comparing MT systems based on their BLEU score turned out to be much rather problematic \cite{tenMattPost}
-
-Furthermore, obtaining reference sentences is labour intensive and expensive,\footnote{For example, production of reference translation at~the Linguistic Data Consortium is complicated process involving translation by~professional agencies based on elaborate guidelines and detailed quality control \cite{strassel}.} thus the standard practice is using only one reference sentence and BLEU then tends to perform badly. 
-
-As there are many translations of a single sentence, even a perfectly correct hypothesis might get a low score due different wording and disregarding synonymous expressions (see \Fref{example_of_BLEU_malfunction}). 
-This is especially valid for morphologically rich languages with free word order like the Czech language. \cite{bojar-tackling-sparse-data}
-
 
 
 
@@ -87,38 +47,19 @@ This is especially valid for morphologically rich languages with free word order
 
 \section{Human Evaluation}
 Human evaluation is the most reliable and the most desired method in the end.
-However, it has also its disadvantages. It is slow and expensive \todo{podporit tvrzeni}, 
-and non-reproducible and inconsistent - sentences are complex and a persons
-opinion of their quality changes during the evaluation, resulting in low
-intrannotator agreement \todo{odkaz}.
+However, it has also its disadvantages. 
+It is slow and expensive \todo{podporit tvrzeni}, and non-reproducible and inconsistent - sentences are complex and a persons opinion of their quality changes during the evaluation, resulting in low intrannotator agreement \todo{odkaz}.
 
 There are many ways how to judge the quality of a machine translation system. 
-The methods range from scoring fidelity and intelligibility of a translation
-%, counting a~number of necessary post-edits to a correct translation or 
-to the ability to perform a~task based on the automatically translated instruction, e.g., 
-how successfully are technicians in  helicopter maintenance based on translated 
-manual \cite{Sinaiko}.
+The methods range from scoring fidelity and intelligibility of a translation to the ability to perform a~task based on the automatically translated instruction, e.g., how successfully are technicians in  helicopter maintenance based on translated manual \cite{Sinaiko}.
 
-In the first year of WMT shared tasks \citep{koehn-monz:2006:WMT}, translations
-were evaluated based on their adequacy and fluency. In this method, initially  
-developed by the Linguistics Data Consortium \todo{(LDC,2005)},  a human judge 
-is presented with five hypotheses and assign them a score between 1 and 5 based 
-on how well the original meaning of the sentence is sustained and how well is the 
-sentence formed in the target language.
+In the first year of WMT shared tasks \citep{koehn-monz:2006:WMT}, translations were evaluated based on their adequacy and fluency. 
+In this method, initially  developed by the Linguistics Data Consortium \todo{(LDC,2005)},  a human judge is presented with five hypotheses and assign them a score between 1 and 5 based on how well the original meaning of the sentence is sustained and how well is the sentence formed in the target language.
 
-\cite{callison-burch-etal-2007-meta} reports high correlation between annotators’ 
-adequacy and fluency scores. In other words -- it is hard to draw any meaning
-from a disfluent sentence and similarly, for complete understanding of a sentence,
-it must be almost fully fluent as minor variation in morphology can significantly
-modify meaning of a whole sentence, especially in flective languages such as the 
-Czech language. 
+\cite{callison-burch-etal-2007-meta} reports high correlation between annotators’ adequacy and fluency scores. In other words -- it is hard to draw any meaning from a disfluent sentence and similarly, for complete understanding of a sentence, it must be almost fully fluent as minor variation in morphology can significantly modify meaning of a whole sentence, especially in flective languages such as the Czech language. 
 %Furthermore, the separation of adequacy and fluency leads to the problem of recombining the two scores in some meaningful way for tasks such as tuning au- tomatic metrics. 
 
-The very next year this method was replaced by relative ranking method (RR) 
-\citep{callison-burch-etal-2007-meta}. In this evaluation campaign, an 
-annotator see five hypotheses and ranks them relatively from the best to the 
-worst with ties allowed.
-
+The very next year this method was replaced by relative ranking method (RR) \citep{callison-burch-etal-2007-meta}. In this evaluation campaign, an annotator see five hypotheses and ranks them relatively from the best to the worst with ties allowed.
 
 %The most common option for judging and measuring machine translation quality is human evaluation. The quality of MT output is judged by experts in translation and linguistics from two different perspectives. The first perspective is the degree of adherence to the target text and target language norms, referring, for example, to features such as grammaticality and clarity. This quality evaluation perspective is known as fluency. When judging fluency, the source text is not relevant. The evaluators have access to only the translation being judged and not the source data. Fluency requires an expert fluent only in the target language. On the other hand, source text adherence is judged to the source text norms and meaning, in terms of how well the target text represents the informational content of the source text. It is known as accuracy. The evaluators have access to the source text and translations being judged. Frequently, the context of a sentence is also taken into account. The evaluators must be bilingual in both the source and target languages. The adequacy and fluency are usually judged on a 5-point scale, as given in Table 3 .
 
@@ -160,6 +101,36 @@ BLEU (BiLingual Evaluation Understudy; \cite{bleu}) works from the hypothesis th
 ways how to translate a text "correctly", most of them will share certain phrases in common. If this is correct, then it should
 be possible to model statistically a quasi ideal of that text against which translations can be compared in relatively simple 
 string-by-string matches. 
+
+
+%The pioneer metrics correlating well with human judgment were BLEU \cite{bleu} and NIST \cite{nist}. 
+%They are computed based on n-gram overlap between the hypothesis and one or more corresponding reference sentences, i.e., translations made by a human translator.
+% For this reasons, automatic evaluation metrics are essential for objective evaluation during development of a MT system as well as comparison of different MT systems.
+
+
+
+
+Due to its simplicity and language independence, BLEU still remains the de facto standard metric for MT evaluation and tuning, even though other, better-performing metrics exist (\cite{wmt13-metrics}, \cite{wmt14}).
+Even though its correlation with human judgment is not as high as previously thought (\cite{callison2006re},\cite{koehn-monz:2006:WMT}??). 
+This is particular valid at a sentence level (Blatz et al. 2003).
+
+Furthermore, the standard practice is using only one reference sentence and BLEU  then tends to~perform badly. 
+There are many translations of a single sentence and even a perfectly correct translation might get a low score as BLEU disregards synonymous expressions and word order variants.
+This is especially valid for~morphologically rich languages with free word order like the Czech language \cite{bojar-tackling-sparse-data}.
+
+
+%Nowadays, automatic evaluation methods play a very important role in the development cycle of Machine Translation (MT) systems. They are used during error analysis to obtain preliminary translation quality reports over individual test cases. They are also a key ingredient in the process of system optimization, guiding the adjustment of internal system parameters. Finally, they allow for system comparison, both from the perspective of system improvement (i.e. comparison of different versions of the same system) and system competitiveness (i.e. comparison of different systems).
+
+\cite{callison2006re} shows that correlation of BLUE with human judgment is not as high as previously thought. 
+Also commonly used comparing MT systems based on their BLEU score turned out to be much rather problematic \cite{tenMattPost}
+
+Furthermore, obtaining reference sentences is labour intensive and expensive,\footnote{For example, production of reference translation at~the Linguistic Data Consortium is complicated process involving translation by~professional agencies based on elaborate guidelines and detailed quality control \cite{strassel}.} thus the standard practice is using only one reference sentence and BLEU then tends to perform badly. 
+
+As there are many translations of a single sentence, even a perfectly correct hypothesis might get a low score due different wording and disregarding synonymous expressions (see \Fref{example_of_BLEU_malfunction}). 
+This is especially valid for morphologically rich languages with free word order like the Czech language. \cite{bojar-tackling-sparse-data}
+
+
+
 
 
 \section{Meta-evalution}
