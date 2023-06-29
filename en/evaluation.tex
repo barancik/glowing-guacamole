@@ -7,7 +7,7 @@ The hypothesis can be evaluated in two ways - either directly by a human judge o
 
 The direct human approach is considered most reliable and it is what MT developers want in the end. However, it has serious drawbacks - it is slow and expensive in comparison to its automatic alternative.
 
-Furthermore, its complicated. Consider the following example from WMT15 Russian to English task. A sentence ... was translated differently by all 14 competing systems.   
+Furthermore, its complicated. Consider the following example from WMT15  \cite{wmt15} Russian to English task. A sentence \textit{Митинг закончился возложением цветов к закладному камню.} (`The rally ended with the placing of flowers at the foundation stone.'') has a completely different translation by all 14 competing systems.   
 
 WMT15 ru-en
 \begin{enumerate}
@@ -26,8 +26,10 @@ WMT15 ru-en
 \item The meeting was laying flowers to закладному stone.
 \end{enumerate}
 
-Imagine comparing the previous sentences. What is worse -- non-sensical sentence, untranslated words, badly translated words, grammatical errors, missing articles? 
-There are no exact methodology how to evaluate. 
+Consider the task of comparing the aforementioned statements. What should be considered worse in terms of their undesirable attributes? Nonsensical sentences, untranslated words, poorly translated words, shifts in sentence meaning, grammatical errors, or missing articles? Determining which of these attributes should be considered more severe is subjective and varies among annotators. Furthermore, the absence of a exact methodology for evaluating these attributes introduces additional complexity to the task.
+
+
+Every annotator feels differently about that and
 \todo{.. ze to kazdy citi jinak, souteze to nemaji, CCB}
 
 This complexity of translation evaluation leads to low inter-annotator agreement \cite{wmt13}. \todo{updatovat citace}
