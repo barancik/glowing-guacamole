@@ -26,11 +26,12 @@ WMT15 ru-en
 \item The meeting was laying flowers to закладному stone.
 \end{enumerate}
 
-Consider the task of comparing the aforementioned statements. What should be considered worse in terms of their undesirable attributes? Nonsensical sentences, untranslated words, poorly translated words, shifts in sentence meaning, grammatical errors, or missing articles? Determining which of these attributes should be considered more severe is subjective and varies among annotators. Furthermore, the absence of a exact methodology for evaluating these attributes introduces additional complexity to the task.
+Consider the task of comparing the aforementioned statements. What should be considered worse in terms of their undesirable attributes? Nonsensical sentences, untranslated words, poorly translated words, shifts in sentence meaning, grammatical errors, or missing articles? Determining which of these attributes should be considered more severe is subjective and varies among annotators based on their linguistic sensibility. 
+
+Furthermore, the absence of a exact methodology for evaluating these attributes introduces additional complexity to the task. This absence is typically intentional. as it doesn't make much sense to explain to a native speaker of a language how they should feel about language errors.
 
 
-Every annotator feels differently about that and
-\todo{.. ze to kazdy ma jiny cit pro jazyk, citi to jinak, souteze to nemaji, CCB}
+It acknowledges that the annotator, as a native speaker of the language being evaluated, should make the choice based on their own judgment of which sentence appears or sounds more aesthetically pleasing.
 
 This complexity of translation evaluation leads to low inter-annotator agreement \cite{wmt13}. \todo{updatovat citace}
 Furthermore, after seeing several such a bad translations and making the difficult choice in their comparison, it is literally impossible to remember its own choices which causes also low intra-annotator agreement.
@@ -58,8 +59,10 @@ The methods range from scoring fidelity and intelligibility of a translation to 
 In the first year of WMT shared tasks \citep{koehn-monz:2006:WMT}, translations were evaluated based on their adequacy and fluency. 
 In this method, initially  developed by the Linguistics Data Consortium \todo{(LDC,2005)},  a human judge is presented with five hypotheses and assign them a score between 1 and 5 based on how well the original meaning of the sentence is sustained and how well is the sentence formed in the target language.
 
-\cite{callison-burch-etal-2007-meta} reports high correlation between annotators’ adequacy and fluency scores. In other words -- it is hard to draw any meaning from a disfluent sentence and similarly, for complete understanding of a sentence, it must be almost fully fluent as minor variation in morphology can significantly modify meaning of a whole sentence, especially in flective languages such as the Czech language. 
-%Furthermore, the separation of adequacy and fluency leads to the problem of recombining the two scores in some meaningful way for tasks such as tuning au- tomatic metrics. 
+\cite{callison-burch-etal-2007-meta}'s findings indicate a significant correlation between annotators’ adequacy and fluency scores. In other words -- it is hard to draw any meaning from a disfluent sentence and similarly, for complete understanding of a sentence, it must be almost fully fluent as minor variation in morphology can significantly modify meaning of a whole sentence, especially in flective languages such as the Czech language. 
+%Furthermore, the separation of adequacy and fluency leads to the problem of recombining the two scores in some meaningful way for tasks such as tuning automatic metrics. 
+
+
 
 The very next year this method was replaced by relative ranking method (RR) \citep{callison-burch-etal-2007-meta}. In this evaluation campaign, an annotator see five hypotheses and ranks them relatively from the best to the worst with ties allowed.
 
