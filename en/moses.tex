@@ -2,12 +2,13 @@
 \addcontentsline{toc}{chapter}{moses}
 
 In the following two chapters,\footnote{This chapter is based on the article \citep{barancikova:itat2014}, which is a joint work with Aleš Tamchyna. 
-Aleš .... My responsibilities included data preparation, paraphrasing and evaluation of experiments.} 
+Aleš was in charge of training and tuning Moses. My responsibilities included data preparation, paraphrasing and evaluation of experiments.} 
 we present a method of targeted paraphrasing of using machine translation itself. 
 
-There is a close resemblance between translation and paraphrasing -- they both strive to preserve the meaning of a sentence, the first one between two languages and the latter one within one language by different word choice.  %\cite{madnani:2010} 
-However, there are many more tools available for machine translation than for paraphrasing. 
-Therefore, it seems only natural to take advantage of available machine translation engines and adapt them to translate within a single language for targeted paraphrasing. 
+There is a strong resemblance between translation and paraphrasing -- they both strive to preserve the meaning of a sentence.  While translation focuses on converting text from one language to another, paraphrasing achieves the same objective within a single language by using a different choice of words.  %\cite{madnani:2010}  
+Both processes require a deep understanding of the original content and the ability to convey the intended message accurately while considering linguistic nuances, cultural context, and the target audience. 
+
+Interestingly, machine translation has a wide array of tools and resources available compared to the relatively limited availability of paraphrasing tools. Given this disparity, it appears only logical to leverage existing machine translation engines and adapt them for the purpose of targeted paraphrasing within a single language.
  
 We describe this attempt on two types of MT systems -- phrase-based and rule-based. 
 Initially, we experiment with the freely available SMT system Moses.
@@ -22,53 +23,15 @@ In the view of errors appearing in the new paraphrased sentences, we propose ano
 
 \section{Data} 
 We perform our experiments on data from the English-to-Czech translation task 
-of WMT12 \cite{wmt12}. The data set contains 13 files with Czech outputs of MT 
-systems and one file with corresponding reference sentences.
-
-The human evaluation of system outputs is available as a relative ranking of 
-performance of five systems for~a~sentence. We compute the absolute score of each
-MT system by the “$ > $ others” method \cite{bojar-grains}. It is computed as 
-$ \frac{wins}{wins+losses} $. We refer to this score as human judgment from now on.
-
-We use two available sources of Czech paraphrases -- the Czech WordNet 1.9 PDT 
-\cite{czech-wordnet} and the Czech Meteor Paraphrase Tables \cite{meteor-tables}. 
-Czech WordNet 1.9 PDT contains high quality lemmatized paraphrases, but it is 
-too small for our purposes.
-
-On the other hand, the Czech Meteor Paraphrase tables are large but very noisy. 
-For example, the following pairs are selected as paraphrases: 
-\textit{na poloostrově} (in a peninsula) -- \textit{šimpanzím mlékem} (milk of 
-a chimpanzee), \textit{gates} -- \textit{vrata} (gates) or \textit{1873} -- 
-\textit{pijavice} (a leech). We attempt to reduce the noise in the following 
-way:
-
-\begin{enumerate}
-\item We keep only pairs consisting of single words, since we were not successful in 
-reducing the noise effectively for the multi-word paraphrases. \cite{barancikova:2014}
-\item We perform morphological analysis using Mor\v{c}e \cite{morce:2007} and 
-replace the word forms with their lemmas. 
-\item We keep only pairs of different lemmas.
-\item We dispose of pairs of words that differ in their parts of speech.
-\item We dispose of pairs of words that contain an unknown word (typically a~foreign 
-word).
-\end{enumerate}
-
-The last two rules have a single exception -- paraphrases consisting of numeral and 
-corresponding digits, e.g., \textit{osmnáct} (eighteen) and \textit{18}.\footnote{
-\textit{0smnáct} has the part of speech \textit{C}, which is designated for numerals, 
-\textit{18} is marked with \textit{X} meaning it is an unknown word for the morphological
-analyzer.} These paraphrases are very common in the data. 
-
-This way we reduce almost 700k pairs of paraphrases to only 32k couples of lemmas. 
-All previous examples of incorrect paraphrases were removed. We refer to this new 
-lemmatized paraphrase table as~filtered Meteor.
+of WMT12 \cite{wmt12}. 
 
 \section{Moses}
-Moses \cite{moses} is a freely available statistical machine translation engine. 
-In a nutshell, statistical machine translation involves the following phases: creating 
-language and translation models, parameter tuning and decoding. We use Moses in
-the phrase-based setting.
+Moses \citep{moses} is a widely recognized open-source statistical machine translation (SMT) engine. It has been a prominent tool in the field of machine translation for several years.
+The advancements in neural machine translation (NMT), particularly with the introduction of the Transformer architecture and pre-trained models, have led to significant improvements in translation quality and made NMT the preferred approach for many translation tasks.
 
+Moses generates translatations using statistical models. The translation process involves the following phases: creating language and translation models, parameter tuning and decoding. We use Moses in the phrase-based setting.
+
+The first phase in statistical machine translation is creating language and translation models. 
 A language model is responsible for a correct word order and grammatical correctness 
 of the translated sentence. A translation model (phrase table) supplies all possible 
 translations of a word or a phrase. Models are assigned weights which are learned 
@@ -85,6 +48,14 @@ On its own, this setting could create paraphrases, but they would be just random
 paraphrases of the reference sentence -- their similarity in wording to our original 
 hypotheses would not be guaranteed. Therefore, we also add a new feature for targeted 
 paraphrasing to Moses.
+
+
+After building the models, the next phase is parameter tuning. This step involves adjusting the model parameters to optimize the translation quality. Various optimization techniques, such as minimum error rate training or maximum likelihood estimation, are employed to fine-tune the statistical models.
+
+Finally, the decoding phase takes place. In this stage, the models are used to generate translations for input sentences. The input sentence is segmented into phrases, and the translation model scores different translation options for each phrase. The decoding algorithm then searches for the most probable translation by considering both the translation model scores and the language model probabilities. The resulting translation is the output of the decoding process.
+
+When it comes to Moses, it is specifically used in the phrase-based setting. The phrase-based approach to machine translation divides the input sentence into smaller units, or phrases, and translates them independently. These translated phrases are then recombined to form the final translation. Moses excels in this setting, providing efficient and effective translation capabilities.
+
 
 \subsection{Language model}
 We create the language model (LM) using the SRILM toolkit \cite{srilm} on the 
