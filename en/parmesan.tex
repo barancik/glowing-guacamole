@@ -116,7 +116,7 @@ opposite of Czech WordNet -- they are large in size, but contain a lot of noise.
 
 We attempt to reduce the noise in the Czech Meteor Paraphrase tables in the following way. We 
 keep only pairs consisting of single words since we were not successful in reducing the noise
-effectively for the multi-word paraphrases \cite{barancikova2014}. 
+effectively for the multi-word paraphrases \cite{barancikova-etal-2014-improving}. 
 
 Using Morče, we first perform morphological analysis of all one-word pairs and replace 
 the word forms with their lemmas.  We keep only pairs of different lemmas. Further, we
@@ -270,7 +270,7 @@ paraphrase match).
 We experiment with seven different settings that are presented in~\Tref{meteory}. All of them are 
 created by reducing the original Meteor Paraphrase tables, except for the setting referred 
 to~as~\textbf{WordNet} in the table. In this case, the paraphrase table is generated from one-word paraphrases in 
-Czech WordNet to all their possible word forms found in~CzEng \cite{czeng}.
+Czech WordNet to all their possible word forms found in~CzEng \cite{czeng10:lrec2012}.
 
 Prior paraphrasing reference sentences and using Meteor with the \textbf{No paraphr.} setting
 for computing scores constitutes Parmesan -- our submission to the WMT14 for evaluation English-to-Czech 

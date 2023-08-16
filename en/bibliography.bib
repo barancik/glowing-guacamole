@@ -71,6 +71,21 @@
  address = {Stroudsburg, PA, USA}
 } 
 
+@inproceedings{barancikova-etal-2014-improving,
+    title = "Improving Evaluation of {E}nglish-{C}zech {MT} through Paraphrasing",
+    author = "Baran{\v{c}}{\'\i}kov{\'a}, Petra  and
+      Rosa, Rudolf  and
+      Tamchyna, Ale{\v{s}}",
+    booktitle = "Proceedings of the Ninth International Conference on Language Resources and Evaluation ({LREC}'14)",
+    month = may,
+    year = "2014",
+    address = "Reykjavik, Iceland",
+    publisher = "European Language Resources Association (ELRA)",
+    url = "http://www.lrec-conf.org/proceedings/lrec2014/pdf/935_Paper.pdf",
+    abstract = "In this paper, we present a method of improving the accuracy of machine translation evaluation of Czech sentences. Given a reference sentence, our algorithm transforms it by targeted paraphrasing into a new synthetic reference sentence that is closer in wording to the machine translation output, but at the same time preserves the meaning of the original reference sentence. Grammatical correctness of the new reference sentence is provided by applying Depfix on newly created paraphrases. Depfix is a system for post-editing English-to-Czech machine translation outputs. We adjusted it to fix the errors in paraphrased sentences. Due to a noisy source of our paraphrases, we experiment with adding word alignment. However, the alignment reduces the number of paraphrases found and the best results were achieved by a simple greedy method with only one-word paraphrases thanks to their intensive filtering. BLEU scores computed using these new reference sentences show significantly higher correlation with human judgment than scores computed on the original reference sentences.",
+}
+
+
 @inproceedings{bojar-grains,
  author = {Bojar, Ond\v{r}ej and Ercegov\v{c}evi\'{c}, Milo\v{s} and Popel, Martin and Zaidan, Omar F.},
  title = {{A} {G}rain of {S}alt for the {WMT} {M}anual {E}valuation},
@@ -662,7 +677,7 @@ address = {Prague, Czech republic}
 @inproceedings{srilm,
     author = {Andreas Stolcke},
     title = {{SRILM - An Extensible Language Modeling Toolkit}},
-    booktitle = {},
+    booktitle = {roceedings of the Seventh International Conference on Spoken Language Processing},
     year = {2002},
     pages = {901--904}
 }   
@@ -760,6 +775,32 @@ address = {Prague, Czech republic}
   address   = {Montr{\'e}al, Canada},
   pages     = {10--51}
 }
+
+@InProceedings{wmt15,
+  author    = {Bojar, Ond\v{r}ej  and  Chatterjee, Rajen  and  Federmann, Christian  and  Haddow, Barry  and  Huck, Matthias  and  Hokamp, Chris  and  Koehn, Philipp  and  Logacheva, Varvara  and  Monz, Christof  and  Negri, Matteo  and  Post, Matt  and  Scarton, Carolina  and  Specia, Lucia  and  Turchi, Marco},
+  title     = {Findings of the 2015 Workshop on Statistical Machine Translation},
+  booktitle = {Proceedings of the Tenth Workshop on Statistical Machine Translation},
+  month     = {September},
+  year      = {2015},
+  address   = {Lisbon, Portugal},
+  publisher = {Association for Computational Linguistics},
+  pages     = {1--46},
+  url       = {http://aclweb.org/anthology/W15-3001}
+}
+
+@inproceedings{parmesan,
+    title = "{P}armesan: Meteor without Paraphrases with Paraphrased References",
+    author = "Baran{\v{c}}{\'\i}kov{\'a}, Petra",
+    booktitle = "Proceedings of the Ninth Workshop on Statistical Machine Translation",
+    month = jun,
+    year = "2014",
+    address = "Baltimore, Maryland, USA",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/W14-3345",
+    doi = "10.3115/v1/W14-3345",
+    pages = "355--361",
+}
+
 
 
 @ARTICLE{wordnet,
@@ -996,6 +1037,15 @@ address = {Praha, Czechia},
    year = {2017}
 }
 
+@misc{wiki:death,
+   author = "{Wikipedia contributors}",
+   title = "List of expressions related to death --- {W}ikipedia{,} The Free Encyclopedia",
+   year = "2023",
+   url = "https://en.wikipedia.org/wiki/List_of_expressions_related_to_death",
+   note = "[Online; accessed 13-July-2023]"
+ }
+
+
 @book{fellbaum98wordnet,
   editor = {Fellbaum, Christiane},
   keywords = {WordNet wordnet},
@@ -1028,31 +1078,7 @@ address = {Praha, Czechia},
    year = {2018}
 }
 
- @misc{wiki:death,
-   author = "{Wikipedia contributors}",
-   title = "List of expressions related to death --- {W}ikipedia{,} The Free Encyclopedia",
-   year = "2023",
-   url = "https://en.wikipedia.org/wiki/List_of_expressions_related_to_death",
-   note = "[Online; accessed 13-July-2023]"
- }
-
-@inproceedings{williams-etal-2018-broad,
-    title = "A Broad-Coverage Challenge Corpus for Sentence Understanding through Inference",
-    author = "Williams, Adina  and
-      Nangia, Nikita  and
-      Bowman, Samuel",
-    booktitle = "Proceedings of the 2018 Conference of the North {A}merican Chapter of the Association for Computational Linguistics: Human Language Technologies, Volume 1 (Long Papers)",
-    month = jun,
-    year = "2018",
-    address = "New Orleans, Louisiana",
-    publisher = "Association for Computational Linguistics",
-    url = "https://aclanthology.org/N18-1101",
-    doi = "10.18653/v1/N18-1101",
-    pages = "1112--1122",
-    abstract = "This paper introduces the Multi-Genre Natural Language Inference (MultiNLI) corpus, a dataset designed for use in the development and evaluation of machine learning models for sentence understanding. At 433k examples, this resource is one of the largest corpora available for natural language inference (a.k.a. recognizing textual entailment), improving upon available resources in both its coverage and difficulty. MultiNLI accomplishes this by offering data from ten distinct genres of written and spoken English, making it possible to evaluate systems on nearly the full complexity of the language, while supplying an explicit setting for evaluating cross-genre domain adaptation. In addition, an evaluation using existing machine learning models designed for the Stanford NLI corpus shows that it represents a substantially more difficult task than does that corpus, despite the two showing similar levels of inter-annotator agreement.",
-}
- 
-@article{parrot, 
+@misc{parrot, 
 author = {MacNaughton, Ian and Chapman, Graham and Cleese, John and Cleveland, Carol and Davies, Rita and Gilliam, Terry and Idle, Eric and Jones, Terry and Palin, Michael and Wyeth, Katya}, 
 year = {1969}, 
 issue_date = {1969}, 
@@ -1061,7 +1087,7 @@ volume = {2019},
 number = {308}, 
 url = {https://search.informit.org/doi/10.3316/edutv.3078884}, 
 abstract = {One of the most imaginative comedy shows ever, this is the original sketch series from Monty Python. This episode features John Cleese and Michael Palin’s iconic Parrot sketch, and Hell’s Grannies sweep the nation attacking people.}, 
-journal = {Monty Python’s Flying Circus: Full Frontal Nudity - Series 1 - Ep 8} 
+title = {Monty Python’s Flying Circus: Full Frontal Nudity - Series 1 - Ep 8} 
 } 
  
 @inproceedings{dagan:2005, 
