@@ -1,78 +1,57 @@
 \chapter{Background: Machine Translation Evaluation}
 \addcontentsline{toc}{chapter}{Evaluation}
 
-Since the very first appearance of machine translation (MT) systems, a necessity for their objective evaluation and comparison has emerged. Traditional direct evaluation slowly became unfeasable for vyhodnocovani postupneho zlepsovani prekladovych systemu \todo{vycizelovat}
-
-The hypothesis can be evaluated in two ways - either directly by a human judge or by an automatic MT evaluation metric.
-
-The direct human judgment approach is widely regarded as the most reliable and is the preferred method for MT developers. However, it has significant drawbacks - it is slow and expensive compared to the automatic alternative.
-
-Furthermore, the task itself poses considerable challenges for the majority of annotators. Consider the following example from WMT15 \cite{wmt15} Russian to English task. A sentence \textit{Митинг закончился возложением цветов к закладному камню.} (`The rally ended with the placing of flowers at the foundation stone.'') has a completely different translation by all 14 competing systems. 
-
-\begin{enumerate}
-\item The meeting ended with the laying of flowers of the chapel stone.
-\item The meeting ended with the laying of flowers to stone.
-\item Rally ended Bill of sale laying flowers to stone.
-\item The meeting ended with the laying on of colours to stone.
-\item The rally ended with laying flowers to the zakladnomu stone.
-\item The meeting ended with the laying of flowers to the foundation stone.
-\item Meeting ended with the placing of colors to the mortgage stone.
-\item The rally ended with laying flowers to the memorial stone.
-\item Meeting ended with flower-laying to the foundation stone.
-\item The meeting ended with laying flowers to clad stone.
-\item The rally ended laying flowers to slaid stone.
-\item Rally ended laying flowers to закладному stone.
-\item The meeting was laying flowers to закладному stone.
-\end{enumerate}
-
-Consider the task of comparing the aforementioned statements. What should be considered worse in terms of their undesirable attributes? Nonsensical sentences, untranslated words, poorly translated words, shifts in sentence meaning, grammatical errors, or missing articles? Determining which of these attributes should be considered more severe is subjective and varies among annotators based on their linguistic sensibility.
-
-Furthermore, the absence of a exact methodology for evaluating these attributes introduces additional complexity to the task. This absence is typically intentional -- it acknowledges that the annotator, being a native speaker of the evaluated language,  is capable of making a choice based on their own subjective judgment of which sentence seems more aesthetically pleasing without requiring explicit guidelines.
-
-
-All these intricacies involved in translation evaluation lead to low inter-annotator agreement \cite{wmt13}. \todo{updatovat citace}
-Furthermore, after seeing several such a bad translations and making the difficult choice in their comparison, it is literally impossible to remember its own choices which causes also low intra-annotator agreement.
-
-Due to being slow and unreproducible, it is impossible to use human evaluation for tuning and development of MT systems. 
-Well-performing automatic MT evaluation metrics are essential precisely for these tasks. 
-
-
-
-
-%The output of machine translation systems can be evaluated in two ways. First is by directly asking humans to assess the quality of the MT output. This is what MT developers want in the end. However, this process of evaluation is very slow and expensive compared to its alternative: automatic evaluation. Automatic evaluation metrics are just an approximation to the human judgment, but because of its speed very useful in the process of development of an MT system.
-
-
-
-
-
 \section{Human Evaluation}
-Human evaluation is the most reliable and the most desired method in the end.
-However, it has also its disadvantages. 
-It is slow and expensive \todo{podporit tvrzeni}, and non-reproducible and inconsistent - sentences are complex and a persons opinion of their quality changes during the evaluation, resulting in low intrannotator agreement \todo{odkaz}.
+Since the first appearance of machine translation systems, there has been a necessity for their objective evaluation and comparison. Direct human judgement approach is widely considered to be the most reliable and is the preferred method for MT system developers. 
 
 There are many ways how to judge the quality of a machine translation system. 
 The methods range from scoring fidelity and intelligibility of a translation to the ability to perform a~task based on the automatically translated instruction, e.g., how successfully are technicians in  helicopter maintenance based on translated manual \cite{Sinaiko}.
 
-In the first year of WMT shared tasks \citep{koehn-monz:2006:WMT}, translations were evaluated based on their adequacy and fluency. 
-In this method, initially  developed by the Linguistics Data Consortium \todo{(LDC,2005)},  a human judge is presented with five hypotheses and assign them a score between 1 and 5 based on how well the original meaning of the sentence is sustained and how well is the sentence formed in the target language.
+In the first year of WMT shared tasks \citep{koehn-monz:2006:WMT}, the evaluation of machine translation quality was approached from two distinct angles - fluency and adequacy. The first perspective, fluency, evaluates the degree to which the translation adheres to target language norms, considering factors like grammaticality and clarity. This evaluation does not take the source text into account and requires experts fluent only in the target language. In contrast, accuracy assesses the adherence of the translation to source text meaning, focusing on how well the target text represents the informational content of the source text. Evaluators for accuracy have access to both the source text and the translations under consideration. \todo{preformulovat, takhle to bylo vykradene}
+In this method, initially  developed by the Linguistics Data Consortium \todo{(LDC,2005)}, a human expert is presented with five hypotheses and assign them a score between 1 and 5 based on how well is the sentence formed in the target language and how well the original meaning of the sentence is sustained.
+The evaluators must be bilingual in both the source and target languages. 
 
-\cite{callison-burch-etal-2007-meta} reports high correlation between annotators’ adequacy and fluency scores. In other words -- it is hard to draw any meaning from a disfluent sentence and similarly, for complete understanding of a sentence, it must be almost fully fluent as minor variation in morphology can significantly modify meaning of a whole sentence, especially in flective languages such as the Czech language. 
-%Furthermore, the separation of adequacy and fluency leads to the problem of recombining the two scores in some meaningful way for tasks such as tuning au- tomatic metrics. 
+\cite{callison-burch-etal-2007-meta} reports high correlation between annotators’ adequacy and fluency scores. In other words -- it is hard to draw any meaning from a disfluent sentence and similarly, for complete understanding of a sentence, it must be almost fully fluent as minor variation in morphology can significantly modify meaning of a whole sentence, especially in flective languages such as the Czech language.  Furthermore, the separation of adequacy and fluency leads to the problem of recombining the two scores in some meaningful way for tasks such as tuning automatic metrics. 
 
-The very next year this method was replaced by relative ranking method (RR) \citep{callison-burch-etal-2007-meta}. In this evaluation campaign, an annotator see five hypotheses and ranks them relatively from the best to the worst with ties allowed.
+The very next year this method was replaced by relative ranking method (RR) \citep{callison-burch-etal-2007-meta}. In this evaluation campaign, an annotator see five hypotheses and ranks them relatively from the best to the worst with ties allowed. The judges are not given explicit instructions to evaluate specific aspects of the translation system, such as fluency or adequacy. Instead, they are asked only to rank translations by their “quality” where they leave up to the judge to decide what quality means.
 
-%The most common option for judging and measuring machine translation quality is human evaluation. The quality of MT output is judged by experts in translation and linguistics from two different perspectives. The first perspective is the degree of adherence to the target text and target language norms, referring, for example, to features such as grammaticality and clarity. This quality evaluation perspective is known as fluency. When judging fluency, the source text is not relevant. The evaluators have access to only the translation being judged and not the source data. Fluency requires an expert fluent only in the target language. On the other hand, source text adherence is judged to the source text norms and meaning, in terms of how well the target text represents the informational content of the source text. It is known as accuracy. The evaluators have access to the source text and translations being judged. Frequently, the context of a sentence is also taken into account. The evaluators must be bilingual in both the source and target languages. The adequacy and fluency are usually judged on a 5-point scale, as given in Table 3 .
-
-The latter method was used in early WMT shared tasks - judges were presented with 5 sentences and asked to assign a score between 1 and 5 for its fluency and adequacy. This method has severe cons \citep{callison-burch-etal-2007-meta}, e.g. problems to separate the scales and no clear guidelines. 
-In later WMT shared tasks it was
-
-
-The very next year this method was replaced by relative ranking method (RR) \citep{callison-burch-etal-2007-meta}
-
-%There are many ways how humans can judge the quality of MT systems. Early WMT shared tasks (Koehn and Monz, 2006) have used two criteria to judge MT systems: adequacy and fluency. The human judge is presented with 5 translations and for each one of them she/he needs to assign an integer between 1 and 5 for its fluency (independently of the reference translation) and for its adequacy (given the source sentence and its reference translation).
-%In the coming years this method was replaces by the relative ranking method (RR) (Callison-Burch et al., 2007). In relative ranking method, the human judges are asked whether they prefer one translation over the other, given the reference translation made by a human translator. The judges are not told explicitly to evaluate any individual aspect of the translation system such as fluency or adequacy, but only to rank translations by their “quality” where they leave up to the judge to decide what quality means.
-%In WMT shared translation tasks since 2007, the main evaluation method is RR method in which the judges are presented 5 translations and, as before, they need to assign an integer between 1 and 5 but in this case the numbers have different meaning. The numbers do not represent the absolute measure of quality, but a “rank” of translation: rank 1 means that the translation is the best translation out of the 5 offered translations, while rank 5 means that this is the worst translation. Ties in rankings are allowed.
+% The numbers do not represent the absolute measure of quality, but a “rank” of translation: rank 1 means that the translation is the best translation out of the 5 offered translations, while rank 5 means that this is the worst translation. Ties in rankings are allowed.
 %The reason why the judge is offered 5 translations to rank instead of just 2 is because judging ranks of 5 translations at the same time gives 10 pairwise rankings. Because this causes more cognitive effort and less reliable rankings some other translation tasks present only 2 translations to the judges (Braslavski et al., 2013).
+
+This absence of exact rules makes very good sense -- it acknowledges that the annotator, being a native speaker of the evaluated language,  is capable of making a choice based on their own subjective judgment without requiring explicit guidelines. On the other hand, this lack of rules makes the task possibly even more challenging, as illustrated in\Tref{table:wmt15:example}, where the Russian source sentence was translated differently by all 14 participating MT systems.
+
+\begin{table}[htb]
+    \centering
+    \begin{tabular}{l}
+Source: Митинг закончился возложением цветов к закладному камню.\\
+Reference: The rally ended with the placing of flowers at the foundation stone. \\
+\hline
+1. The meeting ended with the laying of flowers of the chapel stone. \\
+2. The meeting ended with the laying of flowers to stone. \\
+3. Rally ended Bill of sale laying flowers to stone. \\
+4. The meeting ended with the laying on of colours to stone. \\
+5. The rally ended with laying flowers to the zakladnomu stone. \\
+6. The meeting ended with the laying of flowers to the foundation stone. \\
+7. Meeting ended with the placing of colors to the mortgage stone. \\
+8. The rally ended with laying flowers to the memorial stone.\\
+9. Meeting ended with flower-laying to the foundation stone. \\
+10. The meeting ended with laying flowers to clad stone.\\
+11. The rally ended laying flowers to slaid stone.\\
+12. Rally ended laying flowers to закладному stone.\\
+13. The meeting was laying flowers to закладному stone.\\
+\end{tabular}
+     \caption{Example from WMT15 \cite{wmt15}, Russian to English translation task.}
+    \label{table:wmt15:example}
+\end{table}
+\todo{proverit - pisu 14 prekladovych systemu, mam jen 13 prekladu}
+
+Consider the task of comparing the aforementioned statements. What should be considered worse in terms of their undesirable attributes? Nonsensical sentences, untranslated words, poorly translated words, shifts in sentence meaning, grammatical errors, or missing articles? Determining which of these attributes should be considered more severe is subjective and varies among annotators based on their linguistic sensibility.
+
+All these intricacies involved in translation evaluation lead to low inter-annotator agreement \cite{wmt13}. \todo{updatovat citace} Furthermore, after seeing several complex translations and making the difficult choice in their comparison, it is literally impossible to remember one's choices, which makes manual annotation unreproducible and inconsistent. Additionally, a person's opinion of their quality changes during the evaluation, resulting in low inter-annotator agreement. \todo{odkaz}
+
+Furthermore, it has other major drawbacks - it is slow and expensive. For these reasons, it is literally impossible to use human evaluation for incremental tuning and development of MT systems. Well-performing automatic MT evaluation metrics are essential precisely for these tasks. 
+
+\todo{nasledujici odstavec asi budu muset taky zminit, ze nebylo jen RR, ale DA}
 %In recent years there have been a few publications that recommend using a more modern version of absolute scoring of translation instead of relative scoring. Graham et al. (2013) propose usage of a continuous scale that can assign integer numbers between 1 and 100 which gives a much higher granularity to the judgment than the previous 5 integers scale. Together with large number of judges per sentence, the average of the these absolute scores can give more reliable judgments than relative ranking approach. This method of directly assigning the absolute adequacy score to the system, named direct assessment (DA), was used in parallel with RR method in human evaluation on WMT16 shared translation task (Bojar et al., 2016).
 %Human judges judge only individual sentences. The procedure for generalizing the judgments of individual sentences to the judgments of systems that generated these sentences is varies depending on the type of judgments that are collected. In the case of DA judgments the procedure is easy: we just need to take the average of the absolute scores assigned by human judges to the sentences produced by the system.
 %In case RR judgments there are several possible procedures that were changing over the years. Initial measures counted the number of wins of one system versus any other system that was compared against it. The formula for computing system’s score is given bellow where win(Si, Sj ) is the number of judgments in which system Si was ranked as better than system Sj and the ties are ignored:
@@ -94,6 +73,74 @@ should agree (correlate) with manually made human judgment.
 While automatic measures are an invaluable tool for the day-to-day development of machine translation systems, they are an imperfect substitute for human assessment of translation quality. 
 
 Reference based metrics have 
+
+
+\todo{tohle vsechno je Marie}
+An evaluation with automatic metrics has the advantages to be faster, more reproducible, and cheaper than an evaluation conducted by humans. This is especially true for the evaluation of machine translation. For a human evaluation, we would ideally need expert translators. For many language pairs, such experts are extremely rare and difficult to hire.
+
+A large-scale and fast manual evaluation, as required by the very dynamic research area of machine translation to evaluate new systems, is often impractical. Consequently, automatic evaluation for machine translation has been a very active, and productive, research area for more than 20 years.
+
+While BLEU remains by far the most used evaluation metric, there are countless better alternatives. BLEU is a metric from another age.
+
+Since 2010, 100+ automatic metrics have been proposed to improve machine translation evaluation.
+
+In this article, I present the most popular metrics that are used as alternatives, or in addition, to BLEU. I grouped them into two categories: traditional or neural metrics, each category having different advantages.
+Automatic Metrics for Machine Translation
+
+Most automatic metrics for machine translation only require:
+
+    The translation hypothesis generated by the machine translation system to evaluate
+    At least one reference translation produced by humans
+    (Rarely) the source text translated by the machine translation system
+
+Here is an example of a French-to-English translation:
+
+    Source sentence:
+
+Le chat dort dans la cuisine donc tu devrais cuisiner ailleurs.
+
+    Translation hypothesis (generated by machine translation):
+
+The cat sleeps in the kitchen so cook somewhere else.
+
+    Reference translation:
+
+The cat is sleeping in the kitchen, so you should cook somewhere else.
+
+The translation hypothesis and the reference translation are both translations of the same source text.
+
+The objective of the automatic metric is to yield a score that can be interpreted as a distance between the translation hypothesis and the reference translation. The smaller the distance is and the closer the system is to generating a translation of human quality.
+
+The absolute score returned by a metric is usually not interpretable alone. It is almost always used to rank machine translation systems. A system with a better score is a better system.
+
+In one of my studies (Marie et al., 2021), I showed that almost 99% of the research papers in machine translation rely on the automatic metric BLEU to evaluate translation quality and rank systems, while more than 100 other metrics have been proposed during the last 12 years. Note: I looked only at research papers published from 2010 by the ACL. Potentially many more metrics have been proposed to evaluate machine translatio
+Tu vysvetlit reference, hypothesis, etc...
+
+\subsection{Traditional}
+\todo{vykradena Marie, upravit}
+Traditional machine translation evaluatuin metric is based on string similarity between a reference transaltion 
+
+Machine translation evaluation can be approached through metrics that assess the similarity between two strings based on their constituent characters. These strings consist of the translation hypothesis and the reference translation. One of the commonly used metrics in the past was WER (Word Error Rate), which was later succeeded by BLEU in the early 2000s.
+
+
+
+Evaluation of machine translation can involve metrics that gauge the likeness between two strings, considering their component characters. These strings comprise the translation hypothesis and the reference translation. A notable historical metric is WER (Word Error Rate), which was subsequently replaced by BLEU in the early 2000s.
+
+
+Advantages:
+
+    Low Computational Cost: Traditional metrics often rely on efficient string-matching algorithms at the character and/or token level. While some metrics might involve token shifting, which could be more resource-intensive for long translations, their calculation is easily parallelizable and doesn't require GPU processing.
+    Explainable: These metrics are usually straightforward to compute manually for short segments, aiding in analysis. However, this does not necessarily mean the scores are interpretable in terms of translation quality.
+    Language Independence: With a few exceptions, most traditional metric algorithms can be applied across different languages without modification.
+
+Disadvantages:
+
+    Poor Correlation with Human Judgments: This is the main drawback compared to neural metrics. Traditional metrics do not provide a reliable estimation of translation quality.
+    Specific Preprocessing Required: Except for chrF, all the traditional metrics discussed here require tokenized input segments and their reference translations. Tokenization is not integrated into the metric and must be done externally. The resulting scores are therefore reliant on specific tokenization practices that might not be consistent.
+
+It's important to note that traditional metrics might not provide the most accurate reflection of translation quality and are being surpassed by more advanced neural metrics in this regard.
+
+
 
 
 \subsection{BLEU}
