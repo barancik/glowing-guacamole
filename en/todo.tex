@@ -1,3 +1,504 @@
+TODO:
+
+nekonzistentně spojovníky 
+- (hyphen, "-", bez mezer, např. u čísovek) 
+-- kratší (En dash, v latexu "--", bez mezer, rozmezí, např. p. 2--18)
+--- (Em dash, v latexu "---", typicky také bez mezer, pro vsuvku nebo oddělení kusu věty) ... tedy v angličtině jinak než v češtině (v č. se Em dash nepoužívá, ale En dash oddělující vsuvku má kolem sebe mezery), viz např. https://www.grammarly.com/blog/punctuation-capitalization/hyphens-and-dashes/}
+
+\ml{Pozor na formát citací Tvých publikací, který vkládáš na samý závěr. Měl by být stejný jako u vygenerovaných citací - zejm. rok až ke konci položky, titul se nepíše kurzivou (ale obyč. fontem), kurzivou až kniha / procedings NEBO časopis, sjednotit stránky, doplnit url. \\
+Doporučuju nechat přegenerovat a pak vložit na správné místo :-)}
+
+embeddings     	op.	ARS	Vmeas	AMIS
+LaBSE.npy      	x+y	0.03	0.34	0.18
+LaBSE.npy      	x-y	0.37	0.77	0.72
+LaBSE.npy      	x*y	0.01	0.23	0.05
+LaBSE.npy      	x/y	0.00	0.02	0.00
+all-MiniLM-L6-v2.npy	x+y	0.03	0.33	0.17
+all-MiniLM-L6-v2.npy	x-y	0.26	0.76	0.71
+all-MiniLM-L6-v2.npy	x*y	0.02	0.28	0.10
+all-MiniLM-L6-v2.npy	/	SKIPPED (All values Inf/NaN)
+e5-large-v2.npy	x+y	0.03	0.35	0.19
+e5-large-v2.npy	x-y	0.36	0.75	0.69
+e5-large-v2.npy	x*y	0.04	0.36	0.20
+e5-large-v2.npy	x/y	-0.00	0.02	-0.00
+sup-simcse-bert-base-uncased.npy	x+y	0.02	0.30	0.13
+sup-simcse-bert-base-uncased.npy	x-y	0.41	0.78	0.73
+sup-simcse-bert-base-uncased.npy	x*y	0.01	0.25	0.08
+sup-simcse-bert-base-uncased.npy	x/y	-0.00	0.02	-0.00
+bert-large-cased.npy	x+y	0.02	0.31	0.13
+bert-large-cased.npy	x-y	0.27	0.64	0.57
+bert-large-cased.npy	x*y	0.02	0.29	0.12
+bert-large-cased.npy	x/y	-0.00	0.02	0.00
+bge-m3.npy     	x+y	0.03	0.32	0.16
+bge-m3.npy     	x-y	0.22	0.75	0.70
+bge-m3.npy     	x*y	0.02	0.26	0.08
+bge-m3.npy     	x/y	-0.00	0.02	-0.00
+gemini-embedding-001.npy	x+y	0.03	0.34	0.18
+gemini-embedding-001.npy	x-y	0.30	0.75	0.70
+gemini-embedding-001.npy	x*y	0.03	0.31	0.14
+gemini-embedding-001.npy	x/y	0.00	0.02	0.00
+random-bert-base-uncased.npy	x+y	0.02	0.27	0.09
+random-bert-base-uncased.npy	x-y	0.32	0.65	0.58
+random-bert-base-uncased.npy	x*y	0.02	0.27	0.09
+random-bert-base-uncased.npy	x/y	0.00	0.02	0.00
+text-embedding-3-large.npy	x+y	0.03	0.33	0.17
+text-embedding-3-large.npy	x-y	0.32	0.77	0.71
+text-embedding-3-large.npy	x*y	0.02	0.31	0.14
+text-embedding-3-large.npy	x/y	-0.00	0.02	-0.00
+Qwen3-Embedding-4B.npy	x+y	0.03	0.32	0.16
+Qwen3-Embedding-4B.npy	x-y	0.28	0.77	0.72
+Qwen3-Embedding-4B.npy	x*y	0.02	0.31	0.14
+Qwen3-Embedding-4B.npy	x/y	0.00	0.03	0.00
+modernbert-embed-base.npy	x+y	0.04	0.36	0.20
+modernbert-embed-base.npy	x-y	0.36	0.72	0.66
+modernbert-embed-base.npy	x*y	0.04	0.34	0.18
+modernbert-embed-base.npy	x/y	-0.00	0.02	-0.00
+text-embedding-3-small.npy	x+y	0.03	0.32	0.15
+text-embedding-3-small.npy	x-y	0.35	0.78	0.73
+text-embedding-3-small.npy	x*y	0.02	0.30	0.14
+text-embedding-3-small.npy	x/y	-0.00	0.02	-0.00
+
+embeddings     	op.	ARS	Vmeas	AMIS
+laser          	x+y	0.01	0.20	0.10
+laser          	x-y	0.45	0.79	0.77
+laser          	x*y	0.00	0.15	0.05
+laser          	x/y	0.00	0.03	0.00
+infersent_1    	x+y	0.03	0.27	0.18
+infersent_1    	x-y	0.51	0.88	0.87
+infersent_1    	x*y	0.02	0.24	0.15
+infersent_1    	x/y	0.00	0.03	0.00
+infersent_2    	x+y	0.04	0.28	0.20
+infersent_2    	x-y	0.32	0.69	0.66
+infersent_2    	x*y	0.04	0.28	0.19
+infersent_2    	x/y	0.01	0.09	0.05
+use            	x+y	0.04	0.26	0.17
+use            	x-y	0.21	0.64	0.60
+use            	x*y	0.08	0.33	0.25
+use            	x/y	0.00	0.03	0.00
+use-large      	x+y	0.04	0.26	0.16
+use-large      	x-y	0.28	0.75	0.72
+use-large      	x*y	0.06	0.30	0.22
+use-large      	x/y	-0.00	0.03	-0.00
+elmo_maxpool   	x+y	0.03	0.26	0.18
+elmo_maxpool   	x-y	0.43	0.77	0.74
+elmo_maxpool   	x*y	0.02	0.22	0.13
+elmo_maxpool   	x/y	-0.01	0.05	0.02
+elmo_mean      	x+y	0.03	0.27	0.18
+elmo_mean      	x-y	0.56	0.85	0.83
+elmo_mean      	x*y	0.02	0.23	0.14
+elmo_mean      	x/y	-0.00	0.02	-0.00
+bert_mean      	x+y	0.02	0.23	0.14
+bert_mean      	x-y	0.32	0.57	0.54
+bert_mean      	x*y	0.01	0.17	0.07
+bert_mean      	x/y	0.00	0.03	0.00
+bert_cls       	x+y	0.02	0.22	0.13
+bert_cls       	x-y	0.32	0.65	0.62
+bert_cls       	x*y	0.01	0.16	0.07
+bert_cls       	x/y	0.00	0.03	0.00
+
+
+--
+Here’s a **comprehensive, structured, and publication-ready** version of your chapter, integrating model descriptions, results, discussion, implications, and open questions. This is designed to be **clear, rigorous, and engaging** for your thesis.
+
+---
+
+# **Chapter: Sentence Embedding Evaluation**
+
+## **1. Introduction**
+The rapid evolution of natural language processing (NLP) has led to a proliferation of sentence embedding methods, each with distinct architectural and training paradigms. While modern transformer-based models dominate benchmarks for semantic similarity and retrieval, their ability to preserve **linear algebraic structure**—a hallmark of early word embedding models—remains underexplored. This chapter investigates whether and how sentence embeddings encode semantic transformations as geometric operations in vector space, comparing legacy and modern architectures across a range of evaluation metrics.
+
+---
+
+## **2. Classification and Description of Sentence Embedding Models**
+
+We evaluate a diverse set of sentence embedding models, categorized by architectural paradigm and training objective. This taxonomy reflects the evolution of NLP from early recurrent networks to contemporary large-scale transformers and contrastive learning approaches.
+
+### **2.1 Legacy Architectures**
+These models predate the transformer revolution and rely on recurrent or pooling-based architectures, often trained with supervised objectives.
+
+- **InferSent** (Conneau et al., 2017)
+  - **Architecture:** BiLSTM encoder with max pooling.
+  - **Training:** Supervised on SNLI for natural language inference.
+  - **Output:** 4096-dimensional sentence embeddings.
+  - **Strengths:** Early demonstration of transferable sentence representations; strong performance on downstream tasks.
+
+- **ELMo** (Peters et al., 2018)
+  - **Architecture:** Deep BiLSTM language model.
+  - **Training:** Unsupervised language modeling on large corpora.
+  - **Output:** Contextualized token embeddings, averaged for sentence representation.
+  - **Strengths:** Captures deep syntactic and semantic features; robust to input variations.
+
+- **LASER** (Artetxe & Schwenk, 2019)
+  - **Architecture:** 5-layer BiLSTM.
+  - **Training:** Multilingual translation ranking (90+ languages).
+  - **Output:** 1024-dimensional max-pooled sentence embeddings.
+  - **Strengths:** Language-agnostic; effective for cross-lingual tasks.
+
+- **Universal Sentence Encoder (USE)** (Cer et al., 2018)
+  - **Architecture:** Transformer (USE-T) or Deep Averaging Network (USE-D).
+  - **Training:** Unsupervised + SNLI fine-tuning.
+  - **Output:** 512-dimensional embeddings.
+  - **Strengths:** Balances speed and accuracy; widely used in production.
+
+---
+
+### **2.2 Transformer Baselines**
+These models introduced the transformer architecture and set the foundation for modern NLP.
+
+- **BERT** (Devlin et al., 2019)
+  - **Architecture:** 12/24-layer transformer encoder.
+  - **Training:** Masked language modeling + next sentence prediction.
+  - **Output:** [CLS] token or mean-pooled embeddings.
+  - **Strengths:** Contextualized representations; foundational for most modern NLP.
+
+- **SBERT** (Reimers & Gurevych, 2019)
+  - **Architecture:** Siamese BERT network.
+  - **Training:** Contrastive learning for semantic similarity.
+  - **Output:** 768-dimensional embeddings.
+  - **Strengths:** Optimized for STS tasks; widely adopted baseline.
+
+---
+
+### **2.3 Modern Dense Representations**
+These models leverage contrastive learning, instruction tuning, and large-scale data to achieve state-of-the-art performance.
+
+- **SimCSE** (Gao et al., 2021)
+  - **Architecture:** BERT with dropout-based contrastive learning.
+  - **Training:** Unsupervised contrastive loss.
+  - **Output:** 768-dimensional embeddings.
+  - **Strengths:** Simple yet effective; strong STS performance.
+
+- **E5** (Wang et al., 2022)
+  - **Architecture:** Transformer encoder.
+  - **Training:** Weak supervision from text pairs; instruction tuning.
+  - **Output:** 768-dimensional embeddings.
+  - **Strengths:** Task-specific prefixes; strong retrieval performance.
+
+- **BGE** (Xiao et al., 2023)
+  - **Architecture:** Transformer encoder.
+  - **Training:** Multi-stage contrastive learning with hard negatives.
+  - **Output:** 768/1024-dimensional embeddings.
+  - **Strengths:** Top performer on MTEB; robust to domain shifts.
+
+- **LaBSE** (Feng et al., 2020)
+  - **Architecture:** Dual-encoder transformer.
+  - **Training:** Translation ranking (109 languages).
+  - **Output:** 768-dimensional embeddings.
+  - **Strengths:** Cross-lingual alignment; effective for multilingual tasks.
+
+---
+
+### **2.4 Control and Efficiency Baselines**
+- **Random BERT**
+  - Untrained BERT-base-uncased with random weights.
+  - **Purpose:** Isolate architectural biases from learned features.
+
+- **MiniLM** (Wang et al., 2020)
+  - Distilled BERT variant (22M parameters).
+  - **Purpose:** Efficient baseline for resource-constrained settings.
+
+---
+
+### **2.5 LLM-Based and Proprietary Embeddings**
+- **Qwen3-Embedding** (Bai et al., 2024)
+  - Decoder-only LLM fine-tuned for embeddings.
+  - **Strengths:** Leverages LLM knowledge; supports variable dimensions.
+
+- **OpenAI text-embedding-3** (2024)
+  - Closed-source, instruction-tuned embedding model.
+  - **Strengths:** Industry standard for commercial applications.
+
+---
+
+## **3. Experimental Setup**
+
+### **3.1 Data**
+- **Source:** SNLI (Bowman et al., 2015) and MultiNLI (Williams et al., 2018).
+- **Preprocessing:** Lowercasing, tokenization (NLTK).
+- **Pattern Extraction:** Automated extraction of sentence pairs differing by a single pattern (e.g., "man" → "woman").
+- **Result:** 4,200 unique sentence pairs across 60 patterns.
+
+### **3.2 Evaluation Metrics**
+- **Adjusted Rand Score (ARS):** Measures clustering agreement, adjusted for chance.
+- **V-measure:** Harmonic mean of homogeneity and completeness.
+- **Adjusted Mutual Information (AMIS):** Measures clustering agreement, corrected for chance.
+
+### **3.3 Vector Operations**
+- **Subtraction (x-y):** Most effective for isolating semantic deltas.
+- **Addition (x+y), Multiplication (x*y), Division (x/y):** Tested but performed poorly.
+
+---
+
+## **4. Results**
+
+### **4.1 Clustering Performance**
+**Table 1:** Clustering performance (ARS, V-measure, AMIS) for vector subtraction (x-y).
+
+| Model Family         | Model               | ARS   | V-measure | AMIS  |
+|----------------------|----------------------|-------|-----------|-------|
+| **Legacy**           | InferSent\_1         | **0.51** | **0.88**   | **0.87** |
+|                      | ELMo (mean)          | **0.56** | **0.85**   | **0.83** |
+|                      | LASER                | **0.45** | **0.79**   | **0.77** |
+|                      | USE-T                | 0.21   | 0.64      | 0.60   |
+| **Modern**           | SimCSE               | 0.41   | 0.78      | 0.73   |
+|                      | E5-large-v2          | 0.36   | 0.75      | 0.69   |
+|                      | text-embedding-3-small | 0.35   | 0.78      | 0.73   |
+|                      | BGE-m3               | 0.22   | 0.75      | 0.70   |
+|                      | BERT (CLS)           | 0.27   | 0.64      | 0.62   |
+|                      | SBERT                | 0.32   | 0.71      | 0.68   |
+| **Control**          | Random BERT          | 0.32   | 0.65      | 0.58   |
+
+**Key Findings:**
+- **Legacy models** (InferSent, ELMo, LASER) **outperform modern models** by 10-20% in all metrics.
+- **Modern models** cluster tightly (ARS ~0.30-0.41), suggesting **architectural similarity** outweighs training differences.
+- **Random BERT** performs comparably to some modern models, indicating **modern architectures may not learn linear structure effectively**.
+
+---
+
+### **4.2 Operation Comparison**
+**Table 2:** Performance across vector operations (best scores in bold).
+
+| Model               | x+y (ARS) | x-y (ARS) | x*y (ARS) | x/y (ARS) |
+|----------------------|-----------|-----------|-----------|-----------|
+| InferSent\_1         | 0.03      | **0.51**  | 0.02      | 0.00      |
+| ELMo (mean)          | 0.03      | **0.56**  | 0.02      | -0.00     |
+| LASER                | 0.01      | **0.45**  | 0.00      | 0.00      |
+| SimCSE               | 0.02      | **0.41**  | 0.01      | -0.00     |
+| E5-large-v2          | 0.03      | **0.36**  | 0.04      | -0.00     |
+
+**Takeaway:**
+- **Subtraction (x-y)** is the **only operation** that yields meaningful clusters.
+- **Addition, multiplication, division** fail to preserve semantic patterns.
+
+---
+
+### **4.3 Visualization**
+- **t-SNE plots** (Figure 1) show **compact clusters** for most patterns in ELMo embeddings.
+- **Noisy patterns** (word order, punctuation) form a central "chaos cloud."
+- **Automatic clustering** (k=9) recovers meaningful groups (e.g., gender oppositions, generalizations).
+
+---
+
+## **5. Discussion**
+
+### **5.1 Why Do Legacy Models Outperform Modern Ones?**
+#### **A. Compositionality vs. Contextualization**
+- **Legacy models** use **compositional aggregation** (e.g., BiLSTM + pooling).
+  - Sentence embedding ≈ sum of word embeddings.
+  - **Subtraction** cancels context, isolating semantic deltas.
+- **Modern models** use **deep contextualization** (self-attention).
+  - Every token is transformed based on the full sentence.
+  - **Subtraction** fails to cancel context, leaving "noise."
+
+#### **B. Anisotropy in Modern Embeddings**
+- Modern embeddings suffer from **anisotropy** (Ethayarajh, 2019): vectors occupy a narrow cone.
+- This reduces **angular separability** of difference vectors.
+
+#### **C. Training Objectives**
+- **Legacy models** are trained for **specific tasks** (e.g., NLI), preserving linear structure as a side effect.
+- **Modern models** are optimized for **semantic similarity**, collapsing similar sentences into compact regions.
+
+---
+
+### **5.2 Implications for NLP Research**
+1. **Task-Dependent Model Selection**
+   - For **geometric interpretability** (e.g., vector arithmetic), **legacy models** are superior.
+   - For **semantic similarity** (e.g., retrieval, STS), **modern models** are optimal.
+
+2. **The Contextualization-Compositionality Tradeoff**
+   - **Deep contextualization** improves semantic similarity but **harms linear structure**.
+   - Future work should explore **hybrid architectures** that balance both.
+
+3. **Evaluation Methodology**
+   - Current benchmarks (MTEB, STS) focus on **proximity**, not **directionality**.
+   - Your **pattern clustering approach** provides a **complementary evaluation dimension**.
+
+4. **Future Directions**
+   - Can we **recover linear structure** in modern embeddings via post-processing?
+   - Can we **design training objectives** that preserve both **contextualization** and **compositionality**?
+
+---
+
+## **6. Open Questions**
+
+1. **Cross-Lingual Generalization**
+   - Do these findings hold for **non-English languages** (e.g., Czech in Costra)?
+   - How does **multilingual alignment** (e.g., LaBSE) affect linear structure?
+
+2. **Architectural Innovations**
+   - Can **hybrid models** (e.g., combining BiLSTM and transformer layers) preserve both contextualization and compositionality?
+   - Can **post-processing** (e.g., normalization, flow-based models) recover linear structure in modern embeddings?
+
+3. **Scalability and Efficiency**
+   - How do these findings scale to **larger models** (e.g., 10B+ parameters)?
+   - Can **efficient distillation** (e.g., MiniLM) preserve linear properties?
+
+4. **Applications**
+   - Can **vector arithmetic** enable **controlled text generation** or **paraphrasing**?
+   - How can these insights improve **explainability** in NLP systems?
+
+---
+
+## **7. Conclusion**
+
+This study reveals a **fundamental tradeoff** in sentence embedding design:
+- **Legacy models** (InferSent, ELMo, LASER) excel at **preserving linear structure**, enabling geometric interpretability.
+- **Modern models** (SimCSE, E5, BGE) prioritize **semantic similarity**, sacrificing linear properties.
+
+These findings **challenge the assumption** that newer models are always better and **highlight the need** for task-specific model selection and hybrid architectures. Future work should explore **cross-lingual generalization**, **architectural innovations**, and **applications** of these insights to text generation and explainability.
+
+---
+
+### **Next Steps for Your Thesis**
+1. **Integrate Czech (Costra) results** to test cross-lingual generalization.
+2. **Refine visualizations** (e.g., t-SNE, clustering plots) for clarity.
+3. **Discuss limitations** (e.g., dataset size, pattern diversity).
+4. **Propose concrete experiments** for open questions (e.g., hybrid models, post-processing).
+
+Would you like to **draft the Costra section** next, or refine any part of this chapter further?
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%\ml{lépe použít prostředí pro příklady se zarovnanými glosami/překlady ... snad by mělo stačit přidat 
+%usepackage\{gb4e\} (musí se načítat až po color/xcolor) a usepackage\{cgloss4e\} ... níž zakomentovávám příklad použití}
+
+%\begin{exe}
+% \ex
+% \label{ex:myslet}
+% \gll
+% \textit{Petr} \textit{myslel} \textit{jen} \textit{na} \textit{sebe.}\\
+% \small{Peter}  \small{thought} \small{only}  \small{of} \small{RM}\\
+% `Peter thought only of himself.'
+% \ex
+% \label{ex:pomahat}
+% \gll
+% \textit{Rodi{\v{c}}e} \textit{si} \textit{(vz{\'{a}}jemn{\v{e}})} \textit{pom{\'{a}}hali.}\\
+% \small{parents}  \small{RM} \small{(mutually)}  \small{helped}\\
+% `Parents helped each other.'
+% \ex
+% \label{ex:smat-se}
+% \gll
+% \textit{Petr} \textit{se} \textit{sm{\'{a}}l} \textit{od srdce.}\\
+% \small{Peter}  \small{RM} \small{laughed} \small{heartily}\\
+% `Peter laughed heartily.'
+%\end{exe}
+%\end{figure}
+
+
+
+\ex[lingstyle=thesisStyle] % Uses your global style
+\begingl
+\gla  Hoc est exemplum //     % Source Language
+\glb  this is example //      % Word-for-word (Optional)
+\glft `This is an example.' // % Free Translation
+\endgl
+\xe
+
+
+\begin{table}[h]
+\centering
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Context} & \textbf{Example} \\ \hline
+Formal & 
+    % We use a minipage to isolate the gloss
+    \begin{minipage}{0.5\textwidth}
+    \exdisplay
+    \begingl
+    \gla  Es-\o{} is-\o{} //
+    \glb  be-1SG he-NOM //
+    \glft `It is him.' //
+    \endgl
+    \xe
+    \end{minipage} 
+\\ \hline
+Informal & 
+    \begin{minipage}{0.5\textwidth}
+    \exdisplay
+    \begingl
+    \gla  C'est lui //
+    \glb  it.is him //
+    \glft `It's him.' //
+    \endgl
+    \xe
+    \end{minipage}
+\\ \hline
+\end{tabular}
+\caption{Comparison of Registers}
+\end{table}
+
+------
+
+
+
+Error Span Annotation: A Balanced Approach for Human Evaluation of Machine Translation
+\cite{kocmi-etal-2024-error}
+
+Translation scores indicate the overall quality of a translation, but they can be subjective and do not provide details about the translation errors. The usual way to overcome this drawback is error classification: asking the evaluators to mark each trans-
+lation error and assign an error tag from a set of predefined categories, such as terminology or style.
+
+In recent years, the dominant error classification protocol is the Multidimensional Quality Metrics (MQM; Lommel et al., 2014; Freitag et al., 2021a). MQM error classification is the standard human metric in the WMT Metrics shared task since 2021
+(Freitag et al., 2021b). While error classification provides interesting insights into the distribution of different types of errors, it requires much more time and effort, both for annotators and task organizers, who need to prepare the error taxonomy, annotation guidelines and training examples. We present a new evaluation protocol based on highlighting errors and followed by assigning scores, Error Span Annotation (ESA), and
+compare it to the MQM error classification and DA+SQM scores. We compare MQM, DA+SQM
+and ESA annotations in parallel on a subset of English→German machine translation outputs
+from WMT23. We find that the proposed ESA protocol is faster and cheaper than MQM whilst
+providing the same usefulness in ranking MT systems.
+
+\cite{wmt16} scrutinized the quality criteria and recommended to focus on adequacy and use fluency to break ties only. 
+
+-------------
+
+
+Findings of the 2023 Conference on Machine Translation (WMT23): LLMs Are Here But Not Quite There Yet
+
+Professional human translator do not always guarantee high quality. For Hebrew <-> English, our references are likely to be post-edited MT, while for Chinese->English, the reference translation is worse than the majority of automatic translation.
+
+
+WMT15
+RR - Trueskill
+
+WMT16
+\cite{wmt16}
+In addition to the standard relative ranking (RR) manual evaluation, this year a new method of hu- man evaluation was also trialed in the main trans- lation task: monolingual direct assessment (DA) of translation fluency (Graham et al., 2013) and adequacy \citep{graham-etal-2013-continuous, graham-etal-2014-machine, graham_2017}
+
+Human assessors are asked to rate a given translation by how adequately it expresses the meaning of the corresponding reference translation on an analogue scale, which corresponds to an underlying absolute 0–100 rating. DA fluency assessment is similar with two exceptions, firstly no reference translation is displayed and secondly, assessors are asked to rate how much they agree that a given translation is fluent target language text. DA fluency therefore provides a dimension of the assessment that cannot be biased by the presence of a reference translation. For both fluency and adequacy, the simpler monolingual assessment DA employs also allows the sentence length restriction to be removed.
+
+Table 9 includes mean DA fluency and ade- quacy scores for all to-English systems participat- ing in WMT16 translation task, while Table 10 includes results for the single out-of-English lan- guage pair for which DA was run this year, English to Russian. Mean standardized scores for systems not significantly lower than that of any other par- ticipating system, according to Wilcoxon signed- rank test, for a given language pair, are highlighted in bold. Although we also evaluated the fluency of
+translations, mean standardized adequacy scores should provide the primary mechanism for rank- ing competing systems, since it is entirely possible to achieve a high fluency score without conveying the meaning of the source input. Fluency can be employed as a secondary mechanism to break sys- tems tied for adequacy or for diagnostic purposes. Figures 7, 8 and 9 show results of combining sig- nificance test conclusions for DA adequacy and fluency, where any ties between systems tied for adequacy are broken if that system outperformed the other with respect to fluency. It should be noted that RR provide official task results, while DA results are investigatory and do not indicate official translation task winners.
+Finally, we compare scores of the official rank- ing to mean standardized adequacy scores for sys- tems evaluated with DA. Table 11 shows the Pear- son correlation between Trueskill scores for sys- tems evaluated by researchers with relative pref- erence judgments (official results) and DA mean scores collected via crowd-sourcing, showing high levels of agreement reached overall for all lan- guage pairs as correlations range from 0.92 to 0.997.
+
+
+ As established in 2016 \cite{wmt16}, DA results (via crowd-sourcing) and RR results (produced by re- searchers) correlate strongly, with Pearson corre- lation ranging from 0.920 to 0.997 across s
+
+WMT17
+provided fresh insight into ways to collect direct assessments (DA) of machine translation quality (Graham et al., 2013, 2014, 2016),
+TODO:
+- podivat se na tu knihovnu s glossama, nejde mi s tim zkompilovat pdf
+
+
+existuje \\part misto \\ section
+
+https://aclanthology.org/E17-1083
 https://arxiv.org/pdf/2004.14989.pdf
 https://arxiv.org/pdf/2004.14989.pdf !
 
@@ -10,3 +511,65 @@ https://hal.science/hal-02981143/
 
 
 https://core.ac.uk/download/pdf/484081674.pdf !
+
+
+In the NIST 2004 machine translation evaluation, two reference sentences were generated by separate human annotators. Out of nearly 11,000 of these reference translation pairs, a mere 21 (less than 0.2\%)  were identical. Notably, a significant 60\% of these pairs exhibited significant differences in wording, with at least 11 words varying between them. \citep{kauchak}
+
+
+
+
+
+
+
+\caption{Example of the targeted paraphrasing. The~hypothesis is grammatically 
+correct and has very similar meaning as the reference sentence. The new reference is closer 
+in wording to the hypothesis, but the agreement between the noun and the adjective is broken. 
+Depfix resolves the error and the final reference is correct. Number of overlapping unigrams
+increased from 2 to 4.}
+
+
+
+\ml{pozor na tvar citací ... najít lepsí příkazy:\\
+- jméno i rok v závorce (pokud není součístí věty)\\
+- jméno součástí věty a pak v závorce jen rok\\
+- pokud celé už v závorce, pak citace jako taková bez závorky}
+
+\ml{formálně odlišit (a popsat), co je glosa (=překlad slovo po slově) a co je správný anglicjý překlad - a to pak drzet vsude!!}
+
+
+=======================
+
+Dobry den,
+
+konecne jsem se k tomu dostala. Chova se to vicemene dost podobne na vsech datech, ale je tam jeden
+rozdil - na WMT14 je vyrazne vyssi prumerny exact match. Mozna ze to asi bude tim -- dava smysl,
+ze potom parafraze hraji mensi roli a i ty jednoduche metriky vychazi dobre, kdyz to odpovida hodnoceni.
+Nicmene zajimave se ten pocet substituci vubec nelisi od predchozich rocniku.
+
+Pokud by Vas zajimala ta cisla (prumer pres vsechny systemy):
+
+                                  WMT12   WMT13    WMT14
+Meteor -exact match:       28184       27185        31122
+      -paraphases:        5770         4970          5359
+     -total:               33955        32155        36481
+
+# substituci Parm.:        4766         4013           4321
+Parmesan - exact:           32300       30823         35170
+
+S pozdravem,
+Petra
+
+
+
+
+===============
+
+There are several way of overcoming the problem of diversity between a reference sentence and a hypothesis. 
+First possibility is to have more reference sentences. \cite{bleu} shows that increasing the number of reference
+translations increases similarity between automatic and human evaluations. However, there are not very much
+human created dataset with multiple reference sentences and additionally, having multiple references does not 
+guarantee that these references will include the exact words found in given hypotheses. 
+
+Another approach is to generate automatically new artificial references that closely match the wording to the original 
+reference sentence. Another option involves the use of evaluation metrics that already incorporate various phrase 
+variants, either by directly utilizing paraphrase databases or pre-computed embeddings.

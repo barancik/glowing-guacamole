@@ -1,0 +1,578 @@
+\section{\costra Dataset}
+\label{sec:costra}
+As we mentioned in \Cref{sentence_embeddings:rw}, resources for evaluating Czech sentence embeddings are scarce.  We consider the lack of an intrinsic evaluation dataset an important issue. To address this, this section\footnote{This section is based on the papers by \cite{costra10,costra11}.} introduces \costra, a novel dataset of COmplex Sentence TRAnsformations, together with a lightweight evaluation toolkit. The dataset is intended for the study of sentence-level embeddings beyond simple word alternations or standard paraphrasing. Although the current release contains only Czech sentences, the construction protocol is language-agnostic and readily extensible to other languages.
+
+The goal of \costra is \emph{not} to rank sentence embedding models according to overall usefulness or the performance of the downstream task. Instead, \costra is designed as a \emph{diagnostic intrinsic benchmark} that investigates whether sentence embedding spaces exhibit an interpretable and consistent \emph{semantic structure}. In particular, we focus on whether specific semantic, stylistic, or temporal transformations correspond to coherent geometric relations in the embedding space. This perspective treats sentence embeddings as representational objects whose internal organization can be examined independently of task-specific fine-tuning.
+
+In an attempt to bring together more traditional representations of sentence meanings and vector representations, \perscite{bojar:etal:jnle:representations:2019} introduce several aspects or desirable properties of sentence embeddings. One of~them, ``relatability'', highlights the correspondence of meaningful differences between sentences on the one hand and geometrical relations between their respective embeddings in the high-dimensional continuous vector space on the other. If such an alignment holds, geometric operations in the embedding space could correspond to particular changes in the meaning of a sentence, similarly to that shown in \Cref{space-of-sentences}.
+
+The purpose of \costra is to support the exploration of semantic and syntactic relations between sentences in continuous space. Our dataset is the prerequisite for one of the possible ways of exploring the relatability of sentence meaning.\footnote{The term ``relatability'' is used to indicate that we search for specific types of relations among sentences. The common term ``relatedness'', in our opinion, suggests some vagueness on the relation type. We do not build a dataset of sentences related in just some way, we seek for a set of clear-cut, ``orthogonal'' relations.} We envision that the continuous space of sentence representations induced by an ideal embedding method would exhibit topological similarity to the graph of sentence variations. For example, one could argue that a subset of sentences could be organized along a linear scale reflecting the formality of the language used. Another set of sentences could form a partially ordered set of gradually less and less concrete statements. Yet another set, intersecting both of the previous ones in multiple sentences, could be partially or linearly ordered according to the strength of the speaker's confidence in the claim. Such structures would provide interpretable axes within the embedding space.
+
+Our long-term objective is to search for a sentence embedding method that exhibits this behavior: where the topology of the embedding space corresponds to meaningful operations or changes in the set of sentences of a language (or more languages at once). We prefer this behavior to \emph{emerge}, as happened for word vector operations, but regardless of whether the behavior is emergent or trained, we need a dataset of sentences illustrating these patterns. A large dataset could serve for training; a small one would provide a test set. In either case, these sentences could provide a ``skeleton'' to the continuous space of sentence embeddings.\footnote{The Czech word for \trans{skeleton} is \foreign{kostra}.}
+
+\begin{mdframed}[
+    linecolor=gray,
+    linewidth=2pt,
+    roundcorner=5,
+    backgroundcolor=gray!5
+]
+\noindent
+In this section, we present a dataset for semantic evaluation of Czech sentence embeddings, focusing on the following research questions:
+
+\begin{itemize}
+    \item To what extent can modern sentence embeddings distinguish between paraphrases and sentences with high lexical overlap but different meanings?
+    \item How effectively do embedding spaces capture the ordinal progression of stylistic, temporal, and semantic transformations?
+    \item Do specialized Czech-language models provide a significant advantage over multilingual or general-purpose commercial models in complex semantic tasks?
+    \item What is the relationship between the model complexity and its performance on the \costra benchmark?
+\end{itemize}
+\end{mdframed}
+
+\subsection{Related Work}
+We place \costra within intrinsic evaluation datasets that are designed to test whether embedding spaces reflect known semantic relations among controlled sentence variants. A common strategy is to compare the relative distances among systematically modified versions of a base sentence. For example, \cite{zhu-etal-2018-exploring} automatically generates sentence variants to probe semantic sensitivity:
+
+\begin{itemize}
+    \item[(1)] Original sentence: A rooster pecked grain.
+    \item[(2)] Synonym substitution: A cock pecked grain.
+    \item[(3)] Not-Negation:  A rooster didn't peck grain.
+    \item[(4)] Quantifier-Negation: There was no rooster pecking grain.
+\end{itemize}
+
+Then they evaluate whether a given embedding space mirrors expected relationships (e.g., synonyms are closer than edits altering sentence meaning). Benchmarks such as SentEval \citep{senteval} and SICK \citep{marelli-etal-2014-sick} use similar evaluation principles.
+
+The PAWS dataset \citep{zhang-etal-2019-paws} and its multilingual extension PAWS-X \citep{yang-etal-2019-paws} address the tendency of models to over-rely on surface overlap. They provide paraphrase/non-paraphrase pairs with very high lexical overlap, enabling tests of whether embeddings capture semantics beyond surface word matching. 
+
+While useful for basic cases, these methods focus on small or categorical edits, and they may fail to show how embeddings capture gradual semantic or stylistic change. Our aim is to move beyond relatively simple transformations \citep{zhu-etal-2018-exploring, ribeiro-etal-2020-beyond, dhole-etal-2023-nl, chiang-etal-2023-revealing} toward more challenging and non-trivial comparisons: changes in style or register, minimal edits that drastically alter meaning, and word-order perturbations that affect interpretation.
+
+To our knowledge, no comparable resource exists for Czech that jointly targets stylistic, temporal, and semantic axes with ordinal structure. To help fill this gap, we introduce \costra, a dataset of complex sentence transformations, designed to evaluate the semantic properties of sentence embeddings beyond simple word substitutions.
+
+\subsection{Annotation}
+We collected the data in four rounds of annotation. In the first round, we collected suggestions for original and uncommon sentence changes. In the second round, we collected sentence transformations inspired by ideas from the first round. These two rounds can be broadly described as \textit{collecting ideas} and \textit{collecting data}, respectively. In the third round, we focused on increasing the density of the sentence space by adding more related sentences: \textit{interpolations} and \textit{extrapolations}. At this stage, the dataset contains various transformations, but their mutual relationships remain unknown. To address this, in the fourth and final round, we collected pairwise comparisons of sentences from the second and third rounds.
+
+\subsection{Round 1: Collecting Ideas}
+We manually selected 15 newspaper headlines. Eleven annotators were asked to produce up to 20 transformations for each headline and to label each transformation with a short\footnote{This requirement was not always respected. Annotators sometimes created very complex descriptions, such as the \textit{specification of information about the society affected by the presence of an alien}.} name. Annotators were given an example sentence together with several possible transformations and their labels (see \cref{tab:first_round_examples}).
+
+\begin{figure}[tb!]
+\centering
+\begin{tabular}{lp{9cm}r}
+\toprule %ML\hline
+\textbf{Change} & \textbf{Example of change} & \textbf{\%} \\
+\midrule %ML
+\textbf{seed sentence} & Several hunters slept on a clearing. & - \\
+
+\textbf{change of aspect} & Hunters have fallen asleep on a clearing. & 4 \\
+
+\textbf{different meaning} & On a clearing, several hunters were dancing. & 15 \\
+
+\textbf{less formal} & Several deer stalkers kipped down on a clearing. & 6 \\
+
+\textbf{possibility} &  Several hunters can sleep on a clearing. & 4 \\
+
+\textbf{ban} & Hunters are forbidden to sleep on a clearing. & 4 \\
+
+\textbf{exaggeration} & Crowds of hunters slept on a clearing. & 7 \\
+
+\textbf{concretization} & Several hunters dozed off after lunch on the Upper clearing. & 15 \\
+
+\textbf{generalization} & There were several men in a forest. & 9 \\
+
+\textbf{change of locality} & Several hunters slept in a cinema. & 3 \\
+
+\textbf{change of gender} & Several huntresses slept on a clearing. & 2 \\
+\midrule %ML\hline
+\textbf{total} &  & 65 \\
+\bottomrule %ML\hline
+\end{tabular}
+\caption{Examples of transformations given to annotators for the given seed sentence. The third column shows how many of all the transformation suggestions collected in the first round closely mimic the particular example. The number is approximate as annotators typically call one transformation by several names, e.g. \textit{less formally},  \textit{formality diminished}, \textit{decrease of formality}, \textit{not formal expressions}, \textit{non-formal}, \textit{less formal}, \textit{formality decreased}, ... The examples were translated to English for presentation purposes only.}
+\label{tab:first_round_examples}
+\end{figure}
+
+The provided example annotations strongly influenced annotator outputs: transformations shown in the examples accounted for nearly two-thirds of all collected labels. In addition, frequent transformations included changes in word order and transformations to interrogative or imperative form. Other suggested interesting alterations involve a change into a fairy-tale style, heavy use of diminutives or vulgarisms, and a ``dadaistic'' role swap (swapping participant roles so that the resulting sentence remains grammatical but becomes non-sensical in the real world). Of these suggestions, we selected only the role-swap variant for the current study. % (see \textit{nonsense} in Table \ref{annotation_instructions}).
+
+In total, we collected 984 sentences described by 269 unique labels. We used them as  inspiration for the second round of annotation.
+
+\subsection{Round 2: Collecting Data}
+
+% \subsubsection{Sentence Transformations}
+
+% We selected 15 types of modifications, listed below. We asked for two distinct paraphrases of each sentence because we expect a well-formed sentence embedding space to keep paraphrases close together.
+
+% \medskip
+% \noindent
+% \textbf{Transformation types:}
+% \begin{itemize}
+%     \item \textit{Paraphrase 1:} Reformulate the sentence using different words.
+%     \item \textit{Paraphrase 2:}  Reformulate the sentence using other different words. 
+%     \item \textit{Different meaning:} Shuffle words in the sentence to produce a different meaning.
+%     \item \textit{Opposite meaning:} Reformulate the sentence to express the opposite meaning.
+%     \item \textit{Nonsense:} Rearrange words to form a grammatically correct but meaningless sentence (e.g., \textit{A hen pecked a grain} $\rightarrow$ \textit{A grain pecked a hen}).
+%     \item \textit{Minimal change:} Significantly change the meaning using only a minimal alteration.
+%     \item \textit{Generalization:} Make the sentence more general.
+%     \item \textit{Gossip:} Rewrite the sentence in a gossip style, exaggerating its meaning.
+%     \item \textit{Formal:} Rewrite the sentence in a more formal style.
+%     \item \textit{Nonstandard:} Rewrite the sentence in a colloquial or nonstandard style.
+%     \item \textit{Simple sentence:} Simplify the sentence so it is understandable with limited vocabulary.
+%     \item \textit{Possibility:} Change the modality to express possibility.
+%     \item \textit{Ban:} Change the modality to express prohibition.
+%     \item \textit{Future:} Move the sentence into the future tense.
+%     \item \textit{Past:} Move the sentence into the past tense.
+% \end{itemize}
+% \medskip
+
+% Several modification types were explicitly selected to constitute a thorough test of embeddings. In \textit{different meaning}, annotators were asked to create a sentence with a different meaning using the same words as the original sentence. Another challenging transformation is \textit{minimal change}, where the meaning should be significantly altered with minimal modification. The \textit{nonsense} transformation requires rearranging words into a grammatically correct but semantically incoherent sentence. An example of the resulting annotations is shown in \Cref{fig:example}.
+
+%begin{figure}[tbh]
+%\centering
+% \begin{tabular}{p{14cm}}
+% \toprule
+%    \textbf{Change and instructions}\\
+%     \midrule
+%    \textit{paraphrase 1:} Reformulate the sentence using different words. \\  \midrule
+%    \textit{paraphrase 2:} Reformulate the sentence using other different words. \\  \midrule
+%    \textit{different meaning:} Shuffle words in the sentence in order to get different meaning.\\  \midrule
+%    \textit{opposite meaning:} Reformulate the sentence to get a sentence with an opposite meaning.\\  \midrule
+%    \textit{nonsense:} Shuffle words in the sentence to make grammatical sentence with no sense.  (e.g. A hen pecked a grain. $\to$ A grain pecked a hen.) \\  \midrule
+%    \textit{minimal change:} Significantly change the meaning of the sentence using only a minimal alternation.\\  \midrule
+%    \textit{generalization:} Make the sentence more general.  \\  \midrule
+%    \textit{gossip:} Rewrite the sentence in a gossip style -- strongly exaggerated meaning on the sentence. \\  \midrule
+%    \textit{formal:} Rewrite the sentence in a more formal style. \\  \midrule
+%    \textit{nonstandard:} Rewrite the sentence in nonstandard, colloquial style. \\  \midrule
+%    \textit{simple sentence:} Rewrite the sentence in a simplistic style, so even a person with a limited vocabulary could understand it. \\  \midrule
+%    \textit{possibility:} Change the modality of the sentence into a possibility. \\  \midrule
+%    \textit{ban:} Change the modality of the sentence into a ban. \\  \midrule
+%    \textit{future:} Move the sentence into the future. \\  \midrule
+%    \textit{past:} Move the sentence into the past.  \\  
+% \bottomrule
+% \end{tabular}
+%\caption{Sentences transformations requested in the second round of annotation with the instructions to the annotators. The annotators were given no examples (with the exception of \textit{nonsense}) not to be influenced as much as in the first round.}
+%\label{annotation_instructions} 
+%\end{figure}
+
+
+\subsubsection{Sentence Transformations}
+We asked for two distinct paraphrases of each sentence, as a well-structured sentence embedding should keep paraphrases close together in the vector space. Several transformation types were explicitly selected to constitute a thorough test of embeddings. In \textit{different meaning}, annotators were asked to create a sentence with a different meaning using the same words as the original sentence. Another challenging transformation is \textit{minimal change}, where the meaning should be significantly altered with minimal text modification. The \textit{nonsense} transformation requires rearranging words into a grammatically correct but semantically incoherent sentence. 
+
+\noindent
+All 15 types of transformations, together with their annotation instructions and representative examples from our annotators, are listed below.
+
+\begin{description}
+\item[\textit{Paraphrase 1.}] Reformulate the sentence using different words. \\
+\samppair{Je to hloupost, zastavte ten projekt a ušetřete státní peněze.}
+{It's stupid, stop the project and save state money.}
+
+\item[\textit{Paraphrase 2.}] Reformulate the sentence using other different words. \\
+\samppair{Je to blbost, zastavte práce a neplýtvejte veřejnými prostředky.}
+{It's stupid, stop the work and don't waste public funds.}
+
+\item[\textit{Different meaning.}] Shuffle words in the sentence to obtain a different meaning. \\
+\samppair{Zrušení projektu je blbost a nesmyslné mrhání státními penězi.}
+{Cancellation of the project is stupid and pointless waste of state money.}
+
+\item[\textit{Opposite meaning.}] Reformulate the sentence to express the opposite meaning. \\
+\samppair{Jedná se o promyšlený plán, je třeba ho realizovat a uvolnit peníze ze státní kasy.}
+{It is a well-thought-out plan, it needs to be implemented and the money released for it.}
+
+\item[\textit{Nonsense.}] Rearrange words into a grammatical but meaningless sentence. \\
+\samppair{Zrušte státní peníze prosím a nemrhejte prostými blbostmi.}
+{Please cancel the state money and do not squander plain nonsense.}
+
+\item[\textit{Minimal change.}] Significantly change the meaning using only minimal alternation. \\
+\samppair{Je to blbost, přerušte ten projekt, prosím, a mrhejte státními penězi.}
+{It's nonsense, interrupt the project, please, and squander state money.}
+
+\item[\textit{Generalization.}] Make the sentence more general. \\
+\samppair{Projekt je blbost, zastavte jej a nemrhejte penězi.}
+{The project is nonsense, stop it and do not waste money.}
+
+\item[\textit{Gossip.}] Rewrite the sentence in an exaggerated, informal style. \\
+\samppair{Ten projekt je šílenost, měl by se okamžitě zastavit a neplýtvat na něm miliony z našich daní.}
+{The project is crazy, it should immediately stop and not waste millions from our taxes.}
+
+\item[\textit{Formal.}] Rewrite the sentence in a more formal style. \\
+\samppair{Ten projekt je od základu špatný, zrušte jej prosím a neplýtvejte státními prostředky.}
+{The project is fundamentally flawed, please cancel it and do not waste state resources.}
+
+\item[\textit{Nonstandard.}] Rewrite the sentence in colloquial style. \\
+\samppair{Je to kravina, práce by se měla zastavit a nemrhat státníma penězma.}
+{It's bullshit, work should stop and not waste government money.}
+
+\item[\textit{Simple sentence.}] Simplify the sentence for easier understanding. \\
+\samppair{Projekt je špatný, zastavte jej, neplýtvejte státními penězi.}
+{The project is bad, stop it, do not waste state money.}
+
+\item[\textit{Possibility.}] Change the modality to express possibility. \\
+\samppair{Tento projekt může být blbost, mohl by se zrušit a nemělo by se zde mrhat státními penězi.}
+{This project may be nonsense, it could be canceled and state money should not be wasted.}
+
+\item[\textit{Ban.}] Change the modality to express prohibition. \\
+\samppair{Ten projekt nesmí být blbost, jeho realizace se nesmí zrušit a nesmí být na něj uvolněny státní peníze.}
+{The project must not be nonsense, its realization must not be canceled and state money must not be allocated.}
+
+\item[\textit{Future.}] Move the sentence into the future. \\
+\samppair{Bude to určitě blbost, projekt bude nejspíš zrušen a nebude se mrhat státními penězi.}
+{It will certainly be nonsense, the project will likely be canceled and state money will not be wasted.}
+
+\item[\textit{Past.}] Move the sentence into the past. \\
+\samppair{Byla to prostě blbost, projekt byl zrušen a nemrhalo se státními penězi.}
+{It was simply nonsense, the project was canceled and state money was not wasted.}
+
+\end{description}
+
+
+
+
+
+
+% \begin{table}[H]
+% \begin{center}
+% \small
+% \begin{tabular}{p{14cm}}
+%  \textbf{Transformations and their translations} \\
+% \toprule
+% \textbf{seed:} \samppair{Je to prostě blbost, zrušte ten projekt, prosím, a nemrhejte státními penězi.}{It's just crap, please cancel the project, and don't squander state money.} \\ \midrule
+% \textbf{different meaning:} \samppair{Zrušení projektu je blbost a nesmyslné mrhání státními penězi.}{Cancellation of the project is stupid and pointless waste of state money.} \\ \midrule
+% \textbf{formal sentence}: \samppair{Ten projekt je od základu špatný, zrušte jej prosím a neplýtvejte státními prostředky.}{The project is fundamentally bad, please cancel it and don't waste state resources.} \\ \midrule
+% \textbf{future:}  \samppair{Bude to určitě blbost, projekt bude nejspíš zrušen a nebude se mrhat státními penězi.}{It will certainly be crap, the project will likely be canceled and state money will not be squandered.} \\ \midrule
+% \textbf{generalization:} \samppair{Projekt je blbost, zastavte jej a nemrhejte penězi.}{The project is crap, stop it and don't squander money.} \\ \midrule
+% \textbf{gossip:}  \samppair{Ten projekt je šílenost, měl by se okamžitě zastavit a neplýtvat na něm miliony z našich daní.}{The project is crazy, it should immediately stop and not to waste millions on it from our taxes.} \\
+% \textbf{minimal change:} \samppair{Je to blbost, přerušte ten projekt, prosím, a mrhejte státními penězi.}{It's crap, interrupt the project, please, and squander state money.} \\ \midrule
+% \textbf{nonsense:}  \samppair{Zrušte státní peníze prosím a nemrhejte prostými blbostmi.}{Please cancel the state money and do not squander plain crap.} \\ \midrule
+% \textbf{nonstandard:}  \samppair{Je to kravina, práce by se měla zastavit a nemrhat státníma penězma.}{It's bullshit, work should stop and not squander government money.} \\ \midrule
+% \textbf{opposite:} \samppair{Jedná se o promyšlený plán, je třeba ho realizovat a uvolnit peníze ze státní kasy.}{It is a well-thought-out plan, it needs to be implemented and the money released from the Treasury.} \\ \midrule
+% \textbf{paraphrase:} \samppair{Je to hloupost, zastavte ten projekt a ušetřete státní peníze.}{It's stupid, stop the project and save state money.} \\ \midrule
+% \textbf{paraphrase:} \samppair{Je to blbost, zastavte práce a neplýtvejte veřejnými prostředky.}{It's stupid, stop the work and don't waste public funds.} \\ \midrule
+% \textbf{past:} \samppair{Byla to prostě blbost, projekt byl zrušen a nemrhalo se státními penězi.}{It was just crap, the project was canceled and state money weren't wasted.} \\ \midrule
+% \textbf{possibility:} \samppair{Tento projekt může být blbost, mohl by se zrušit a nemělo by se zde mrhat státními penězi.}{This project can be stupid, could be canceled and state money shouldn't be squandered.} \\ \midrule
+% \textbf{simple:} \samppair{Projekt je špatný, zastavte jej, neplýtvejte státními penězi.}{The project is bad, stop it, don't waste state money.} \\ \midrule
+% \textbf{ban:} \samppair{Ten projekt nesmí být blbost, jeho realizace se nesmí zrušit a nesmí být na něj uvolněny státní peníze.}{The project mustn't be crap, its realization mustn't be canceled and state money mustn't be released for it.} \\ 
+% \bottomrule
+% \end{tabular}
+% \end{center}
+% \caption{Example of a single annotation. \ml{Bylo by přehlednější, kdyby transfrmace byly ve stjném pořadí jako v tabulce 4.5 (a v 4.4.7 Dataset Summary)}}
+% \label{fig:example}
+% \vspace{2cm}
+% \end{table}
+
+\subsubsection{Seed Data}
+
+The source sentences for the annotations were selected from two datasets:  Global Voices \citep{tiedemann-2012-parallel} and OpenSubtitles\footurl{http://www.opensubtitles.org/} \citep{opensubtitles2016}. We used two sources in order to have different styles of seed sentences, both journalistic and common spoken language. We considered only sentences with more than 5 and less than 15 words, and manually selected 150 of them for further annotation. This step was necessary to remove sentences that were:
+
+\begin{itemize}
+    \item too unreal, out of this world, such as: \\
+          \foreign{Jedno fotonov\'{y} torp\'{e}do a je z tebe vesm\'{i}rn\'{a} topinka.} \\ 
+          \trans{One photon torpedo and you're a space toast.}
+    \item photo captions, or incomplete sentences, e.g.: \\
+          \foreign{Zvl\'{a}\v{s}tn\'{i} ekv\'{a}dorsk\'{y} p\v{r}\'{i}pad Correa vs. Crudo} \\
+          \trans{Specific Ecuadorian case Correa vs. Crudo}
+    \item too vague, overly dependent on the context: \\
+          \foreign{B\v{e}\v{z} tam a mluv na ni.} \\
+          \trans{Go there and speak to her.}
+\end{itemize}
+
+Many intended sentence transformations would be impossible to apply to such sentences, and annotators' time would be wasted. Even after this filtering, it was still quite possible that the desired sentence transformation could not be achieved for a sentence. For such a case, we gave the annotators the option to enter the keyword \textit{IMPOSSIBLE} instead of the particular (impossible) transformation.
+
+This option allowed annotators to explicitly indicate that a transformation could not be applied. At the same time, most of the transformations are likely to lead to a large number of possible outcomes. As documented in \cite{bojar-scratching}, a Czech sentence can have hundreds of thousands of paraphrases. To capture at least a fraction of this variability, most seed sentences were assigned to multiple annotators; on average, each seed sentence received nearly two independent annotations. \Cref{tab:statistics} presents statistics of the annotation campaign.
+
+
+\begin{table}[tb]
+\centering
+\begin{tabular}{lrrrrrr}
+\toprule
+\textbf{Annotator}     
+& \textbf{Annot.} 
+& \textbf{Sent.} 
+& \textbf{Imp.} 
+& \textbf{Typos} 
+& \textbf{Length} 
+& \textbf{Time}  \\
+\midrule
+armadillo    & 69     & 1035  & 0  & 9  & 10.3   & 12:32        \\
+wolverine    & 42     & 598   & 32 & 13 & 9.6    & 14:32        \\
+honeybadger  & 39     & 584   & 1  & 28 & 10.4   & 30:38        \\
+gorilla      & 31     & 448   & 17 & 16 & 9.8    & 16:55        \\
+porcupine    & 31     & 465   & 0  & 6  & 11.3   & 8:55         \\
+lumpfish     & 23     & 329   & 16 & 4  & 8.4    & 13:28        \\
+crane        & 22     & 319   & 11 & 15 & 9.2    & 15:30        \\
+meerkat      & 17     & 241   & 14 & 17 & 9.1    & 27:36        \\
+axolotl      & 8      & 116   & 4  & 11 & 10.1   & 24:02        \\
+bullshark    & 6      & 90    & 0  & 2  & 9.8    & 20:59        \\
+flamingo     & 3      & 45    & 0  & 8  & 11.3   & 11:37        \\
+capybara     & 2      & 30    & 0  & 0  & 7.6    & 25:06         \\
+\midrule
+total/avg   & 293    & 4,300 & 95 & 129  & 9.9    & 19:50       \\
+\bottomrule
+\end{tabular}
+\caption{Statistics for individual annotators (anonymized as armadillo, \dots{}, capybara). \textit{Annot.} indicates the total number of annotated seed sentences; \textit{Sent.} the total number of sentences created; \textit{Imp.} the count of the  transformations marked impossible; \textit{Length} the average sentence length; and \textit{Time} the average time spent per annotation.}
+\label{tab:statistics}
+\end{table}
+
+
+\subsubsection{Spell-Checking}
+Annotation is a challenging task and it is natural for annotators to occasionally introduce errors. Unfortunately, even a~single typo can significantly influence the resulting sentences embeddings \citep{malykh-etal-2018-robust}. To mitigate the influence of such typographical and grammatical errors on embedding performance, we applied Korektor \citep{richter12}, a statistical spellchecker and grammar checker, to all collected sentence variations. Of the 519 issues identified by Korektor, we manually reviewed each one and corrected 129 true errors.
+
+\subsubsection{Summary}
+In the second round of annotations, we collected a total of 293 annotation sets from 12 annotators. Following post-processing with Korektor, the dataset consists of 4,262 distinct sentences, including the 150 seed sentences. In total, 4,300 sentences were originally generated during annotation; the reduction in size is due to the removal of duplicate outputs produced independently by different annotators. Specifically, 38 duplicate instances were identified and removed, indicating that identical sentence variants were generated only rarely. This low duplication rate suggests a high degree of diversity in annotator responses despite identical transformation instructions. The most repeated transformations are  \textit{past}, \textit{future} and \textit{ban}. The least repeated is \textit{paraphrase} with only one sentence appearing twice. 
+
+On average, the time required to complete one full annotation task, i.e., generating all 15 transformations for a given seed sentence, was approximately 20 minutes, although some annotators required up to 30 minutes. Consistently with the annotation guidelines, the \textit{IMPOSSIBLE} option was rarely used (only 95 times, representing approximately 2\% of all cases). Notably, only seven of the twelve annotators made use of this option, while the remaining five were able to produce all assigned transformations. The three transformation types most commonly deemed unfeasible were \textit{different meaning} (using the same set of words), \textit{past} (particularly when applied to sentences already in past tense) and \textit{simple sentence}.
+
+
+\subsection{Round 3: Collecting Interpolations and Extrapolations}
+\label{round3}
+In the third round of annotation, our goal was to project sentence transformations onto a continuous, approximately linear semantic scale along a given semantic or stylistic dimension. Annotators were presented with a seed sentence together with one of its transformations and instructed to create two additional sentences: an \textit{interpolation}, representing a midpoint in meaning or style between the original sentence and the transformation, and an \textit{extrapolation}, which extends the transformation further in the same direction. An example of this annotation process is presented in \cref{third_round}. 
+
+Not all transformation types from the second annotation round were included in this phase. The reason was straightforward: certain transformation types are unsuitable for interpolation or extrapolation. For example, \textit{paraphrases} are expected to preserve meaning that is identical or nearly identical to the original sentence; trying to interpolate between a sentence and its paraphrase would be unproductive. Similarly, there is the \textit{nonsense} transformation, which is created by shuffling content words of a seed sentence, so the final sentence is grammatically correct, but has no meaning. There are no interpolations or extrapolations of nonsense.
+
+Following a manual review, we selected six types of transformations that appeared to exhibit a linear and scalable nature: \textit{formal sentence}, \textit{future}, \textit{generalization}, \textit{nonstandard sentence}, \textit{opposite meaning}, and \textit{past}.  While some of these dimensions (e.g., tense or formality) are naturally ordered, others --- most notably \textit{opposite meaning} --- do not form a strictly linear scale. In such cases, annotators were instructed to approximate a gradual semantic shift (e.g., from affirmation to contradiction via weaker or partial negation).
+
+In total, we collected approximately 1,500 annotation instances from seven annotators, resulting in 2,749 newly generated sentences. As in the previous round, we applied Korektor and manually reviewed 195 flagged cases, correcting 37 genuine errors. After deduplication across annotation rounds, the final size of the \costra dataset is 6,968 unique sentences.
+
+
+ \begin{figure}[tb]
+\begin{tabular}{p{14cm}}
+\toprule
+\textbf{Transformations and their examples} \\
+\midrule
+\textbf{seed:} \samppair{Ob\v{c}as se mi na hlav\v{e} m\'{a}lo prokrvuje k\r{u}\v{z}e.}{The skin on my head sometimes fills with little blood} \\
+\midrule
+\textbf{interpolation:} \samppair{K\r{u}\v{z}e na hlav\v{e} se mi prokrvuje tak akor\'{a}t}{The skin on my head fills with just the right amount of blood.} \\
+\midrule
+\textbf{transformation:} \samppair{Ob\v{c}as se mi na hlav\v{e} hodn\v{e} prokrvuje k\r{u}\v{z}e}{The skin on my head sometimes fills with too much blood.}\\
+\midrule
+\textbf{extrapolation:} \samppair{Nem\'{a}m \v{z}\'{a}dnou k\r{u}\v{z}i na hlav\v{e}}{There is no skin on my head.}\\
+\bottomrule
+\end{tabular}
+
+\caption{Example from the third round of annotations. The annotator filled the interpolation and extrapolation to the seed and its transformation (\textit{opposite meaning}).}
+% \ml{"opposite" přece není "extrapolation" ... je ta anotace správně? Pokud ne, poznamenat explicitně, že jde o chybu anpotátora!}}
+% PB: priznam, ze vubec nechapu tuto poznamku - oposite je druh transformace. interpolace ma byt vyznamen nekde mezi seed & transformation (tj. opposite) a extrapolace jeste vyznamove dal...
+\label{third_round}
+\end{figure}
+
+\subsection{Round 4: Sentence Comparison}
+In the final round, we focused on collecting additional comparisons among the sentences obtained in the previous rounds, i.e., to densify the set of pairwise judgments. This enriched dataset enables a more thorough evaluation of whether an examined embedding space preserves the orderings implied by human judgments. A secondary objective was quality control --- specifically, identifying potentially questionable sentence comparisons by evaluating annotator agreement.
+
+We continued working with the same types of linearly comparable transformations as in the previous round: changes in tense (\textit{future}, \textit{past}), changes in style (\textit{formal sentence}, \textit{nonstandard sentence}), and significant semantic shifts (\textit{generalization}, \textit{opposite meaning}). Additionally, we merged the \textit{gossip} category with \textit{nonstandard} language, as gossip-like content in our dataset was frequently expressed using informal or nonstandard constructions and vice versa. We also reintroduced the \textit{simple sentence} category, which we had previously considered too difficult for interpolation and extrapolation tasks; this time, we included it in comparisons.
+
+Annotators were presented with pairs of sentences derived from the same seed sentence and transformation, together with criteria for comparison.\footnote{Only for \textit{opposite meaning} annotators were presented with three sentences: two candidates and a source sentence. They were asked which candidate is closer in meaning to the source sentence.} Not all pairs were comparable, some were nearly identical in meaning, while others completely unrelated, making them hard to compare. For every pair of sentences $S_1$ and $S_2$, the annotators had the following four options:
+
+\begin{enumerate}
+	\item $S_1$ is more \textit{general}/\textit{formal}/in the \textit{past}/\textit{nonstandard}/... than $S_2$.
+	\item $S_2$ is more \textit{general}/\textit{formal}/in the \textit{past}/\textit{nonstandard}/... than $S_1$
+	\item $S_1$ and $S_2$ are \textbf{too similar}, for example: \samppair{Byl roz\v{c}ilen\'{y} a hodn\v{e} mluvil.}{He was upset and talked a lot.} and \samppair{Ovlivn\v{e}n siln\'{y}mi emocemi \v{r}\'{i}kal ledacos.}{Influenced by strong emotions, he said all kind of things.} These sentences are so close in their meaning that it is almost impossible to select the more general one. 
+    \item $S_1$ and $S_2$ are \textbf{too dissimilar}, for example: \samppair{V\v{s}echno zl\'{e} je pro n\v{e}co dobr\'{e}.}{Every cloud has a silver lining; lit. All bad is good for something.} and \samppair{V~Asii jsou r\r{u}zn\'{a} obdob\'{i}.}{There are different seasons in Asia.} Neither of the sentences is a generalization of the other sentence, although they were both created as generalizations of the sentence \samppair{Banglad\'{e}\v{s}sk\'{a} monzunov\'{a} sez\'{o}na p\v{r}in\'{a}\v{s}\'{i} radost, probl\'{e}my i pozoruhodn\'{e} fotografie}{Bangladesh's monsoon season brings joy, problems and remarkable photos.}  
+\end{enumerate}
+
+In the fourth round, we collected more than 25{,}000 pairwise comparisons from 7 annotators. To evaluate annotation quality, approximately half of the sentence pairs was annotated by multiple annotators, allowing us to measure inter-annotator agreement. In addition, a smaller subset of pairs was annotated repeatedly by the same annotator to estimate intra-annotator consistency. Agreement was evaluated using average pairwise Cohen’s $\kappa$ \citep{carletta-1996-assessing}, computed across all annotator pairs.
+
+The resulting agreement scores are in line with comparable linguistic annotation tasks. Inter-annotator agreement reached a raw agreement of 0.62 ($\kappa = 0.49$), while intra-annotator agreement was higher, with a raw agreement of 0.77 ($\kappa = 0.70$), indicating reasonably consistent judgments both across and within annotators.
+
+We then combined sentence comparisons obtained in the third and fourth rounds of the annotation. Since multiple annotations could be collected for the same sentence pair, we aggregated annotations by majority vote. In cases where only a single annotation was available, the annotation was kept as is. Pairs for which no majority decision could be established were excluded from further analysis.
+
+After this filtering step, 16{,}385 unique sentence pairs with reliable human judgments remained. An additional 1{,}620 pairs were discarded due to annotator disagreement. The remaining annotations correspond to duplicate annotations of the same sentence pairs, which were used exclusively for agreement estimation.
+
+\subsection{Dataset Summary}
+
+\costra consists of 6{,}968 unique Czech sentences derived from 150 manually selected seed sentences, collected over four annotation rounds. The dataset includes both sentence-level transformations and human judgments about their semantic relationships. Below we summarize the structure and contents of each round.
+
+\paragraph{Round 1: Collecting Ideas.}  
+Annotators created 984 transformed variants based on 15 seed sentences. Each variant was labeled with one of 269 free-form transformation names (e.g., \emph{ban}, \emph{possibility}, \emph{change of tense}), yielding a diverse pool of ideas that informed the design of fixed transformation types.
+
+\paragraph{Round 2: Collecting Data.}  
+For each of the 150 seed sentences, annotators produced 14 specific transformation types:
+\begin{enumerate}
+\setlength{\itemsep}{0.2em}
+\setlength{\parskip}{0pt}
+\setlength{\parsep}{0pt}
+    \item \emph{Paraphrases} (two variants)
+    \item \emph{Different meaning} 
+    \item \emph{Opposite meaning}
+    \item \emph{Nonsense} 
+    \item \emph{Minimal change}
+    \item \emph{Generalization}
+    \item \emph{Gossip}
+    \item \emph{Formal}
+    \item \emph{Nonstandard}
+    \item \emph{Simple sentence}
+    \item \emph{Possibility}
+    \item \emph{Ban}
+    \item \emph{Future tense}
+    \item \emph{Past tense}
+\end{enumerate}
+
+This resulted in 4{,}262 unique sentences (including the 150 seed sentences).
+
+\paragraph{Round 3: Interpolations and Extrapolations.}  
+Seven annotators generated 2{,}749 new sentences by applying six \textit{scalable} transformation types (those assumed to allow for gradation in their meaning change):
+\begin{enumerate}
+\setlength{\itemsep}{0.2em}
+\setlength{\parskip}{0pt}
+\setlength{\parsep}{0pt}
+    \item \emph{Formal}
+    \item \emph{Nonstandard}
+    \item \emph{Generalization}
+    \item \emph{Opposite meaning}
+    \item \emph{Future tense}
+    \item \emph{Past tense}
+\end{enumerate}
+
+\paragraph{Round 4: Pairwise Judgments.}  
+
+In the fourth round, annotators produced over 25{,}000 pairwise similarity judgments for sentence pairs drawn from the third round. Additionally, two more categories were included:
+
+\begin{enumerate}
+    \item \emph{Simple sentence} --- initially excluded due to difficulty, later included
+    \item \emph{Gossip} --- merged with \emph{nonstandard sentence} due to their similarity
+\end{enumerate}
+
+These judgments assessed whether sentence A was more or less {general}/\textit{formal}/in the \textit{past}/\textit{nonstandard}/... than sentence B, or whether the sentences were too similar or too dissimilar to compare meaningfully. We retain 16{,}385 comparisons with a majority agreement, and discard 1{,}620 pairs where no consensus was reached.
+
+\paragraph{Quality Control.}  
+To minimize the influence of typographical and grammatical errors on the quality of the dataset, we ran the Korektor spellchecker \citep{richter12} and manually verified flagged items:
+\begin{itemize}
+    \item Round 2: 519 flagged issues, 129 confirmed and corrected
+    \item Round 3: 195 flagged issues, 37 confirmed and corrected
+\end{itemize}
+
+\paragraph{Final Dataset Contents.}  
+The final \costra dataset includes:
+\begin{itemize}
+    \item 6{,}968 unique Czech sentences
+    \item 150 seed sentences with 13 labeled transformation variants\footnote{The original annotation scheme includes 13 transformation types excluding paraphrases. The \emph{gossip} category is merged with \emph{nonstandard}, resulting in 12 distinct transformation types that alter the meaning of the seed sentence, in addition to paraphrases.}
+    \item Scalable transformations with graded variants for semantic probing
+    \item 16{,}385 pairwise human similarity judgments for evaluation
+\end{itemize}
+
+This structured dataset supports both intrinsic evaluation of sentence representations and the development of models that capture semantic relationships beyond surface-level lexical similarity. Our hope is that \costra will be useful in developing sentence embeddings for the Czech language. It is freely available at the following link:
+\begin{center}
+\url{http://hdl.handle.net/11234/1-3248}\\
+\end{center}
+
+
+\subsection{Sentence Embeddings Evaluation}
+We propose a multi-faceted evaluation framework using 2 paraphrases and 12 semantic transformation types for each seed sentence, grouped into six interpretable categories for conciseness. Each category probes different dimensions of meaning variation. We organize the evaluation into two parts on the basis of the nature of the underlying annotation and the assumptions made about the transformation structure.
+
+\paragraph{1. Non-Scalable (Binary Comparison) Evaluation.} 
+The first part of our evaluation covers 5 types of transformations that do not naturally form linear or ordinal scales, but still allow for meaningful binary comparisons. For these, we measure how often embeddings correctly reflect that a paraphrase should be semantically closer to the seed sentence than any transformation that significantly changes the meaning of the seed. We create the following two categories:
+
+\begin{itemize}
+    \item \textbf{Basic:} Paraphrases should be closer to the seed sentence than any transformation that significantly changes the meaning of the seed (\textit{different meaning}, \textit{minimal change}, \textit{nonsense}).
+    \item \textbf{Modality:} Paraphrases should be closer to the seed sentence than transformations that change sentence modality  (\textit{possibility}, \textit{ban}).
+\end{itemize}
+
+Formally, for each paraphrase $P$ and transformation $T$ in a given category, we compute accuracy as the proportion of cases where
+\[
+\mathrm{sim}_c\!\left(\mathbf{v}_{\text{seed}}, \mathbf{v}_{P}\right) \;>\; \mathrm{sim}_c\!\left(\mathbf{v}_{\text{seed}}, \mathbf{v}_{T}\right)
+\]
+where $\mathrm{sim}_c$ denotes cosine similarity (unless stated otherwise), and $\mathbf{v}_{\bullet}$ are the sentence embeddings.
+
+\paragraph{2. Scalable Evaluation.}  
+The remaining four categories represent remaining 7 scalable transformation types, for which we have collected human judgments on sentence pair similarity. These allow us to test whether the sentence embedding space preserves the relative semantic ordering implied by annotator judgments. The categories are:
+
+\begin{itemize}
+    \item \textbf{Time:} Transformation of the seed sentence into its \textit{future} or \textit{past} variants.
+    \item \textbf{Style:} Transformations involving changes in formality, nonstandard usage, or sentence simplification (\textit{formal}, \textit{nonstandard}, \textit{simple}).
+    \item \textbf{Generalization:} Abstraction of the seed sentence to a more general or less specific version.
+    \item \textbf{Opposite Meaning:} Shifts that invert the core meaning of the seed sentence.
+\end{itemize}
+
+For these categories, we use the human-annotated pairwise comparisons from Costra. If annotators indicate that the sentences $A,B,C$ satisfy $A \prec_{h}B$ and $B\prec_{h}C$ along the target dimension, we count how often the embedding space respects the induced ordering by satisfying
+\[
+\mathrm{sim}_c\!\left(\mathbf{v}_{A},\mathbf{v}_{B}\right) \;>\; \mathrm{sim}_c\!\left(\mathbf{v}_{A},\mathbf{v}_{C}\right)
+\quad\text{and}\quad
+\mathrm{sim}_c\!\left(\mathbf{v}_{B},\mathbf{v}_{C}\right) \;>\; \mathrm{sim}_c\!\left(\mathbf{v}_{A},\mathbf{v}_{C}\right).
+\]
+To make use of the options \textit{too similar} and \textit{too dissimilar}, we also verify that
+\[
+\mathrm{sim}_c\!\left(\mathbf{v}_{A},\mathbf{v}_{B}\right) \;>\; \mathrm{sim}_c\!\left(\mathbf{v}_{B},\mathbf{v}_{C}\right)
+\]
+for all triples $(A,B,C)$ where annotations mark $A$ and $B$ as too similar and $B$ and $C$ as too dissimilar.
+
+This two-part evaluation setup allows us to probe whether sentence embeddings not only capture intuitive semantic relationships but also preserve fine-grained semantic orderings across interpretable transformation dimensions. For each category, we compute accuracy as the proportion of correctly satisfied constraints:
+
+\begin{itemize}
+    \item In the non-scalable setting, each triple $(\text{seed}, P, T)$ yields a single binary decision indicating whether the paraphrase is closer to the seed than the transformed sentence.
+    \item In the scalable setting, each annotated comparison (or derived triple) yields one or more binary constraints reflecting the expected ordering.
+\end{itemize}
+
+ %Each category yields a score between 0 (worst) and 1 (best), and the overall \costra score is calculated as the arithmetic mean across all categories. 
+All binary decisions within a category are averaged to obtain a category-level score. The overall \costra score is then computed as the arithmetic mean (macro-average) across all categories, giving equal weight to each semantic dimension.
+
+\noindent In order to make the evaluation using \costra simply reproducible, we created an easy-to-use tool. It is available as a Python package (`costra`) on PyPI, or directly from the following repository:
+\begin{center}
+\url{https://github.com/barancik/costra}
+\end{center}
+
+\cite{bednavr2024some} integrated \costra into a larger evaluation pipeline that also includes other tasks such as semantic textual similarity and relevance assessment. This comprehensive tool is publicly available at the following repository:
+
+\begin{center}
+    \url{https://github.com/seznam/czech-semantic-embedding-models}
+\end{center}
+
+\subsection{Results}
+\label{costra:results}
+For our experiments in evaluating sentence embeddings using \costra, we evaluate several state-of-the-art sentence embedding models, employing both Czech-specific and multilingual variants. The Czech encoders include \czert, \fernet, \robeczech, \simcse and \retromae. To provide a broader comparative analysis, we also include multilingual sentence embedding models trained on datasets that contain Czech texts. These include \labse, \xlmr, and \mepet.
+In addition, we include two commercial text-embedding models: \tetrismall and \tetrilarge from OpenAI. These proprietary models are designed for general-purpose semantic similarity tasks and have demonstrated strong performance across multiple languages and domains. As control models, we employ \randombert and \random.  These models are described in more detail in \Cref{examined-embeddings}. The selection of models reflects those that were publicly available and practically usable at the time of experimentation. Evaluation of newer models we leave for future work.
+
+\Cref{tab:costra_results} reports the intrinsic evaluation results using the \costra dataset, with the overall \costra score calculated as the arithmetic mean for all six categorie.
+
+\begin{table}[]
+    \centering
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l|rr|rrrr|rr}
+\toprule
+\textbf{name} & \textbf{basic} & \textbf{mod.} & \textbf{time} & \textbf{style} & \textbf{gen.} & \textbf{opp} & \textbf{\costra} & \textbf{\costraminus} \\
+\midrule
+\simcse & 0.20 & 0.35 & \textbf{0.74} & 0.63 & 0.73 & \textbf{0.78} & 0.57 & \textbf{0.72} \\
+\tetrilarge & 0.26 & 0.35 & 0.72 & 0.62 & 0.74 & 0.77 & \textbf{0.58} & 0.71 \\
+\mepet & 0.24 & 0.34 & 0.71 & 0.62 & \textbf{0.75} & 0.77 & 0.57 & 0.71 \\
+\labse & 0.20 & 0.26 & 0.71 & 0.63 & 0.75 & \textbf{0.75} & 0.55 & 0.71 \\
+\retromae & 0.06 & 0.06 & 0.69 & 0.63 & 0.70 & 0.76 & 0.48 & 0.70 \\
+\tetrismall & 0.11 & 0.16 & 0.70 & 0.62 & 0.72 & 0.76 & 0.51 & 0.70 \\
+\robeczech & 0.15 & 0.13 & 0.69 & \textbf{0.65} & 0.69 & 0.75 & 0.51 & 0.70 \\
+\randombert & 0.07 & 0.06 & 0.65 & 0.60 & 0.72 & 0.74 & 0.47 & 0.68 \\
+\czert & 0.31 & 0.35 & 0.66 & 0.64 & 0.69 & 0.69 & 0.56 & 0.67 \\
+\xlmr & 0.16 & 0.11 & 0.65 & 0.61 & 0.67 & 0.68 & 0.48 & 0.65 \\
+\fernet & 0.33 & 0.38 & 0.65 & 0.61 & 0.63 & 0.68 & 0.54 & 0.64 \\
+\random & \textbf{0.49} & \textbf{0.52} & 0.48 & 0.50 & 0.50 & 0.50 & 0.50 & 0.50 \\
+\bottomrule
+\end{tabular}
+}
+  \caption{This Table presents the results of intrinsic evaluation using the \costra dataset. The score ranges from 0 (worst) to 1 (best) in each category. \costraminus score represents the mean score excluding the first two categories (\textbf{Basic} and \textbf{Mod.}), as these categories appear excessively challenging for all pretrained encoders evaluated.}
+   \label{tab:costra_results}
+\end{table}
+
+The most striking finding is that in the \textbf{Basic} and \textbf{Modality} categories, all trained models performed substantially worse than the \random baseline. The \random model achieves scores near 0.50, effectively acting as a neutral coin-flip. It has no opinion on the relationship between sentences, and subsequently correctly guesses the proximity of paraphrases roughly half the time by chance. In contrast, state-of-the-art models like \tetrilarge (0.26) and \mepet (0.24) score far below the coin-flip. This shows that these models are not merely ``guessing'' incorrectly; they are tricked by surface-level similarity, because these categories compare paraphrases with low lexical overlap against ``false friends'' with high lexical overlap but different meaning. The reliance on surface-level word matching causes them to confidently assign higher similarity to the wrong pairs.
+
+As a result, it is impossible to distinguish genuine model quality from noise in these categories. In order to keep the evaluation reliable, we report the \costraminus score,  which excludes these two problematic categories and averages performance in the four remaining categories: \textbf{Time}, \textbf{Style}, \textbf{Generalization}, and \textbf{Opposite}. However, the \costraminus scores revealed only marginal differences between the models' performance. The \Small \simcse model slightly leads the group; however, the model performs only marginally better than \randombert, suggesting limited success in capturing phenomena tested in \costra, such as linearity of time or generalization. Several trained models, including \LargeSize multilingual \xlmr or \Base Czech \fernet, even performed worse than \randombert. 
+
+The limited gains over \randombert suggest that phenomena such as temporal ordering, stylistic variation, and logical opposition are only weakly encoded in current embedding spaces. Overall, the results indicate that while modern sentence embeddings excel in general semantic similarity, they are still predominantly driven by surface-level heuristics. Therefore, the \costra dataset remains a challenging benchmark that highlights a persistent gap between surface-level similarity modeling and truly abstract semantic representation.
+
+\subsection{Conclusion}
+\label{conclusion-costra}
+
+In this chapter, we have introduced the \costra dataset, addressing a gap in the intrinsic evaluation of Czech sentence embeddings by providing a challenging benchmark focused on complex semantic and stylistic transformations. Through a four-round annotation process, we constructed a dataset comprising 6,968 unique sentences and 16,385 human pairwise judgments, enabling evaluation of both binary semantic distinctions and fine-grained ordinal relations along dimensions such as meaning, time, style, and generalization.
+
+We use the \costra dataset to evaluate a representative set of state-of-the-art Czech-specific, multilingual, and commercial sentence embedding models. However, all models are outperformed by the random baseline in categories that test susceptibility to surface-level similarity, and showed only marginal improvements on scalable categories compared to the untrained \randombert model. We hypothesize that these findings reflect the fact that current embeddings still rely on lexical overlap, with limited ability to capture abstract semantic structure or graded meaning shifts.
+
+The lightweight Python \costra toolkit supports reproducible benchmarking of Czech sentence embeddings, and the language-agnostic construction protocol supports future extensions to other languages. In conclusion, \costra serves as a challenging probe for progress toward more robust and semantically meaningful sentence embeddings.
+
+\begin{mdframed}[
+    linecolor=gray,
+    linewidth=2pt,
+    roundcorner=5,
+    backgroundcolor=gray!5
+]
+\noindent
+We addressed the following research questions:
+
+\paragraph{To what extent can modern sentence embeddings distinguish between paraphrases and sentences with high lexical overlap but different meanings?}
+The results indicate that current models are largely unable to prioritize semantic content over surface-level similarity. In the \textbf{Basic} and \textbf{Modality} categories, which contains comparisons of paraphrases and sentences with high word-overlap but divergent meanings, all tested models, including state-of-the-art commercial variants such as \tetrilarge, do not outperform the \random baseline. 
+
+\paragraph{How effectively do embedding spaces capture the ordinal progression of stylistic, temporal, and semantic transformations?}
+Although embedding models perform better than a random vector representation on scalable dimensions (\textbf{Time}, \textbf{Style}, \textbf{Generalization} and \textbf{Opposite}), the improvement over the \randombert is not substantial. The model that performs the best (\simcse) achieves the \costraminus score of 0.72, compared to 0.68 for the untrained \randombert. This small gap suggests that phenomena such as  linearity of time or levels of abstraction are encoded only weakly  in current embedding spaces.
+    
+\paragraph{Do specialized Czech-language models provide a significant advantage over multilingual or general-purpose commercial models in complex semantic tasks?}
+No, specialized Czech encoders do not show a clear superiority in this benchmark. The \costraminus scores for Czech-specific models like \retromae (0.70) and \simcse (0.72) are nearly identical to multilingual models like \mepet (0.71) and commercial models like \tetrilarge (0.71). 
+ 
+\paragraph{What is the relationship between model complexity and performance on the \costra benchmark?} 
+We do not observe any relation between model complexity and performance. All models perform comparably.
+\end{mdframed}

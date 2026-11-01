@@ -4,6 +4,8 @@
 % Margins: left 40mm, right 25mm, top and bottom 25mm
 % (but beware, LaTeX adds 1in implicitly)
 \documentclass[12pt,a4paper]{report}
+\usepackage[rgb]{xcolor}  % typesetting in color
+\usepackage{glossaries} % for \makeglossaries
 \setlength\textwidth{145mm}
 \setlength\textheight{247mm}
 \setlength\oddsidemargin{15mm}
@@ -25,7 +27,225 @@
 % \setlength\headheight{0mm}
 % \let\openright=\cleardoublepage
 
+%% Generate PDF/A-2u
+\usepackage{cmap}
+\usepackage[a-2u]{pdfx}
+\usepackage{lmodern}
 
+\usepackage{iftex}
+\ifPDFTeX
+  % pdfLaTeX path: keep fontenc/inputenc setup below
+\else
+  % XeLaTeX/LuaLaTeX path
+  \usepackage{fontspec}
+  \usepackage{unicode-math}
+  \setmainfont{TeX Gyre Termes}
+  \setmathfont{TeX Gyre Termes Math}
+\fi
+
+\usepackage{minted} 
+
+
+%\usepackage[a-2u]{pdfx}
+
+\input{glyphtounicode}     % \input, NOT \usepackage
+\pdfgentounicode=1
+
+%% Character encoding
+\usepackage[T2A,T1]{fontenc}
+\usepackage[main=english,russian]{babel}
+\usepackage{url}
+\usepackage[utf8]{inputenc}
+
+% TAble???
+\usepackage{multirow}
+%\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{adjustbox}
+\usepackage{longtable}
+\usepackage{ltxtable}
+
+% pseudocode
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+%\usepackage{amsmath}
+
+\algnewcommand\algorithmicinput{\textbf{Input:}}
+\algnewcommand\algorithmicoutput{\textbf{Output:}}
+\algnewcommand\Input{\item[\algorithmicinput]}
+\algnewcommand\Output{\item[\algorithmicoutput]}
+
+%% motto
+\usepackage{epigraph}
+\usepackage{quotchap}
+\newcommand{\chapquote}[3]{\begin{quotation} \textit{#1} \end{quotation} \begin{flushright} - #2, \textit{#3}\end{flushright} }
+
+
+%% Prefer Latin Modern fonts
+%\usepackage{lmodern}
+
+%% Further useful packages (included in most LaTeX distributions)
+
+\usepackage{amsmath}        % extensions for typesetting of math
+\usepackage{amsfonts}       % math fonts
+\usepackage{amssymb}
+\usepackage{amsthm}         % theorems, definitions, etc.
+\usepackage{bbding}         % various symbols (squares, asterisks, scissors, ...)
+
+
+
+%\usepackage{newtxmath}  % <-- newtxmath LAST among math packages
+\usepackage{bm}         % <-- bm after newtxmath
+
+\usepackage{graphicx}       % embedding of pictures
+\graphicspath{{../img/}{img/}{./img/}}
+% Fix occasional Unicode minus (U+2212) in text (e.g. pasted from PDFs)
+\DeclareUnicodeCharacter{2212}{-}
+% Fix combining breve U+0306 in some BibTeX-generated names (e.g., Luk{\'a}s̆)
+\DeclareUnicodeCharacter{0306}{}
+% Fix common Czech diacritics typo in names (e.g., Pra{\vz }{\'a}k)
+\newcommand{\vz}{\v{z}}
+\usepackage{fancyvrb}       % improved verbatim environment
+\usepackage{natbib}         % citation style AUTHOR (YEAR), or AUTHOR [NUMBER]
+\usepackage[nottoc]{tocbibind} % makes sure that bibliography and the lists
+			    % of figures/tables are included in the table
+			    % of contents
+\usepackage{dcolumn}        % improved alignment of table columns
+\usepackage{booktabs}       % improved horizontal lines in tables
+\usepackage{paralist}       % improved enumerate and itemize
+% (xcolor already loaded above)
+
+\usepackage[final]{microtype} % better line breaking / fewer overfull hboxes
+\setlength{\emergencystretch}{3em} % allow extra stretch on hard-to-break lines
+
+\usepackage{tikz}             %fancy boxes
+\usetikzlibrary{shapes.geometric} % fancy shapes
+\usepackage[noabbrev,capitalize]{cleveref} % \cref
+\usepackage{float} %table[H]
+
+\usepackage{framed}   %enables text enclosed in a frame
+\usepackage{mdframed} %enables text enclosed in a frame with overflow to the next page  
+
+%% GLOSSBUSINESS
+% \definelingstyle{thesisStyle}{
+%     textoffset=.5em,  % Indentation
+%     labeltype=numeric, % Numbering style (1, 2, 3)
+%     glhangstyle=none, % Formatting for wrapped lines
+% }
+
+
+\usepackage[normalem]{ulem} % sout, uline
+\usepackage{xcolor}
+%\DeclareRobustCommand{\XXX}[1]{\textcolor{red}{XXX #1}}
+  % use \XXX{blabla} for a red comment
+%\DeclareRobustCommand{\repl}[2]{%
+%\textcolor{red}{XXX\sout{#1}}%
+%\textcolor{blue}{\uline{#2}}}
+
+
+%% tu si zadefinovat zkratky za bezne pouzivane nazvy
+\usepackage{xspace}
+\usepackage{array}
+% (xcolor already loaded above; [table] option unnecessary unless you use \rowcolors etc.)
+
+% Define column type for centered text with fixed width
+\newcolumntype{P}[1]{>{\centering\arraybackslash}p{#1}}
+
+\newcommand{\mn}{\textsc{Meteor-NEXT}\xspace}
+\newcommand{\meteor}{\textsc{Meteor}\xspace}
+\newcommand{\mpt}{the \textsc{Meteor} paraphrase tables\xspace}
+\newcommand{\cmt}{the Czech \textsc{Meteor} tables\xspace}
+\newcommand{\fm}{\emph{filtered \textsc{Meteor}}\xspace}
+
+% Resource Macros
+\newcommand{\cmpt}{\emph{full \textsc{Meteor}}\xspace}
+%\newcommand{\fm}{MPT-CZ (Filtered)\xspace}
+\newcommand{\wordnet}{Czech WordNet\xspace}
+
+
+\newcommand{\bleu}{\textsc{BLEU}\xspace}
+\newcommand{\ter}{\textsc{TER}\xspace}
+\newcommand{\terp}{\textsc{TERp}\xspace}
+\newcommand{\chrf}{\textsc{chrF}\xspace}
+\newcommand{\chrfp}{\textsc{chrF++}\xspace}
+\newcommand{\comet}{\textsc{COMET}\xspace}
+\newcommand{\prism}{\textsc{Prism}\xspace}
+\newcommand{\bleurt}{\textsc{BLEURT}\xspace}
+\newcommand{\bertscore}{\textsc{BERTscore}\xspace}
+\newcommand{\remedy}{\textsc{ReMedy}\xspace}
+\newcommand{\mtranker}{\textsc{MT-Ranker}\xspace}
+\newcommand{\parmesan}{\textsc{Parmesan}\xspace}
+\newcommand{\costra}{\textsc{Costra}\xspace}
+\newcommand{\costraminus}{\textsc{Costra--}\xspace}
+\newcommand{\enhanedmeteor}{\emph{Enhanced \textsc{Meteor}}\xspace}
+\newcommand{\owpt}{\emph{One-word paraphrase table}\xspace}
+\newcommand{\cometWithReference}{\texttt{wmt22-comet-da}\xspace}
+\newcommand{\cometReferenceless}{\texttt{wmt22-cometkiwi-da}\xspace}
+\newcommand{\comets}[1]{\emph{CE}(#1)}
+\newcommand{\cometm}[1]{$\mathrm{CE}_\mathrm{MTE}$(#1)}
+\newcommand{\cometq}[1]{$\mathrm{CE}_\mathrm{QE}$(#1)}
+\newcommand{\footurl}[1]{\footnote{\url{#1}}}
+
+\newcommand{\Small}{\textit{small}\xspace}
+\newcommand{\Base}{\textit{base}\xspace}
+\newcommand{\LargeSize}{\textit{large}\xspace}
+\newcommand{\Prop}{\textit{proprietary}\xspace}
+
+% Definuju vsechny embeddingy
+\newcommand{\infersent}{\texttt{InferSent}~\largeemb{gray}\xspace} 
+\newcommand{\elmo}{\texttt{ELMo}~\baseemb{gray}\xspace}
+\newcommand{\useemb}{\texttt{USE}~\largeemb{gray}\xspace}
+\newcommand{\laser}{\texttt{LASER}~\baseemb{black}\xspace}
+\newcommand{\bertlarge}{\texttt{BERT-Large}~\largeemb{gray}\xspace}
+\newcommand{\sbert}{\texttt{SBERT}~\smallemb{gray}\xspace}
+\newcommand{\ensimcse}{\texttt{SimCSE}~\baseemb{gray}\xspace}
+\newcommand{\labse}{\texttt{LaBSE}~\baseemb{black}\xspace}
+\newcommand{\bgemthree}{\texttt{BGE-M3}~\largeemb{black}\xspace}
+\newcommand{\esmall}{\texttt{E5-Small-v2}~\smallemb{gray}\xspace}
+\newcommand{\elarge}{\texttt{E5-Large-v2}~\largeemb{gray}\xspace}
+\newcommand{\modernbert}{\texttt{ModernBERT}~\baseemb{gray}\xspace}
+\newcommand{\qwen}{\texttt{Qwen3-4B}~\largeemb{black}\xspace}
+\newcommand{\tetrismall}{\texttt{TE3-small}~\propemb{black}\xspace}
+\newcommand{\tetrilarge}{\texttt{TE3-large}~\propemb{black}\xspace}
+\newcommand{\geminiemb}{\texttt{Gemini-001}~\propemb{black}\xspace}
+\newcommand{\enrandombert}{\texttt{Random BERT} \baseemb{gray}\xspace}
+\newcommand{\randombert}{\texttt{Random BERT}~\baseemb{black}\xspace}
+\newcommand{\random}{\texttt{Random}\xspace}
+\newcommand{\czert}{\texttt{Czert}~\baseemb{white}\xspace}
+\newcommand{\simcse}{\texttt{SimCSE-dist-cs}~\smallemb{white}\xspace}
+\newcommand{\fernet}{\texttt{FERNET}~\baseemb{white}\xspace}
+\newcommand{\xlmr}{\texttt{XLM-R}~\largeemb{black}\xspace}
+\newcommand{\robeczech}{\texttt{RobeCzech}~\baseemb{white}\xspace}
+\newcommand{\retromae}{\texttt{RetroMAE}~\smallemb{white}\xspace}
+\newcommand{\mepet}{\texttt{mE5}~\largeemb{black}\xspace}
+
+\newcommand{\pattern}[2]{%
+  \texttt{#1} $\rightarrow$ \texttt{#2}%
+}
+\usetikzlibrary{shapes.geometric,patterns,patterns.meta}
+
+\newcommand{\embsymbol}[3][]{%
+  \tikz[baseline=-0.6ex]\node[
+    regular polygon,
+    regular polygon sides=#2,
+    draw,
+    inner sep=1pt,
+    minimum size=#3,
+    fill=#1
+  ] {};
+}
+\newcommand{\smallemb}[1]{\embsymbol[#1]{3}{3mm}}
+\newcommand{\baseemb}[1]{\embsymbol[#1]{4}{3.5mm}}
+\newcommand{\largeemb}[1]{\embsymbol[#1]{5}{4mm}}
+\newcommand{\propemb}[1]{\embsymbol[#1]{200}{3.5mm}}
+%\newcommand{\propemb}[1]{\circ[#1]{3.5mm}}
+
+\newcommand{\monolingual}{\texttt{Cz}\xspace}
+\newcommand{\multilingual}{\texttt{M}\xspace}
+
+% \newcommand{\ml}[1]{\textcolor{blue}{\raisebox{.2ex}{\tiny ML:~}#1}}
+% \newcommand{\out}[1]{\textcolor[rgb]{0.8,0.8,0.8}{\textbf{#1}}}
+% \newcommand{\pb}[1]{\textcolor{green}{\raisebox{.2ex}{\tiny PB:~}#1}}
 
 \def\xxx#1{\textbf{\textcolor{red}{xxx: #1}}}
 \def\todo#1{\textbf{\textcolor{red}{todo: #1}}}
@@ -35,89 +255,96 @@
 \def\Tref#1{Table~\ref{#1}}
 \def\Fref#1{Figure~\ref{#1}}
 \def\Sref#1{Section~\ref{#1}}
-\def\footurl#1{\footnote{\url{#1}}}
 % ilustrace vety + anglicke glosy
-\def\samppair#1#2{``\textit{#1}'' (#2)}
+%\def\samppair#1#2{\textit{#1} (#2)}
+% 1. For foreign language terms (italics)
+\newcommand{\foreign}[1]{\textit{#1}}
+% 2. For English translations (single quotes - standard in linguistics)
+\newcommand{\trans}[1]{‘#1’}
+% 3. The Combined Pair (standardized)
+\def\samppair#1#2{\foreign{#1} (\trans{#2})}
+\newcommand{\langpair}[2]{\foreign{#1} \trans{#2}}
 
-%% Generate PDF/A-2u
-\usepackage[a-2u]{pdfx}
-
-%% Character encoding: usually latin2, cp1250 or utf8:
-\usepackage[english]{babel}
-\usepackage[T2A]{fontenc}
-%%\usepackage[utf8]{inputenc}
-
-
-%% motto
-\usepackage{epigraph}
-\usepackage{quotchap}
-\newcommand{\chapquote}[3]{\begin{quotation} \textit{#1} \end{quotation} \begin{flushright} - #2, \textit{#3}\end{flushright} }
+\def\parcite#1{\citep{#1}}  % (Smith, 2014)  ... in PARentheses
+\def\perscite#1{\cite{#1}}  % Smith (2014)   ... the PERson that wrote it
+\def\inparcite#1{\citealp{#1}} % Smith, 2014   ... to be used (IN PARentheses, Smith 2014)
 
 
-%% Prefer Latin Modern fonts
-\usepackage{lmodern}
-
-%% Further useful packages (included in most LaTeX distributions)
-\usepackage{amsmath}        % extensions for typesetting of math
-\usepackage{amsfonts}       % math fonts
-\usepackage{amsthm}         % theorems, definitions, etc.
-\usepackage{bbding}         % various symbols (squares, asterisks, scissors, ...)
-\usepackage{bm}             % boldface symbols (\bm)
-\usepackage{graphicx}       % embedding of pictures
-\usepackage{fancyvrb}       % improved verbatim environment
-\usepackage{natbib}         % citation style AUTHOR (YEAR), or AUTHOR [NUMBER]
-\usepackage[nottoc]{tocbibind} % makes sure that bibliography and the lists
-			    % of figures/tables are included in the table
-			    % of contents
-\usepackage{dcolumn}        % improved alignment of table columns
-\usepackage{booktabs}       % improved horizontal lines in tables
-\usepackage{paralist}       % improved enumerate and itemize
-\usepackage[usenames]{xcolor}  % typesetting in color
-
-\usepackage{multirow}
 %%% Basic information on the thesis
 
+
 % Thesis title in English (exactly as in the formal assignment)
-\def\ThesisTitle{Thesis title}
+\def\ThesisTitle{Evaluating Metrics for Machine Translation Evaluation: From Paraphrases to Semantic Embeddings}
 
 % Author of the thesis
-\def\ThesisAuthor{Name Surname}
+\def\ThesisAuthor{Mgr. Petra Barančíková}
 
 % Year when the thesis is submitted
-\def\YearSubmitted{YEAR}
+\def\YearSubmitted{2026}
 
 % Name of the department or institute, where the work was officially assigned
 % (according to the Organizational Structure of MFF UK in English,
 % or a full name of a department outside MFF)
-\def\Department{Name of the department}
+\def\Department{Institute of Formal and Applied Linguistics}
 
 % Is it a department (katedra), or an institute (ústav)?
-\def\DeptType{Department}
+\def\DeptType{Institute}
 
 % Thesis supervisor: name, surname and titles
-\def\Supervisor{Supervisor's Name}
+\def\Supervisor{doc. RNDr. Markéta Lopatková, Ph.D.}
 
 % Supervisor's department (again according to Organizational structure of MFF)
-\def\SupervisorsDepartment{department}
+\def\SupervisorsDepartment{Institute of Formal and Applied Linguistics}
 
 % Study programme and specialization
-\def\StudyProgramme{study programme}
-\def\StudyBranch{study branch}
+\def\StudyProgramme{Computational Linguistics}
+\def\StudyBranch{P4I3}
 
 % An optional dedication: you can thank whomever you wish (your supervisor,
 % consultant, a person who lent the software, etc.)
 \def\Dedication{%
-Dedication.
+I would like to dedicate this thesis to my grandfather Bob, who was always so proud of me for trying to follow in his academic footsteps. I can imagine him bursting with joy upon seeing that I had finally managed to submit this thesis. He would certainly have rewarded it with a cheeky poem.
+
+Many thanks go to my parents, who have supported every step of the way---first financially and emotionally, and later with babysitting and endless supplies of amazing homemade food.
+
+My deepest gratitude belongs to my family---my children Bernard and Mariana and my partner Rado---who repeatedly (and quite reasonably) tried to convince me to stop writing this thesis and do something more useful instead. Your patience, love, and occasional eye-rolls kept me grounded.
+
+I am also grateful to my dear colleagues---especially Martin Bachura, Jakub Náplava, Jiří Bednář, Vladislav Stankov, Aleksandra Knotek, Josef Vonášek, and Lenka Lasoňová, whose relentless mocking turned out to be my most consistent source of motivation to finish this work.
+
+I would also like to thank my wonderful colleagues at ÚFAL for creating such an inspiring and supportive environment.
+
+Last but not least, I owe my greatest thanks to my supervisor, doc. RNDr. Markéta Lopatková, Ph.D., for her guidance, tireless corrections, and encouragement, and to my consultant, doc. RNDr. Ondřej Bojar, Ph.D., who, despite his busy schedule, always managed to offer insightful advice and clever suggestions.
 }
 
 % Abstract (recommended length around 80-200 words; this is not a copy of your thesis assignment!)
 \def\Abstract{%
-Abstract.
+Automatic evaluation of machine translation remains challenging, as commonly used metrics correlate imperfectly with human judgment and are sensitive to surface-level variation. This thesis investigates two complementary approaches to improving and analyzing machine translation evaluation: targeted paraphrasing of reference translations and embedding-based evaluation methods. 
+
+The first part demonstrates that controlled paraphrasing of reference translations improves the robustness of string-based metrics, while more complex generation methods do not necessarily outperform simpler ones.
+
+The second part analyzes the geometric properties of sentence embeddings, identifying interpretable structures in which linguistic transformations correspond to consistent directional shifts. We introduce a new dataset of complex sentence transformations for Czech and show that current sentence embedding models rely heavily on surface similarity, and that strong performance on intrinsic evaluation tasks does not reliably predict effectiveness in machine translation evaluation.
+
+Overall, this work highlights the gap between lexical overlap and true semantic equivalence and limitations of current automatic evaluation methods.
+
 }
+
+
+\def\AIack{%
+I also acknowledge the occasional use of large language models—specifically OpenAI’s ChatGPT for grammar checking and improving the clarity of expression. All AI-generated suggestions were carefully reviewed, revised, and approved by the author.
+
+No AI tools were used for content generation, data analysis, or the development of ideas and arguments. The author remains fully responsible for the intellectual content, analysis, and conclusions presented in this thesis.
+
+This declaration is made in the interest of transparency and academic integrity. Any remaining errors, inconsistencies, or stylistic shortcomings are entirely my own.
+}
+
+
 
 % 3 to 5 keywords (recommended), each enclosed in curly braces
 \def\Keywords{%
-{key} {words}
+{machine translation evaluation}, 
+{automatic evaluation metrics}, 
+{paraphrasing},
+{sentence embeddings}
 }
 
 %% The hyperref package for clickable links in PDF and also for storing
@@ -142,32 +369,124 @@ Abstract.
 \include{evaluation}
 \include{rw}
 \include{data}
-\include{tools}
 \include{substitution}
 \include{parmesan}
 \include{moses}
 \include{treex_paraphrasing}
+\include{second_part}
+\include{linear_relations}
+\include{costra}
+\include{extrinsic}
 \include{epilog}
+\include{appendix}
 
 %%% Bibliography
 \include{bibliography}
+
 
 %%% Figures used in the thesis (consider if this is needed)
 \listoffigures
 
 %%% Tables used in the thesis (consider if this is needed)
 %%% In mathematical theses, it could be better to move the list of tables to the beginning of the thesis.
-\listoftables
+\listoftables 
+
 
 %%% Abbreviations used in the thesis, if any, including their explanation
 %%% In mathematical theses, it could be better to move the list of abbreviations to the beginning of the thesis.
 \chapwithtoc{List of Abbreviations}
+ACL – Association for Computational Linguistics \\
+biLM - bi-directional Language Model \\
+BiLSTM - Bidirectional Long Short-Term Memory \\
+BLEU - Bilingual Evaluation Understudy \\
+BERT – Bidirectional Encoder Representations from Transformers \\
+BLEURT - Bilingual Evaluation Understudy with Representations from Transformers \\
+BP - Brevity Penalty \\
+COMET - Crosslingual Optimized Metric for Evaluation of Translation \\
+chrF - Character-level F-score \\
+DA - Direct Assessment \\
+DARPA - Defense Advanced Research Projects Agency \\
+ESA - Error Span Annotation \\
+GPT – Generative Pre-trained Transformer \\
+IAA - Inter-Annotator Agreement \\
+LDC – Linguistic Data Consortium \\
+LLM - Large Language Model \\
+LM - Language Model \\
+MERT - Minimum Error Rate Training \\ 
+Meteor - Metric for Evaluation of Translation with Explicit Ordering \\
+MFAS - Minimum Feedback Arc Set \\
+MLM - Masked Language Modeling \\
+MultiNLI - Multi-Genre NLI \\
+MRL - Matryoshka Representation Learning \\
 MRPC - Microsoft Research Paraphrase Corpus \\
+MQM – Multidimensional Quality Metrics \\
 MT - Machine Translation \\
+MTEB - Massive Text Embedding Benchmark \\
+MTurk – Amazon Mechanical Turk \\
+NLI - Natural Language Inference \\
+NLP – Natural Language Processing \\
+NMT - Neural Machine Translation \\
+PDT - Prague Dependency Treebank \\
+PPDB – Paraphrase Database \\
+Prism – Probabilistic Reference-based Interpretation of Semantic Meaning \\
+PS - Pivot Score \\
+QE – Quality Estimation \\
+RoPE - Rotary Positional Embeddings \\
+RR - Relative Ranking \\
+SMT - Statistical Machine Translation \\
+SQM – Scalar Quality Metric \\
+SNLI - Stanford Natural Language Inference \\
+SOTA - State-of-the-Art \\
+STS - Semantic Textual Similarity \\
+TER - Translation Error Rate \\
+TERp – Translation Error Rate Plus \\
+UniTE – Unified Translation Evaluation \\
 WMT - Workshop on Statistical Machine Translation \\
+XLM-R – Cross-lingual Language Model – RoBERTa \\
 
 %%% Doctoral theses must contain a list of author's publications
-\chapwithtoc{List of publications}
+\chapwithtoc{List of Publications}
+
+\section*{Publications Directly Related to the Thesis}
+
+\begin{enumerate}
+    \item Petra Barančíková and Ondřej Bojar. Intrinsic vs. Extrinsic Evaluation of Czech Sentence Embeddings: Semantic Relevance Doesn’t Help with MT Evaluation. In \textit{Proceedings of Machine Translation Summit XX: Volume 1}, pages 265--275, Geneva, Switzerland, August 2025. European Association for Machine Translation.
+
+    \item Jiří Bednař, Jakub Náplava, Petra Barančíková, and Ondřej Lisický. Some Like It Small: Czech Semantic Embedding Models for Industry Applications. In \textit{Proceedings of the AAAI Conference on Artificial Intelligence}, 38(21), pages 22734--22742, 2024. 
+
+    \item Petra Barančíková and Ondřej Bojar. Costra 1.1: An Inquiry into Geometric Properties of Sentence Spaces. In \textit{Proceedings of the 23rd International Conference on Text, Speech and Dialogue}, pages 135--143, Cham, Switzerland, September 2020. Springer. 
+
+    \item Petra Barančíková and Ondřej Bojar. COSTRA 1.0: A Dataset of Complex Sentence Transformations. In \textit{Proceedings of the Twelfth Language Resources and Evaluation Conference}, pages 3535--3541, Marseille, France, May 2020. European Language Resources Association. 
+
+    \item Petra Barančíková and Ondřej Bojar. In Search for Linear Relations in Sentence Embedding Spaces. In \textit{Proceedings of the 19th Conference ITAT 2019: Slovenskočeský NLP Workshop (SloNLP 2019)}, pages 125--132, Košice, Slovakia, September 2019. CreateSpace Independent Publishing Platform. 
+
+    \item Aleš Tamchyna and Petra Barančíková. Manual and Automatic Paraphrases for MT Evaluation. In \textit{Proceedings of the Tenth International Conference on Language Resources and Evaluation (LREC'16)}, pages 3543--3548, Portorož, Slovenia, May 2016. European Language Resources Association. 
+
+    \item Petra Barančíková and Rudolf Rosa. Targeted Paraphrasing on Deep Syntactic Layer for MT Evaluation. In \textit{Proceedings of the Third International Conference on Dependency Linguistics (Depling 2015)}, pages 20--27, Uppsala, Sweden, August 2015. Uppsala University. 
+
+    \item Petra Barančíková. Parmesan: Meteor without Paraphrases with Paraphrased References. In \textit{Proceedings of the Ninth Workshop on Statistical Machine Translation}, pages 355--361, Baltimore, Maryland, USA, June 2014. Association for Computational Linguistics. 
+
+    \item Petra Barančíková, Rudolf Rosa, and Aleš Tamchyna. Improving Evaluation of English–Czech MT through Paraphrasing. In \textit{Proceedings of the Ninth International Conference on Language Resources and Evaluation (LREC'14)}, pages 3402--3407, Reykjavik, Iceland, May 2014. European Language Resources Association.
+
+    \item Petra Barančíková and Aleš Tamchyna. Machine Translation within One Language as a Paraphrasing Technique. In \textit{Proceedings of the 14th Conference ITAT 2014}, pages 1--6, Prague, Czechia, September 2014. Institute of Computer Science AS CR.
+
+    \item Petra Barančíková. Lexical Paraphrasing for Improvement of MT Evaluation. In \textit{WDS'13 Proceedings of Contributed Papers}, pages 7--11, Prague, Czechia, 2013. Matfyzpress.
+\end{enumerate}
+
+\section*{Other Publications}
+
+\begin{enumerate}
+    \item Václava Kettnerová, Markéta Lopatková, Anna Vernerová, and Petra Barančíková. Towards a Semi-Automatic Detection of Reflexive and Reciprocal Constructions and Their Representation in a Valency Lexicon. In \textit{Proceedings of the Twelfth Language Resources and Evaluation Conference}, pages 3136--3144, Marseille, France, May 2020. European Language Resources Association. 
+
+    \item Václava Kettnerová, Markéta Lopatková, Eduard Bejček, and Petra Barančíková. Enriching VALLEX with Light Verbs: From Theory to Data and Back Again. \textit{The Prague Bulletin of Mathematical Linguistics, 111}, pages 29--56, 2018. 
+
+    \item Petra Barančíková and Václava Kettnerová. Paraphrases of Verbal Multiword Expressions: The Case of Czech Light Verbs and Idioms. In \textit{Multiword Expressions at Length and in Depth: Extended Papers from the MWE 2017 Workshop}, pages 35--59, Berlin, Germany, 2018. Language Science Press. 
+
+    \item Petra Barančíková and Václava Kettnerová. ParaDi: Dictionary of Paraphrases of Czech Complex Predicates with Light Verbs. In \textit{Proceedings of the 13th Workshop on Multiword Expressions (MWE 2017)}, pages 1--10, Valencia, Spain, April 2017. Association for Computational Linguistics. 
+
+    \item Václava Kettnerová, Petra Barančíková, and Markéta Lopatková. Lexicographic Description of Complex Predicates in Czech: Between Lexicon and Grammar. In \textit{Proceedings of the XVII EURALEX International Congress: Lexicography and Linguistic Diversity}, pages 893--904, Tbilisi, Georgia, September 2016. Tbilisi University Press.
+\end{enumerate}
+
 
 %%% Attachments to the doctoral thesis, if any. Each attachment must be
 %%% referred to at least once from the text of the thesis. Attachments
@@ -181,9 +500,9 @@ WMT - Workshop on Statistical Machine Translation \\
 %%% should be uploaded to SIS and optionally also included in the thesis on a~CD/DVD.
 %%% Allowed file formats are specified in provision of the rector no. 72/2017.
 \appendix
-\chapter{Attachments}
+%\chapter{Attachments}
 
-\section{First Attachment}
+%\section{First Attachment}
 
 \openright
 \end{document}

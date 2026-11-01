@@ -1,0 +1,222 @@
+\chapter{Sentence Embedding Evaluation}
+\label{chapter:sentence_embeddings_evaluation}
+%\addcontentsline{toc}{chapter}{sentence_embedding_evaluation}
+
+There is a significant time gap between this chapter and the previous one, during which the field of natural language processing has evolved substantially. Neural architectures, precomputed word and sentence representations, and large language models (LLMs) have transformed both research and applications. Models such as BERT \citep{bert}, RoBERTa \citep{roberta}, and GPT-3 \citep{gpt3} have become foundational, setting new benchmarks across a wide range of NLP tasks. 
+
+Sentence embeddings have become ubiquitous in~NLP, with novel representation methods appearing almost every other week. However, with such an overwhelming number of methods available to~compute sentence vector representations, studying their general properties has become increasingly difficult. Furthermore, it remains an open research question how sentence embeddings should be evaluated as standalone representations, rather than as components of downstream systems. In particular, it is unclear to what extent modern embeddings preserve fine-grained semantic structure in a stable, interpretable, and linguistically meaningful way.
+
+Machine translation evaluation provides a clear example of this evolution. Traditionally, MT evaluation relied heavily on string-based metrics such as \bleu or \ter. 
+%These metrics compare machine-generated translations to human references by measuring n-gram overlap. However, they struggle to capture the full range of possible valid translations because they rely on the exact matching of words and phrases. To overcome this limitation, techniques like paraphrasing \citep{denkowski-lavie-2014-meteor, kauchak, bawden-etal-2020-study} were introduced to better align semantically similar sentences that differed in surface form, thus improving the ability of evaluation metrics to account for linguistic diversity. 
+% Despite the historical utility of paraphrasing, 
+Today, there is currently strong pressure to move away from such metrics \citep{mathur-etal-2020-tangled, freitag-etal-2022-results} in favor of semantic approaches that better correlate with human judgment. String-based methods are increasingly being replaced by more advanced techniques based on precomputed continuous-space representations, commonly referred to as embeddings. Embeddings are high-dimensional vectors of real numbers learned from large-scale datasets. They aim to capture aspects of semantic and syntactic structure, offering a more sophisticated understanding of meaning.
+
+These developments implicitly assume that embedding spaces encode semantic relationships in a geometrically meaningful way. Consequently, the reliability of embedding-based evaluation metrics depends directly on the structural properties of the underlying sentence representations. Understanding how sentence embeddings organize meaning in vector space is therefore essential for interpreting and improving such metrics.
+
+Modern metrics, which we introduced in more detail in \cref{rw}, such as \comet \citep{rei-etal-2020-comet}, \bertscore \citep{bertscore:2020}, or \bleurt \citep{sellam2020bleurt}, often rely on contextual embeddings and learned scoring functions, sometimes using vector similarity as a core component. A high similarity indicates that the hypothesis conveys a meaning close to the reference, providing more reliable evaluations even when their surface forms differ significantly.
+
+This shift represents a substantial advancement, as it allows for more flexible and accurate evaluations, particularly for sentences with multiple valid translations or significant syntactic variations. Furthermore, the rise of massively multilingual models such as XLM-R \citep{xlm-r}, LaBSE \citep{feng-etal-2022-language}, and M5 \citep{wang2024multilingual} allows these metrics to be applied across languages without extensive adaptations.
+
+As embedding-based metrics became prevalent, the need for explicit paraphrasing to account for variations in sentence structure or word choice has diminished.\footnote{While sentence embeddings have reduced reliance on paraphrasing, the metric PRISM \citep{prism} demonstrates that integrating both approaches can still produce superior results by capturing both semantic similarity and translation diversity} However, the field has recently seen another shift: the use of LLMs as evaluators. \cite{kocmi-federmann-2023-large} demonstrated that LLMs can function as SOTA evaluators for machine translation in reference-free assessment. For reference-based evaluation, \cite{kocmi-federmann-2023-gemba} introduced GEMBA-MQM, a high-performing metric based on GPT-4 \citep{gpt4}.
+
+However, using LLMs has significant disadvantages. They are computationally intensive, slow, and often reside behind paid, black-box APIs, limiting transparency and control over the evaluation process. Most importantly, although their stochastic behavior can be partially reduced (e.g., by controlling decoding parameters), it cannot be fully eliminated, and results may vary across model versions and API updates. This lack of stability and reproducibility can make them less suitable for evaluation scenarios requiring consistent and comparable outputs \citep{shen-etal-2023-large}. In scenarios requiring efficiency, privacy, and determinism, encoder-based embedding metrics, which are the focus of this chapter, are much more suitable. 
+
+Although sentence embeddings provide a powerful tool for evaluating sentence similarity, they are not without limitations. An ideal sentence embedding, which perfectly captures the full meaning of a sentence, would eliminate any need for paraphrasing entirely. However, in practice, this ideal is difficult to achieve. The process of mapping a sentence into a fixed-length vector inherently involves lossy compression and task-agnostic projection, and as a result, embeddings may not always fully capture the richness of the sentence's meaning. If an embedding fails to encapsulate essential semantics, such as negation or causality, metrics derived from it can be misleading. Furthermore, the selection of a specific embedding model for evaluation becomes essential --- different models may produce embeddings with varying degrees of fidelity to the original sentence, and the choice of model can significantly affect the outcome of the evaluation.
+
+%offer significant utility, much like continuous word representations (word embeddings). Word embeddings have demonstrably improved downstream 
+%processing by making models more robust to insignificant input variations and minor errors (including typos), and have significantly enhanced 
+%performance in low-data settings. Furthermore, they provide empirically-driven insights into word meanings that can aid lexicographic analysis.
+%There are several advantages of using sentence embeddings instead of paraphrasing. Sentence embeddings can capture deeper semantic relationships 
+%that paraphrasing might miss. They consider the overall meaning of the sentence rather than just surface-level word matches Automated computation of embedding similarities is more scalable than generating and comparing paraphrases, which typically needs labor-intensive and subjective resources. }
+%eBLEU \citep{elnokrashy-kocmi-2023-ebleu}
+
+This raises critical questions: How well does a particular embedding method preserve subtle semantic distinctions? Is it sensitive to grammatical structure? How does it handle small perturbations? Choosing an embedding model best suited for evaluation is a significant challenge. To address this, we focus on a systematic evaluation of sentence embeddings as representations, rather than on downstream task performance. Our goal is to analyze how different embedding models preserve semantic, syntactic, and structural information, and to identify which properties make embeddings robust and reliable for evaluation purposes.
+
+This chapter is structured as follows. First, in \Cref{sentence_embeddings:rw} we review existing approaches to intrinsic and extrinsic evaluation of sentence embeddings. \Cref{examined-embeddings} introduces the models used through our experiments. In \Cref{section:semantic_space}, we introduce an experiment analyzing linear properties of sentence embedding spaces. Then we present the Costra dataset for Czech sentence embedding evaluation in \Cref{sec:costra}, followed by a comparison of intrinsic and extrinsic evaluation methodologies in \Cref{extrinsic}.
+
+\section{Related Work on Sentence Embeddings Evaluation}
+\label{sentence_embeddings:rw}
+
+When \perscite{kiros2015skip} introduced Skip-Thought vectors---one of the first effective methods for encoding sentences into a fixed-length vector from unlabeled text---they evaluated their quality on eight supervised tasks such as paraphrase detection and sentiment polarity classification. This \emph{extrinsic} evaluation (``transfer tasks''), i.e., using sentence embeddings as input features for downstream tasks, became the de facto standard for the evaluation and comparison of sentence embeddings. Furthermore, this method corresponds with the primary objective of the user: to determine which embedding method performs best in a specific application such as sentiment analysis, information retrieval, natural language inference, or machine translation.
+
+Despite its widespread adoption, extrinsic evaluation has limitations. \cite{wieting2016iclr} demonstrated that even simple bag-of-words (BOW) approaches often achieve competitive results in transfer tasks, questioning the necessity of complex models for certain applications. Extrinsic evaluations may also lack transparency in explaining why certain embeddings perform better, making it difficult to understand the underlying properties that contribute to their success or failure in various tasks. Moreover, they might not reflect the embeddings' ability to capture linguistic features beyond the specific context of the evaluated tasks. \cite{pitfalls2019} highlight additional issues in existing evaluation techniques, including biases that favor larger embeddings.
+
+Alternatively, \emph{intrinsic} evaluation should not just test classification accuracy, but also the structural correspondence between meaning and geometry, quality of sentence representations in capturing the sentence's meaning, and various semantic nuances such as formality, sentiment, and syntactic structure. This involves analyzing outputs of different embedding methods to see how effectively they preserve not just the core semantic content but also more subtle aspects of language that contribute to the overall communicative intent.
+
+For \textbf{word embeddings}, there are numerous datasets for intrinsic evaluation. The word analogy task (e.g., ``king'' is to ``queen'' as ``man'' is to ``woman'')  \citep{Mikolov13a, mikolov-etal-2013-linguistic, gladkova-etal-2016-analogy} and the word semantic similarity task \citep{faruqui-dyer-2014-community, hill-etal-2015-simlex, gerz-etal-2016-simverb} are among the most popular methods. The attributes of word embeddings have been studied in depth from various aspects, from sentiment polarity \citep{chen2013expressive} to the ability to predict syntactic properties (such as POS, gender, case or number) \citep{kohn-2015-whats} to data efficiency \citep{JastrzebskiLC17}. \cite{bakarov} provides a typology of 16 intrinsic evaluation methods for word embeddings. In fact, there are so many studies on the properties and improvements of one of the most popular contextualized word embeddings, BERT, that it motivated a metastudy to summarize all current knowledge of BERT \citep{bertology}.
+
+% \cite{li2020sentence} discuss calibration methods such as BERT-flow to improve sentence embedding quality.\ml{POZOR, \cite{li2020sentence} je o "sentence embeddings", tedy asi patří až k následujícím odstavcům; opět - projít bibliografii a doplnit složené závorky kolem "title"}
+
+%\cite{fasttext,subgram} have further refined the support of sub-word units, leading 
+%to considerable improvements in representing morpho-syntactic properties of words. 
+%\cite{VylomovaRCB15} largely extended the set of considered semantic relations of
+%words.
+
+For \textbf{sentence embeddings}, this is a different story --- intrinsic evaluation is more challenging due to sentence complexity. Early studies by \cite{Adi16} and \cite{ettinger-etal-2016-probing} introduced `probing tasks' for intrinsic evaluation of sentence embeddings, focusing on surface-level linguistic features such as sentence length, verb tense, and word order. Building on this foundation, \cite{conneau2018cram} expanded the scope of these tasks, introducing a broader set of linguistic probes to systematically assess the extent to which sentence embeddings capture various linguistic properties. However, \cite{Linzen_2016} and \cite{bacon2018probing} have raised concerns that high performance in these tasks may be due to flaws in the test design, such as the use of grammatically simple sentences.
+
+The work introduced by \cite{conneau2018cram} was extended to SentEval \citep{senteval}, a toolkit designed for both intrinsic and extrinsic evaluation of sentence embeddings. SentEval contains 10 probing tasks and 17 transfer tasks, which mainly focus on single sentence classification and semantic textual similarity (STS). STS measures how well a system can determine the semantic similarity between two sentences, i.e., directly evaluating the ability of the embeddings to capture sentence meaning. \cite{Perone2018} applied SentEval to many sentence embedding techniques, showing that no method had consistently good performance on all tasks, highlighting the challenges of developing universally robust sentence embeddings.
+
+However, \cite{zhelezniak-etal-2019-correlation} and \cite{wang-etal-2022-just} warned against using STS as the only indicator of the quality of sentence embeddings, because strong performance in STS tasks may not necessarily correlate with the effectiveness of sentence representations in a wider range of downstream applications \citep{neelakantan2022text}. \cite{hewitt-liang-2019-designing} questioned whether high performance on probing tasks truly reflects linguistic understanding or if models are exploiting statistical artifacts. They emphasized the need for control tasks to differentiate genuine linguistic competence from dataset biases.
+
+\cite{muennighoff-etal-2023-mteb} introduced the Massive Text Embedding Benchmark (MTEB)\footurl{https://huggingface.co/spaces/mteb/leaderboard}. It started with 8 tasks on 58 datasets for more than a hundred languages and currently\footnote{November 17 2024} it contains more than 250 datasets and 10 tasks. MTEB is open-source and offers a public leaderboard where researchers can compare model performances on various tasks and contribute new results. Recently, \cite{enevoldsen2025mmtebmassivemultilingualtext} presented the Massive Multilingual Text Embedding Benchmark (MMTEB), which comprises more than 500 distinct tasks in 10 task categories, covering more than 250 languages.
+
+In the context of evaluating sentence embeddings, particularly for languages such as Czech, the introduction of MMTEB represents a significant advancement. It allows for more thorough intrinsic and extrinsic evaluations, ensuring that embeddings are not only effective in capturing semantic meaning but also versatile across various applications. By participating in benchmarks such as MTEB or MMTEB, researchers can better understand the strengths and limitations of their models, contributing to the development of more accurate and reliable sentence embeddings. However, such benchmarks primarily provide performance rankings and offer limited insight into why certain embeddings behave well or poorly, motivating complementary analyses that directly probe representation structure.
+
+In the context of the Czech language, several intrinsic evaluation datasets have been developed. \cite{DBLP:conf/tsd/SvobodaB18} adapted the SentEval toolkit to Czech and created one of the first Czech STS datasets. Other Czech STS benchmarks include \cite{konopik-etal-2017-czech} and \cite{Sido2021CzechND}. Costra \citep{costra10, costra11} is a dataset designated for evaluating the quality of Czech sentence embedding spaces. It examines the proficiency of sentence embeddings in capturing intricate linguistic phenomena such as style, formality, or simplicity. We introduce \costra in more detail in \cref{sec:costra}.
+
+\section{Overview of Selected Sentence Encoders}
+\label{examined-embeddings}
+
+In this chapter, we experiment with a diverse range of models, moving from early recurrent architectures to modern instruction-tuned LLMs. This selection allows us to trace how the evolution of sentence representations—specifically a transition from unsupervised pre-training to contrastive fine-tuning—affects the linear geometric properties of their embedding spaces.
+
+Rather than aiming for exhaustive coverage, we select representative models that illustrate key architectural and training paradigms. The goal is not to identify a single “best” embedding model, but to analyze how different design choices shape the geometry and other properties of sentence representations. All selected models and their basic characteristics are summarized in \Cref{tab:model_comparison_detailed} at the end of this section.
+
+Although in this work we focus primarily on Czech embedding models, \Cref{section:semantic_space} is computed using English data. Therefore, we include Czech, English, and multilingual models. In order to increase clarity in model languages and their sizes\footnote{Following the naming convention of~\cite{clark2020electra}, we categorize models based on the number of their parameters}, we introduce the following symbols:
+
+\vspace{0.5cm}
+\begin{tabular}{@{}lcccc @{}}
+Embedding Type & \Small & \Base & \LargeSize  & \textit{proprietary}\\
+approx. parameters & (14--30M) & (110M) & (335M+) & unknown \\ \midrule
+Czech Monolingual       & \smallemb{white} & \baseemb{white} & \largeemb{white} & - \\
+English Monolingual     & \smallemb{gray}  & \baseemb{gray}  & \largeemb{gray}  & - \\ 
+Multilingual            & \smallemb{black} & \baseemb{black} & \largeemb{black} & \propemb{black} \\
+\end{tabular}
+
+
+% \Small (~14–30M params), \Base (~110M params), and \LargeSize (~335M+ params).  To increase clarity in the different model features, we introduce the following symbols: \smallemb{white}/\baseemb{white}/\largeemb{white} for  \Small/\Base/\LargeSize Czech monolingual embeddings, \smallemb{gray}/\baseemb{gray}/\largeemb{gray} for \Small/\Base/\LargeSize English monolingual embeddings and \smallemb{black}/\baseemb{black}/\largeemb{black} for \Small/\Base/\LargeSize multilingual embeddings, respectively. The circle symbol \propemb{black} represent multilingual proprietary (Prop.) embeddings with unknown number of parameters.
+% In order to keep track of different model properties, we use \smallemb{gray}/\baseemb{gray}/\largeemb{gray} for English, \smallemb{white}/\baseemb{white}/\largeemb{white} for Czech, and \smallemb{black}/\baseemb{black}/\largeemb{black} for multilingual models. Proprietary models are denoted by \propemb{black}.
+% where \Small models denote BERT-based architectures with approximately 14 million parameters, 12 encoder layers, and a hidden size of 256, while \Base models contain about 110 million parameters, 12 encoder layers, and a hidden size of 768. Finally, \LargeSize models consist of about 335 million parameters, 24 encoder layers and hidden size of 1024.
+% \caption{Detailed comparison of embedding models across architectures, scales, and linguistic focus. Size labels (Small/Base/Large) are based on standard model family naming. To increase clarity in the different model features, we introduce the following symbols: \smallemb{gray}/\baseemb{gray}/\largeemb{gray} for \Small/\Base/\LargeSize English monolingual embeddings and \smallemb{black}/\baseemb{black}/\largeemb{black} for \Small/\Base/\LargeSize multilingual embeddings, respectively. The circle symbol \propemb{black} represent multilingual proprietary (Prop.) embeddings with unknown number of parameters.} 
+
+
+\subsubsection{Legacy Architectures}
+The following models provide historical baselines from the era before Transformer \cite{attention}. We include these models to provide a historical baseline and to evaluate how early attempts handle linear relationships. They often rely on simpler compositionality, which shows how deep contextualization impacts vector arithmetic.
+
+\begin{itemize}
+    \item \infersent\footurl{https://github.com/facebookresearch/InferSent} \citep{infersent} is one of the first embedding models that uses supervised learning to compute sentence representations. Specifically, it was trained to predict inference labels in the SNLI dataset \citep{snli}. The authors tested 7 different architectures, finding that a BiLSTM (Bidirectional Long Short-Term Memory) encoder with max pooling achieved the best results. We use a version trained using GloVe word embeddings \citep{glove}. % InferSent representations are by far the largest, with the dimensionality of 4096.
+    \item Similarly to \infersent, \useemb (Universal Sentence Encoder) \citep{use} combines unsupervised learning augmented with training on supervised data from SNLI. It comes in several versions, we use a larger transformer-network\footurl{https://tfhub.dev/google/universal-sentence-encoder-large/3} designed for higher accuracy. %Its output representation has 512 dimensions.
+    \item \elmo\footurl{https://github.com/HIT-SCIR/ELMoForManyLangs} (Embeddings from Language Models) \citep{elmo} derives contextualized representations from a BiLSTM trained on a language modeling objective over a large text corpus.  We compute sentence embeddings by averaging all token representations from the final layer.
+    % Embeddings capture syntax and polysemy, i.e., different meanings a word can represent in different contexts. Each token representation of ELMo is a function of the entire input sentence - one word gets different embeddings in different contexts. ELMo computes an embedding for every token and we compute the final sentence embedding as the average over all tokens from the final layer.  It has dimensionality 1024.
+    \item \laser{}\footurl{https://github.com/facebookresearch/LASER} (Language-Agnostic SEntence Representations) \citep{laser} is a five-layer BiLSTM trained on machine translation from over 90 languages to English or Spanish, with random source language selection per batch. It uses max-pooling over the last states to produce a 1024-dimensional vector, optimized for cross-lingual alignment.    
+
+
+\end{itemize}
+
+\subsubsection{Modern Baselines}
+These models represent the transition to attention-based architectures. While BERT-based models serve as the standard foundation, their off-the-shelf representations often exhibit high \textit{anisotropy} (occupying a narrow cone in the vector space), which limits their effectiveness for semantic similarity without specific fine-tuning \citep{ethayarajh-2019-contextual}.
+
+\begin{itemize}
+    \item \bertlarge\footurl{https://huggingface.co/google-bert/bert-large-cased} (Bidirectional Encoder Representations from Transformers) \citep{bert} is a deep unsupervised representation pre-trained on Masked Language Modeling (MLM) and next-sentence prediction. Although the original approach extracted the [CLS] token (a special token inserted at the beginning of every sentence), \cite{Reimers_2019} demonstrated that mean pooling consistently outperforms [CLS] for sentence-level tasks. In our experiments, we use mean pooling to reduce the inherent bias of raw BERT embeddings.
+   % raw BERT embeddings often exhibit high anisotropy (occupying a narrow cone in the vector space), which limits their effectiveness in semantic similarity tasks without fine-tuning \citep{ethayarajh-2019-contextual}.
+    \item \sbert\footurl{https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2} (Sentence-BERT) \citep{Reimers_2019} addresses the limitation of BERT by using a siamese network architecture, where two identical BERT networks share weights to process sentence pairs. It is optimized such that the cosine similarity between vectors directly reflects semantic similarity. We adopt the \texttt{all-MiniLM-L6-v2} variant, which balances competitive performance with high inference speed.
+\end{itemize}
+
+\subsubsection{Contrastive and Generative Approaches}
+%\textbf{sup-simcse-bert-base-uncased}
+
+\begin{itemize}
+    \item \ensimcse\footurl{https://github.com/princeton-nlp/SimCSE} (Simple Contrastive Learning of Sentence Embeddings) \citep{gao-etal-2021-simcse} has a simple yet effective unsupervised training objective. It uses dropout as a minimal data augmentation technique: the same sentence is passed through the encoder twice with different dropout masks, creating a ``positive pair'' that the model learns to pull together in vector space, while pushing away representations of other sentences. This approach is specifically designed to address the anisotropy of BERT, pushing apart unrelated sentences to make the embedding space more uniform.
+\end{itemize}
+
+\subsubsection {Czech Encoders}
+A primary focus of this work is the evaluation of Czech-specific models. We include three \emph{base}-size Transformer architectures, each using masked language modeling as their primary pretraining objective:
+
+\begin{itemize}
+    \item CZERT-b-cased\footurl{https://huggingface.co/UWB-AIR/Czert-B-base-cased}  (\czert, \citealp{sido2021czert})
+    \item FERNET-C5\footurl{https://huggingface.co/fav-kky/FERNET-C5} (\fernet, \citealp{FERNETC5})
+    \item \robeczech\footurl{https://huggingface.co/ufal/robeczech-base} \citep{robeczech}
+\end{itemize}
+
+We also adopt two efficient Czech \Small encoders from \cite{bednavr2024some}: 
+\begin{itemize}
+    \item \retromae\footurl{https://huggingface.co/Seznam/retromae-small-cs} (Seznam/retromae-small-cs), a BERT-small model trained with the RetroMAE objective on a custom Czech corpus from the Seznam.cz search engine
+    \item\simcse{}\footurl{https://huggingface.co/Seznam/simcse-dist-mpnet-czeng-cs-en} (Seznam/simcse-dist-mpnet-czeng-cs-en), a dis\-tilled BERT-small model derived from \path{sentence-transformers/all-mpnet-base-v2}, trained on the parallel Czech-English dataset CzEng \citep{czeng10:lrec2012} and fine-tuned with the SimCSE objective \citep{gao-etal-2021-simcse}. \simcse was the best performing model in zero-shot evaluation among recently published \Small-size Czech sentence embedding models that are efficient in both size and speed \citep{bednavr2024some}. 
+\end{itemize}
+
+\subsubsection{Multilingual Models}
+Although the experiment in \cref{section:semantic_space} utilizes English data (SNLI and MultiNLI), we include massively multilingual models to serve as a bridge to \cref{sec:costra}, where we evaluate Czech representations. It is essentially an open research question whether the cross-lingual alignment objectives used to train these models distort the vector space in a way that affects the linearity of monolingual (English) relationships.
+
+\begin{itemize}
+    \item \labse\footurl{https://huggingface.co/sentence-transformers/LaBSE} (Language-agnostic BERT Sentence Embedding) \citep{feng-etal-2022-language} is a dual-encoder model that generates language-agnostic representations for more than 100 languages with remarkable cross-lingual alignment, since its training objective was machine translation into a shared semantic space.% It produces 768-dimensional embeddings.
+    \item \bgemthree\footurl{https://huggingface.co/BAAI/bge-m3} (BAAI General Embedding) \citep{bge-m3} are currently among top-performers on benchmarks like MTEB. It supports over 100 languages with hybrid training for dense, sparse, and multi-vector retrieval. We use its dense output, trained via retro-fitting on diverse datasets including hard negatives for improved discrimination.
+    \item \xlmr\footurl{https://huggingface.co/facebook/xlm-roberta-large} (XLM-RoBERTa-large)
+     \citep{xlm-r} represents a significant milestone in multilingual encoders, scaling the RoBERTa architecture to a massive scale. Unlike previous models trained on constrained Wikipedia data, XLM-R was pretrained on 2.5TB of filtered CommonCrawl data. Geometrically, it is unique because it does not use explicit language identifiers, learning a shared multilingual manifold purely through MLM. %With 560M parameters, it provides the capacity to resolve lexical ambiguities across diverse scripts, though its "raw" representations often require pooling or fine-tuning to reach peak semantic performance.
+    \item \mepet\footurl{https://huggingface.co/intfloat/multilingual-e5-large} (multilingual-e5-large) \citep{wang2024multilingual} is a model pretrained using a contrastive learning approach on a diverse range of tasks, including natural language inference and question answering across multiple languages.
+\end{itemize}
+
+\subsubsection{Instruction-Tuned Encoders} 
+This category represents the current state-of-the-art for encoder-only models (2023--2025). These models move beyond simple self-supervised pre-training, utilizing massive-scale contrastive learning and instruction tuning to align the embedding space with human semantic expectations.
+
+\begin{itemize}
+    \item The \elarge\footurl{https://huggingface.co/intfloat/e5-large-v2} and \esmall\footurl{https://huggingface.co/intfloat/e5-small-v2} \citep{wang2022text} models represent a paradigm shift by leveraging a massive, weakly-supervised dataset (CCPairs) for contrastive training. Geometrically, these models are unique because they require task-specific instruction prefixes (e.g., \textit{"query: "} or \textit{"passage: "}). %From a linear perspective, these prefixes act as a "soft" transformation, shifting the sentence vector into a subspace optimized for specific retrieval tasks. 
+    \esmall is roughly 10x smaller than \elarge (335M parameters), which allow us to observe how model scale influences the linear relationships.
+    \item \modernbert\footurl{https://huggingface.co/nomic-ai/modernbert-embed-base} \citep{warner-etal-2025-smarter} represents the 2024 modernization of the BERT architecture. It incorporates \textit{Rotary Positional Embeddings (RoPE)} and unpadding to support long-context windows (up to 8k tokens) efficiently. Unlike the original BERT, which used absolute position embeddings, RoPE introduces a relative geometric bias that allows the model to better capture long-range dependencies, potentially affecting the global structure of the sentence-level embedding space.
+\end{itemize}
+
+\subsubsection{LLM-based and Proprietary Embeddings}
+Recent trends involve adapting massive Large Language Models (LLMs) into embedding models. This shift represents a move from encoder-only architectures (like BERT) to decoder-only architectures, using the whole world knowledge and reasoning capabilities inherent in models with billions of parameters. Unlike BERT (which uses the [CLS] token or mean pooling), these decoder-only models usually extract the representation from the last token in the sequence.
+
+\begin{itemize}
+    \item \qwen\footurl{https://huggingface.co/Qwen/Qwen3-Embedding-4B} \citep{qwen3embedding} represents open-weights LLM embedding models. Based on a 4-billion parameter decoder, it is fine-tuned with contrastive loss and \textit{Matryoshka Representation Learning} (MRL). MRL is specifically designed to make the vector space \textit{nested}: the model is trained so that the first few dimensions (e.g., 256) contain the most critical semantic information, while larger dimensions provide finer-grained detail. 
+    \item \tetrismall and \tetrilarge\footurl{https://platform.openai.com/docs/guides/embeddings} \citep{gpt4} from OpenAI are the commercial standards for closed-source embeddings. Like Qwen3, these models utilize MRL, allowing users to truncate vectors (down to 256 dimensions) with minimal performance degradation. While their exact training data are proprietary, their inclusion allows us to compare properties of highly optimized \emph{black-box} models against open-source alternatives.
+    \item \geminiemb\footurl{https://ai.google.dev/gemini-api/docs/models} \citep{google2023gemini} from Google utilizes a similar LLM-based backbone. It is optimized for a wide variety of tasks including clustering and classification. By including Gemini alongside OpenAI and Qwen, we can evaluate whether the massive scaling of decoder-only models creates a geometric structure of their semantic spaces.
+\end{itemize}
+
+
+\subsubsection{Control Baselines}
+We introduce two control baselines designed to isolate the effects of the model architecture from the information acquired during pre-training.
+\begin{itemize}
+    \item Untrained \enrandombert  and \randombert:  To isolate the contributions of the model architecture and tokenization, we employ two random versions of BERT where all weights are randomly initialized, using Xavier normal initialization: (i)  \enrandombert for English texts, this model utilizes the \texttt{bert-base-uncased} architecture and its corresponding English tokenizer. (ii) \randombert for Czech texts, this model utilizes the \texttt{bert-base-multilingual-cased} architecture and its multilingual tokenizer.  The only component inherited from the pretrained model is the tokenizer. In other words, the model processes an input according to the tokenization patterns learned from data but does not have any pretrained language representations. This setup isolates and evaluates the contribution of the tokenizer alone, establishing a lower performance bound and offering a meaningful point of comparison to evaluate the benefits of pretraining.    
+    \item \random: As a second baseline, we used completely random vectors assigned to each sentence. This provides a minimal benchmark, helping to contextualize the performance of trained embedding models.
+\end{itemize}
+
+
+\begin{table}[tb!]
+\centering
+\small
+\begin{tabular}{@{}lllcrr@{}}
+\toprule
+\textbf{Category} & \textbf{Model} & \textbf{Language} & \textbf{Arch.} & \textbf{Params} & \textbf{Dim} \\
+\midrule
+\textbf{Legacy} & \infersent & English & BiLSTM & $\approx$200M & 4096 \\
+ & \elmo  & English & BiLSTM & 94M & 1024 \\
+ & \useemb & English & Encoder & 147M & 512 \\
+ & \laser{}   & Multilingual & BiLSTM & $\approx$200M & 1024 \\
+\midrule
+\textbf{Baselines} & \bertlarge & English & Encoder & 336M & 1024 \\
+ & \sbert & English & Encoder & $\approx$23M & 384 \\
+\midrule
+\textbf{Contrastive} & \ensimcse & English & Encoder & 110M & 768 \\
+\midrule
+\textbf{Czech} & \czert & Czech & Encoder & 109M & 768 \\
+ & \fernet& Czech & Encoder & $\approx$200M & 768 \\
+ & \robeczech  & Czech & Encoder & 125M & 768 \\
+ & \retromae & Czech & Encoder & $\approx$14M & 256 \\
+ & \simcse  & Czech & Encoder & $\approx$23M & 384 \\
+\midrule
+\textbf{Multilingual} & \labse  & Multilingual & Encoder & 471M & 768 \\
+ & \bgemthree & Multilingual & Encoder & 567M & 1024 \\
+ & \xlmr  & Multilingual & Encoder & 560M & 1024 \\
+ & \mepet  & Multilingual & Encoder & 560M & 1024 \\
+\midrule
+\textbf{Instruction} & \esmall  & English & Encoder & $\approx$33M & 384 \\
+ & \elarge  & English & Encoder & $\approx$335M & 1024 \\
+ & \modernbert  & English & Encoder & 149M & 768 \\
+\midrule
+\textbf{LLM } & \qwen  & Multilingual & Decoder & 4.0B & 2560 \\
+ & \tetrismall  & Multilingual & Prop. & Prop. & 1536 \\
+ & \tetrilarge & Multilingual & Prop. & Prop. & 3072 \\
+ & \geminiemb  & Multilingual & Prop. & Prop. & 3072 \\
+\midrule
+\textbf{Controls} & \enrandombert & English & Encoder & 110M & 768 \\
+ & \randombert & Multilingual & Encoder & 110M & 768 \\
+ & \random & N/A & N/A & N/A & 256 \\
+\bottomrule
+\end{tabular}
+\caption{Detailed comparison of embedding models across architectures and linguistic focus. Size labels and symbols denote parameter scales and language: \texttt{gray} (English), \texttt{white} (Czech), \texttt{black} (Multilingual/Proprietary). For models that support truncation via MRL, dimensions are the default/maximum output size.} 
+%\ml{zde 26 modelu, ale dal se pracije jen s 18 - proc??}}
+% v nove casti nepouzivam ceske embedding (5) a XLM-R zdalo se mi zastarale...
+\label{tab:model_comparison_detailed}
+\end{table}
+
+

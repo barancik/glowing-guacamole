@@ -1,95 +1,82 @@
-\chapter*{Introduction}
-\addcontentsline{toc}{chapter}{Introduction}
-
+\chapter{Introduction}
+\label{preface}
+%\addcontentsline{toc}{chapter}{Introduction}
 
 \chapquote{'E's not pinin'! 'E's passed on! This parrot is no more! He has ceased to be! 'E's expired and gone to meet 'is maker! 'E's a stiff! Bereft of life, 'e rests in peace! If you hadn't nailed 'im to the perch 'e'd be pushing up the daisies! 'Is metabolic processes are now 'istory! 'E's off the twig! 'E's kicked the bucket, 'e's shuffled off 'is mortal coil, run down the curtain and joined the bleedin' choir invisible!! THIS IS AN EX-PARROT!!}{Mr. Praline}{\cite{parrot}}
 
+The paragraph above is an iconic scene from Monty Python's Dead Parrot sketch, which is arguably one of the most famous examples of paraphrasing in popular culture. It vividly illustrates the extensive variety found within natural languages, showcasing the numerous ways in which a simple fact of a bird's demise can be expressed. It highlights the richness and diversity inherent in language usage.
 
-The paragraph above is a well-known scene from Monty Python's Parrot Sketch, which is arguably one of the most famous examples of paraphrasing in popular culture. This scene effectively illustrates the extensive variety found within natural languages, showcasing the numerous ways in which a simple fact of a bird's demise can be expressed. It highlights the richness and diversity inherent in language usage.
+In fact, according to Wikipedia \citep{wiki:death}, there are more than a hundred expressions related to death, including idioms, euphemisms, and slang. Although humans may appreciate and enjoy the linguistic diversity in various contexts such as poetry, humor, or everyday speech, this diversity makes interpretation and comprehension of the intended meaning more difficult for automated systems.  Despite substantial progress in recent years, even advanced models struggle to capture semantic equivalence when paraphrases involve structural reordering, idiomatic usage, or culturally dependent formulations \citep{michail-etal-2025-paraphrasus, zhou2024paraphraseidentificationdeeplearning}. For natural language processing (NLP) applications, the ability to recognize that diverse expressions have the same underlying concept remains a persistent challenge. 
 
-In fact, Wikipedia registers over 100 expressions related to death -- mostly idioms, euphemisms and slang.  \citep{wiki:death} While language speakers may appreciate and enjoy this abundance of linguistic richness in various contexts such as poetry, puns, or casual conversations, a wide range of expressions and variations related to a particular concept can make it more difficult for automated systems to precisely interpret and comprehend the intended meaning. Paraphrases remain a challenge for various automatic language processing tasks, including information retrieval, sentiment analysis, or natural language inference (NLI).
+We illustrate this issue with two NLP tasks: natural language inference (NLI) and machine translation (MT) evaluation. In NLI, models assess relationships between two texts, a \emph{premise} and a \emph{hypothesis}. The task is to determine whether the meaning of the hypothesis can be inferred from the premise based on their semantic similarity. The relationship is typically categorized as \emph{entailment}, \emph{contradiction}, or \emph{neutral}, depending on whether the hypothesis logically follows from, contradicts, or is independent of the premise \citep{dagan:2005}.
 
-In NLI\footnote{formerly known as recognizing textual entailment (RTE)}, an algorithm is provided with two texts - a \emph{premise} and a \emph{hypothesis}. The task is to determine whether the meaning of the hypothesis can be inferred from the premise, based on their semantic similarity. The algorithm aims to assess the relationship between the two texts, typically categorized as either \emph{entailment}, \emph{contradiction}, or \emph{neutral}. The objective is to capture the logical inference or lack thereof between the premise and the hypothesis using computational methods and semantic understanding. \citep{dagan:2005} 
-\todo{tu neco chybi!! proc jsou parafraze problematicke v NLI??? jako ze lexikalni metody nestaci}
+A major difficulty in NLI is the variability of linguistic expression: two sentences may convey the same meaning using entirely different lexical or syntactic structures (see \Cref{nli_examples}). Lexical overlap–based methods or surface-level similarity metrics often fail to recognize such paraphrastic relationships, as they rely primarily on word matching rather than deeper semantic understanding. Consequently, models must rely on contextual representations capable of capturing meaning beyond exact wording in order to correctly identify entailment and semantic equivalence. However, even modern embedding-based models may struggle in such cases, particularly when paraphrases involve subtle semantic distinctions or complex structural variation, as we show in further detail in \Cref{costra:results}.
 
+Similarly, automatic machine translation evaluation is challenging because a single source sentence can have many valid translations. During evaluation, a \textit{hypothesis} (the system-generated translation) is typically compared to a \textit{reference} translation produced by a human expert. However, there may be hundreds of thousands of correct ways to translate the same sentence \citep{bojar-scratching}, and many commonly used evaluation metrics, such as \bleu \citep{papineni-etal-2002-bleu}, fail to account for synonymous expressions or variations in word order. As a result, even a perfectly adequate and fluent translation may receive a low score, reflecting the metric’s reliance on surface-level string matching rather than semantic equivalence.
 
-\begin{figure*}[h]
-\begin{center}
-\begin{tabular}{ll}
- Less loud.   &  Please be quiet. \\
-  \hline
-Stop blaming John.  &    Quit holding John responsible. \\
- \hline
-And no one will be nicer.   &    And not a single person will act in a more kind manner. \\
-\end{tabular}
-\caption{Example of entailments from MultiNLI \citep{williams-etal-2018-broad}, the large dataset specifically designed to facilitate the development and evaluation of sentence understanding machine learning models.}
+\Cref{example_of_BLEU_malfunction} illustrates this issue, showing how a correct and semantically accurate translation can nevertheless receive a lower score due to the lexical difference from the reference. This problem is particularly pronounced in morphologically rich languages with relatively free word order, such as Czech \citep{bojar-tackling-sparse-data}. Consequently, the ability to handle paraphrasing and meaning variation becomes crucial for a reliable MT evaluation. In particular, the role of paraphrasing within MT evaluation constitutes the central motivation of this thesis.
+
+\begin{figure}[tb]
+\centering
+\normalsize 
+\begin{tabularx}{\linewidth}{XX} % 'X' columns automatically fill the space and wrap text
+\toprule
+\textbf{Premise} & \textbf{Hypothesis} \\
+\midrule
+\trans{Less loud.} & \trans{Please be quiet.}\\ \addlinespace
+\trans{Stop blaming John.} & \trans{Quit holding John responsible.} \\ \addlinespace
+\trans{And no one will be nicer.} & \trans{And not a single person will act in a more kind manner.}\\
+\bottomrule
+\end{tabularx}
+\caption{Examples of entailment from MultiNLI \citep{williams-etal-2018-broad}, a large dataset designed to facilitate the development and evaluation of NLI models.}
 \label{nli_examples}
-\end{center}
-\end{figure*}
+\end{figure}
 
-
-\begin{figure*}[h]
-\begin{center}
+\begin{figure}[tb]
+\centering
+\small
+\resizebox{\linewidth}{!}{%
 \begin{tabular}{ll}
- Source  &  \begin{tabular}{l}
-  	\textit{Banks are testing payment by mobile telephone} \\
-	\end{tabular}  \\
- \hline
- 
- Hypothesis & \begin{tabular}{llllll}
- 			\textit{Banky} & \textit{zkou\v sej\'i} & \textit{platbu} & 
- 			\textit{pomoc\'i} & \textit{mobiln\'iho} & \textit{telefonu} \\
- 			Banks & are testing & payment & with help & mobile & phone \\
-			\end{tabular} \\
- & \begin{tabular}{l}
-  	Banks are testing payment by mobile phone \\
-	\end{tabular} \\
-
- \hline
- Reference  & \begin{tabular}{llll}
- 			\textit{Banky} & \textit{testuj\'i} & \textit{placen\'i} & 
- 			\textit{mobilem} \\
- 			Banks & are testing & paying & by mobile phone \\
-			\end{tabular} \\
- &  \begin{tabular}{l}
-  	Banks are testing paying by mobile phone \\
-	\end{tabular}
- 
+\toprule
+\textbf{Source} &
+\textit{Banks are testing payment by mobile telephone} \\
+\midrule
+\textbf{Hyp.} &
+\begin{tabular}[t]{@{}llllll@{}}
+\foreign{Banky} & \foreign{zkoušejí} & \foreign{platbu} & \foreign{pomocí} & \foreign{mobilního} & \foreign{telefonu} \\
+\trans{Banks}   & \trans{are testing}& \trans{payment}  & \trans{by}       & \trans{mobile} & \trans{phone}
+\end{tabular} \\
+&
+\trans{Banks are testing payment by mobile phone} \\
+\midrule
+\textbf{Ref.} &
+\begin{tabular}[t]{@{}llll@{}}
+\foreign{Banky} & \foreign{testují} & \foreign{placení} & \foreign{mobilem} \\
+\trans{Banks}   & \trans{are testing} & \trans{paying}  & \trans{by mobile phone} \\
+\end{tabular} \\
+&
+\trans{Banks are testing paying by mobile phone} \\
+\bottomrule
 \end{tabular}
-\caption{In this example from WMT12 \citep{wmt12}, despite the hypothesis being grammatically correct and having the same meaning as the source sentence, there is only a single overlapping unigram between them. As a result, the hypothesis would receive a very low score when evaluated using n-gram overlap-based automatic evaluation metrics.}
+}
+\caption{In this example from  Workshop on Machine Translation (WMT) 2012 \citep{wmt12}, despite the hypothesis being grammatically correct and having the same meaning as the source sentence, there is only a single overlapping unigram between the hypothesis and the reference translation. As a result, the hypothesis would receive a very low score when evaluated using n-gram overlap-based automatic evaluation metrics.}
 \label{example_of_BLEU_malfunction}
-\end{center}
-\end{figure*}
+\end{figure}
 
-Similarly, automatic machine translation evaluation can encounter challenges due to the potential variability and diversity of correct translations for a single source sentence. During the evaluation process, a hypothesis (the output of the automatic translator) is typically compared to a reference sentence, which is the translation of the original sentence done by a professional translator.
+This thesis was originally proposed more than a decade ago, when the state-of-the-art in NLP was considerably different from that today. At that time, paraphrasing was considered a key strategy for addressing the variability of correct translations in  machine translation evaluation. Metrics such as \mn \citep{denkowski-lavie-2014-meteor} or \terp \citep{terp}  incorporated paraphrase tables and synonym matching to reduce the dependence on the exact word overlap. Another approach, to make string-based metrics more reliable, was the automatic paraphrasing of reference sentences to cover a wider range of acceptable translation variants. The first part of this thesis revisits this line of research, exploring ways to improve string-based evaluation through the use of paraphrasing resources and targeted reference expansion for Czech.
 
-However, \citep{bojar-scratching} shows that there are might be hundreds of thousands correct translations of a single Czech sentence. Many commonly used evaluation metrics, such as BLEU \citep{bleu}, fail to consider synonymous expressions and word order variants. As a result, even if a machine translation system produces a perfectly translated sentence, it may still be penalized by the evaluation metrics. \Fref{example_of_BLEU_malfunction} illustrates this issue, where a machine translation that is correct and accurate could receive a lower evaluation score due to the metrics' limitations in capturing semantic equivalence. This is especially problematic for~morphologically rich languages with free word order like the Czech language. \cite{bojar-tackling-sparse-data}
+Over the past decade, however, the field of machine translation evaluation has changed dramatically. Neural embedding-based metrics and large-language-model-based metrics (e.g., \bleurt \citep{sellam2020bleurt}, \comet \citep{rei-etal-2020-comet}, \textsc{GEMBA} \citep{kocmi-federmann-2023-gemba}) now achieve significantly higher correlation with human judgments, which largely reduces the need for explicit paraphrasing.
 
-There are several ways how to tackle this problem. Firstly, this penalization can be softened using more reference sentences. While many automatic machine translation evaluation metrics allow for the use of multiple reference translations, the standard practice is to utilize only a single reference sentence. This approach is prevalent due to practical considerations, as gathering multiple high-quality reference translations for each source sentence can be time-consuming and resource-intensive. \todo{citace}
+At the same time, embedding-based approaches represents a fundamentally different way of handling paraphrastic variation. Instead of enumerating discrete paraphrases or synonym lists, embeddings represent sentences as points in a continuous vector space, where semantically similar formulations are mapped to nearby regions. In this sense, embeddings implicitly capture a potentially unbounded set of alternative expressions, providing a more flexible and scalable representation of meaning than explicit paraphrase collections.
 
-The other way around is using a machine translation evaluation metric that employs other semantic resources such as paraphrases or embeddings. For the Czech language there is only one metric that takes into account synonymous phrases and word form variants, METEOR. \cite{meteor-wmt:2014}  Unfortunately as we show further its paraphrase sources are so noisy, it awards even sentences with paraphrases that are not grammatically correct, or are partly untranslated.
+Nevertheless, despite the clear advantages of modern evaluation metrics, string-based metrics remain widely used in research and shared tasks. In a large study, \cite{marie-etal-2021-scientific} showed that between 2010 and 2021 more than 100 new evaluation metrics were proposed, yet approximately 99\% of MT studies still relied on \bleu for system comparison. Among these newer metrics, only \texttt{RIBES} \citep{ribes:isozaki-etal-2010-automatic} and \chrf \citep{popovic-2015-chrf} have gained modest adoption, while \bleu, \ter \citep{ter} and \mn \citep{denkowski-lavie-2014-meteor} remained the most widely used ones. 
 
-\todo{Tu uz je to pomerne zastarale, chybi neuronove evaluacni metody, jako treba Comet}
+This situation has changed substantially since \citeyear{marie-etal-2021-scientific}. It has become more common to publish results using modern metrics such as \bleurt \citep{sellam-etal-2020-bleurt} and \comet \citep{rei-etal-2020-comet, rei-etal-2022-cometkiwi}, each of which has accumulated more than a thousand citations. There is also strong pressure to report additional metrics alongside \bleu, as recent analyses \citep{mathur-etal-2020-tangled, freitag-etal-2022-results} confirm that \bleu and other surface-level metrics often correlate poorly with human evaluation and urge the community to go beyond them.
 
-\cite{marie-etal-2021-scientific} highlighted an intriguing phenomenon within the field of machine translation evaluation. Despite the development of more than 100 new evaluation metrics (e.g., \cite{rei-etal-2020-comet}, \cite{BERTScore}, \cite{kocmi-federmann-2023-large} )between the years 2010-2021, a staggering 99\% of the research papers in machine translation continue to rely on BLEU to evaluate translation quality and rank systems. Remarkably, many of these newer metrics have demonstrated superior performance compared to BLEU, yet only two of them - RIBES \citep{ribes:isozaki-etal-2010-automatic} and chrF \citep{popovic-2015-chrf} have been used in more than two research publications. Meanwhile, the traditional metrics of BLEU \citep{bleu}, TER \citep{ter}, and METEOR \citep{meteor-wmt:2014} maintain their stronghold as the most frequently employed evaluation measures within the field. \todo{to platilo v 2021, plati to jeste?}
+However, \bleu remains widely used for several practical reasons: its simplicity and interpretability, comparability with previous work and the lack of transparency and trust in “black-box” neural evaluation models \citep{leiter2023explainable}. Furthermore, some reviewers  continue to require \bleu scores for publication, further reinforcing its continued use \citep{marie-etal-2021-scientific}.
 
-\todo{tu preformulovat}
-Many recent papers, eg. () show that BLEU is unsufficient metric for MT evaluation, so why is it still among the most common metrics? \todo{citace} show the following main reasons: comparability with previous models
+This thesis reflects both perspectives --- the traditional and the contemporary. The earlier chapters revisit paraphrasing as a once-key strategy for addressing the limitations of surface-based metrics. Although embedding-based methods reduce the need for explicit paraphrasing, paraphrasing remains a useful complementary strategy, particularly in settings where transparency, interpretability, or compatibility with traditional metrics is required.
 
-\cite{mathur-etal-2020-tangled} urge to stop using BLEU, TER and similar surface metrics created two decades ago.
+The later chapters shift toward the evaluation of sentence embeddings, as embedding-based metrics currently represent the state-of-the-art in MT evaluation. We introduce a dataset for thorough testing of Czech sentence embeddings and investigate which models provide the strongest foundation for evaluating Czech translations. Furthermore, we examine whether a high-quality embedding for translation evaluation can be identified solely on the basis of its ability to capture meaning and sentence-level similarity.
 
-%%% sem by chtel ten uvod z Towards - hlavne toho Marii
- which were created two decades ago, a trend that may allegedly have worsened in recent times. These surface-level metrics cannot (even) measure semantic similarity
-of their inputs and are thus fundamentally flawed, particularly when it comes to assessing the quality of recent state-of-the-art MT systems (e.g. Peyrard 2019; Freitag et al. 2022), raising
-concerns about the credibility of the scientific field. We argue that the potential reasons for this neglect of recent high-quality metrics include: (i) non-enforcement by reviewers; (ii) easier
-comparison to previous research, for example, by copying BLEU-based results from tables of related work (potentially a pitfall in itself); (iii) computational inefficiency to run expensive new
-metrics at large scale; (iv) lack of trust in and transparency of high-quality black box metrics. In this work, we concern ourselves with the last-named reason, and address the explainability
-of such metrics.
-
-%Tady zminit, ze uz jsou lepsi bLack box metriky, ale v praxi se moc nepouzivaji. (MArie) PRoc - jsou nevysvetlitelne... (Towards)
-
-
-In this thesis, wetake a different approach around this problem. 
-As the main task of an MT metric is essentially to decide whether a hypothesis is a paraphrase of a given reference sentence, we aim to achieve higher accuracy of machine translation evaluation by targeted paraphrasing of reference sentences. In other words, we explore the possibility of transforming the reference sentence automatically to a new one that is still grammatically correct and keeps its original meaning but at the same time it is closer in wording to the hypothesis.
-BLEU and other string-based metrics should perform much more reliable using these new custom-made references.
-
+Taken together, this thesis follows the field’s transition from paraphrase-driven fixes for string-based evaluation to embedding-based approaches that more directly model semantic similarity---while also acknowledging the continued practical and historical reliance on traditional metrics.

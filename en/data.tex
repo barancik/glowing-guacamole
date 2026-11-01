@@ -1,136 +1,119 @@
-\chapter{Data}
-\label{data}
-\addcontentsline{toc}{chapter}{Data}
+\chapter{Targeted Sentence Paraphrasing for MT Evaluation}
+\label{prehistory}
+%\addcontentsline{toc}{chapter}{Prehistory}
+Automatic evaluation of machine translation systems is sensitive to lexical overlap between system outputs and reference translations. As discussed in previous chapters, this leads to systematic bias against valid translations that differ lexically or syntactically from the reference, particularly in morphologically rich languages such as Czech. One way to mitigate this bias is to increase the diversity of reference translations by introducing paraphrastic variants that preserve meaning while varying the surface form.
 
-\section{Test Data}
+This chapter investigates \textit{targeted paraphrasing} of reference sentences as a method for reducing bias in automatic machine translation evaluation. We show that targeted paraphrasing can effectively increase the robustness of evaluation by reducing the mismatch between system outputs and reference translations. Unlike general-purpose paraphrasing, which aims to generate a broad range of alternative formulations, targeted paraphrasing focuses on producing reference variants that are lexically closer to system outputs while remaining grammatical and semantically equivalent. The goal is not to generate all possible paraphrases, but to selectively reduce evaluation bias by narrowing the gap between hypotheses and references.
 
-We use data sets from the English-to-Czech Translation Task of the Workshop on
-Statistical Machine Translation (WMT) from the years 2011 to 2014.
+In this chapter, we present several techniques for the targeted paraphrasing of Czech sentences to improve machine translation evaluation. The chapter is organized as follows. Before exploring different paraphrasing methods, \Cref{prehistory:data} introduces the datasets used across all experiments in this chapter. The initial method, described in \Cref{substitution}, adopts a simple substitution strategy directly inspired by \cite{kauchak}. This approach involves the substitution of words and phrases in reference sentences using paraphrase tables, while ensuring grammatical correctness and the original meaning of the resulting sentences. In \Cref{parmesan}, we apply this method to propose a new machine translation evaluation metric.
 
-All of these datasets consist of one file with the original English source sentences,
-several files with Czech hypotheses (outputs of MT systems) and one file with corresponding 
-reference sentences. Data from each year of the WMT competition differ in the 
-number of MT systems and the length of the source files (see \Tref{wmt-data}). 
+The subsequent sections explore the use of machine translation systems for targeted paraphrasing. There are notable similarities between translation and paraphrasing; both aim to preserve the meaning of a sentence while changing its form. While translation focuses on converting text from one language to another, paraphrasing achieves the same objective within a single language by using a different choice of words or syntactic structures. Both processes require a thorough understanding of the original content and the ability to accurately express the intended message while considering linguistic nuances, cultural context, and the target audience. Machine translation, however, benefits from a much wider variety of accessible tools and resources compared to the relatively limited availability of paraphrasing tools. Given this disparity, it is natural to consider repurposing existing machine translation systems for targeted paraphrasing within a single language.
 
-%We perform morphological 
-%analysis and tagging of the MT outputs and the reference sentences using 
-%Morphodita \citep{morphodita}. \todo{nekde morphodita, nekde jeste morce}
+The subsequent sections explore the use of machine translation systems for targeted paraphrasing. Translation and paraphrasing share a common objective: preserving meaning while altering surface form. While translation operates across languages, paraphrasing achieves this within a single language through lexical and syntactic variation. Because machine translation benefits from a wide range of mature tools and resources, it is natural to consider repurposing these systems for targeted paraphrasing.
 
-\begin{table}[h]
+\Cref{moses} presents experiments conducted using the freely available statistical machine translation (SMT) system Moses. Although its results are inconclusive, analysis of the generated reference sentences reveals systematic problems that motivate an alternative approach. \Cref{treex} therefore introduces targeted paraphrasing with components of a rule-based translation system implemented in the NLP framework Treex, which successfully mitigates many of the issues observed with Moses.
+
+\section{Data}
+\label{prehistory:data}
+We use two types of data: (i) data from the Workshop on Machine Translation (WMT) to evaluate our experiments, and (ii) paraphrase tables, which provide the source material for targeted paraphrasing.
+
+\subsection{Test Data}
+Our experiments are conducted on several datasets from the English-to-Czech translation task of the WMT shared translation campaigns held between 2011 and 2014.
+
+Each dataset consists of one file containing the original English source sentences, several files with Czech hypotheses (outputs produced by various MT systems), and one file with corresponding reference translations. The datasets vary across years in the number of participating MT systems and the official evaluation methodology, as shown in \Cref{wmt-data}. All hypotheses and reference sentences were morphologically analyzed and tagged using MorphoDiTa \citep{morphodita}. 
+
+\begin{table}[tb]
 \centering
-\begin{tabular}{l|l|l|l|l}
-      & systems & sentences & official score & publication\\
-\hline
-WMT11 & 14/10    & 3003      & “$ >= $ others”      & \cite{wmt11}  \\
-WMT12 & 13          & 3003      & “$ > $ others”      & \cite{wmt12}  \\
-WMT13 & 14/12    & 3000      & \textit{Expected Wins} & \cite{wmt13}  \\
-WMT14 & 10          & 3003      & \textit{TrueSkill}   & \cite{wmt14}
+\begin{tabular}{ccccl}
+\toprule
+year  & systems & sentences & gold standard & publication\\
+\midrule
+WMT11 & 14/10   & 3003      & “$ >= $ others”      & \cite{wmt11}  \\
+WMT12 & 13      & 3003      & “$ > $ others”      & \cite{wmt12}  \\
+WMT13 & 14/12   & 3000      & \textit{Expected Wins} & \cite{wmt13}  \\
+WMT14 & 10      & 3003      & \textit{TrueSkill}   & \cite{wmt14} \\
+\bottomrule
 \end{tabular}
-\caption{Overview of WMT datasets. Number of systems translating from English 
-to Czech (all MT systems / systems that were manually evaluated), number of 
-source sentences and the official method for computing the absolute human 
-judgement score.}
+\caption{Overview of the WMT English–Czech datasets used in \Cref{prehistory}. The number of systems translating from English to Czech (total systems / manually evaluated systems), the number of source sentences, and the official method used to compute absolute human judgment scores (“gold standard”). For implementation details, see \Cref{metaevaluation}.}
 \label{wmt-data}
 \end{table}
 
-During the manual evaluation of WMT competitions, human judges fluent in both
-the source and the target language scores five hypotheses from the best to
-the worst translation. Thus, the human evaluation of hypotheses is available 
-as~a~relative ranking of performance of five systems for~a~sentence. 
+As mentioned in \Cref{background}, during this period the manual evaluation of translated sentences was performed using the relative ranking method. However, the procedure for computing the absolute system scores varied from year to year as shown in \Cref{wmt-data}. We refer to these official WMT scores as the \emph{gold standard}. Therefore, to make our evaluation internally consistent, we additionally compute a common absolute score for every year. Specifically, we adopt the “$ >$ others” method \citep{bojar-grains}, which served as the WMT12 official system score. Throughout the whole \Cref{prehistory}, we refer to this method as the \emph{silver standard}.
 
-There are many ways to compute the absolute system score from this relative
-ranking. The official methods for each year are presented in \Tref{wmt-data} 
-and we refer to these as the \textit{gold standard}. The official method is
-different for every year. Therefore, to make our evaluation internally 
-consistent, we also compute another absolute score for every year using the 
-“$ >$ others” method \citep{bojar-grains}, which was the WMT12 official system
-score. This score is computed simply as $\frac{wins}{wins+loses} $, i.e., the 
-score is~based on~how frequently the system is judged to be better than 
-other systems, ties among several systems are ignored. We refer to this 
-interpretation of human judgments as a \textit{silver standard} to distinguish
-it from the official system scores. % todo: chcu to tu jeste zduvodnit, proc > others??
+\subsection{Czech Paraphrase Tables}
+\label{sect:paraphrase-tables}
+To the best of our knowledge, we considered all major available sources of Czech paraphrases at the time of our study. These include the \textit{Czech WordNet} \citep{czech-wordnet}, which provides a structured repository of synonyms. The database was constructed semi-automatically using electronic bilingual dictionaries, with candidate synsets undergoing manual review. However, its structure largely mirrors the English WordNet, and it exhibits known issues related to word-sense disambiguation.
 
-The performance of an evaluation metric in MT is commonly computed as the
-Pearson correlation coefficient or alternatively as the Spearman rank 
-correlation between the automatic metric and human judgment. 
+Furthermore, the coverage of Czech WordNet is limited and insufficient for the scale required in our experiments. To address this limitation, we adopt \textit{\mpt} \citep{meteor-tables} as an alternative resource. While these tables are substantially larger, they are inherently noisy due to their automatic construction. 
 
-The Pearson correlation coefficient $\rho$ is defined by the following formula:
-
-\begin{equation*}
-\rho(H,M) = \frac{ \sum_{i=1}^{n}{(H_i - \tilde{H})(M_i - \tilde{M})}}{ \sqrt{ \sum_{i=1}^{n}{(H_i - \tilde{H})^2} }  \sqrt{ \sum_{i=1}^{n}{(M_i - \tilde{M})^2} } } 
-\end{equation*}
-
-where $H$ is the vector of human scores (i.e. gold or silver standard here) and 
-$M$ is the vector of corresponding scores predicted by a certain metric. 
-$\tilde{H}$ a $\tilde{M}$ are their means, respectively. 
-
-The Spearman correlation coefficient $r_{s} $ is defined as the Pearson 
-correlation coefficient between the rank variables -- all human scores and  
-metric’s scores of MT systems are converted into ranks $r(H)$ and $r(M)$.
-
-\begin{equation*}
-r_{s}(H,M) = \rho(r(H),r(M))
-\end{equation*}
-
-Both~correlations estimate the linear dependency between two sets of values and 
-range from -1 (perfect negative linear relationship) to 1 (perfect linear correlation). 
-
-In our experiments, we use the Pearson correlation coefficient as it takes into 
-account the distances between the system scores, thus it should be more 
-reliable for similarly evaluated systems \citep{machacek-bojar-2014-results}. 
-\todo{tu to jeste trochu rozsirit, kdyz uz
-to tu je vysvetleny - ze Spearman ignoruje jak moc jsou systemy od sebe vzdaleny}
-
-%
-%WMT13
-%We measured the quality of system-level metrics’ scores using the Spearman’s rank correlation coefficient $\rho$. For each direction of translation we converted the official human scores into ranks. For each metric, we converted the metric’s scores of systems in a given direction into ranks. Since there were no ties in the rankings, we used the simplified formula to compute the Spearman’s $\rho$. 
-%
-%\begin{equation*}
-%r_{s} = 1 -  \frac{6\sum{d_i^{2}}}{n(n^{2}-1)} 
-%\end{equation*}
-%where $d_{i}$ is the difference between the rank for system$_{i}$ and n is the number of systems. The possible values of range between 1 (where all systems are ranked in the same order) and -1 (where the systems are ranked in the reverse order). 
-%
-%\begin{equation*}
-%r_{s} = r_{p}(r(H_{i}),r(M_{i}))
-%\end{equation*}
-
-\section{Sources of Czech Paraphrases}
-We use the following available sources of Czech paraphrases.
-
-\subsection{Czech WordNet}
-Czech WordNet \citep{czech-wordnet} was created (by NLP Centre at the faculty of Informatics, Masaryk University ) as part of the EuroWordNet project \todo{citace}. 
-It's aim was to build a semantic network in several languages that share one common core structure.
-
-It contains 28,201 synsets, each synset represents a word sense and lists words and phrases which can be used to express the meaning. 
-Synsets can include a definition of its meaning but only few have it filled.
-Recently, linguistic students were asked to write missing definitions, however they are not included in the Czech WordNet yet. \citep{Rambousek:2017}
-
-Unfortunately, this original, larger version of Czech Wordnet is only available under closed and paid licence through the ELDA/ELRA agency. 
-Therefore, we adapted slightly smaller and corrected version  -- Czech WordNet 1.9 PDT \citep{czech_wordnet_pdt}, which is publicly available is the LINDAT/CLARIN repository.\footnote{http://hdl.handle.net/11858/00-097C-0000-0001-4880-3} It contains 23,094 synset with nouns, verbs, adjectives, and partly adverbs, 7028 of them contains several entries - paraphrases.
-
-Czech WordNet was derived from the Princeton WordNet \citep{wordnet,fellbaum98wordnet} by automatic translation followed by manual control. 
-This method has several disadvantages \citep{1489838} -- even though most of the paraphrases it contains are very high quality, there are also multiword expressions that are not fixed phrases. Next to commonly used words,
+It should be noted that we did not integrate the Paraphrase Database (PPDB) \citep{ppdb, pavlick-etal-2015-ppdb}, as it was released shortly after the completion of our experiments.
 
 
-   \begin{tabular}{lllll}
-  	ambulance (798) & sanitka (1295) & pohotovost (1304) & záchranka (957) & sanita (138) \\ % jde to prelozit i jinak?? vsechno je to ambulance
+\subsubsection{Czech WordNet}
+Czech WordNet, developed by the NLP Centre at the Faculty of Informatics, Masaryk University, is part of the EuroWordNet project \citep{eurowordnet}. Its primary objective is to create a semantic network that connects multiple languages through a shared core structure.
+
+Czech WordNet contains 28,201 synsets, each representing a set of words or phrases that share an associated meaning within a given context. While some synsets include glosses (clarifying their meanings), the majority do not, as the initial focus was on establishing semantic relations rather than providing exhaustive lexical definitions. Efforts to fill these gaps have been reported by researchers such as \citet{Rambousek:2017}, who involved linguistics students in drafting missing definitions. However, these definitions have not yet been fully integrated into the released version of Czech WordNet.
+
+The original, large version of Czech WordNet is available only under a closed, paid license distributed by the ELDA/ELRA agency. Therefore, in our experiments we use a smaller, corrected version --- Czech WordNet 1.9 PDT \citep{czech_wordnet_pdt}, which is publicly available in the LINDAT/CLARIN repository.\footurl{http://hdl.handle.net/11858/00-097C-0000-0001-4880-3} This version contains 23,094 synsets covering nouns, verbs, adjectives, and partly adverbs; 7,028 synsets include multiple entries, which can be considered paraphrases.
+
+Czech WordNet was developed by mapping entries from existing electronic bilingual dictionaries to the Princeton WordNet \citep{wordnet,fellbaum98wordnet}, a process executed in several iterative cycles of automatic association and manual correction. While this process allowed for rapid creation of the database, it introduced several documented disadvantages \citep{1489838}. Because the mapping relied on bilingual dictionary equivalents, the resulting synsets often inherited the English structural hierarchy, which does not always align with Czech lexical nuances. This led to persistent issues with word-sense disambiguation and the inclusion of non-idiomatic multi-word expressions that function as literal descriptions rather than true lexical units, for example, \samppair{hřebíček na papír}{a little nail for paper}, \samppair{kára s jablky}{cart with apples} or \samppair{zapékaná klobása}{baked sausage}.
+
+At the same time, Czech WordNet includes many useful paraphrases for frequently used words (such as \foreign{ambulance},  \foreign{sanitka}, \foreign{pohotovost}, \foreign{záchranka}, \foreign{sanita}, which can all be translated as \trans{an ambulance}). However, it also contains archaic or rarely used phrases, which may limit its applicability in contemporary MT evaluation. Furthermore, certain synsets — particularly those referring to proper names (e.g., the apostles as \trans{Matthew}-\trans{Saint Matthew}-\trans{Saint Matthew the Apostle}) were left untranslated.  Examples of synsets containing rarely used or even erroneous entries are presented in \Cref{divny_wordnet}.
  
-	\end{tabular} \\
 
-
- there are many paraphrases of archaic or rarely used words in the Czech language and several synsets (with names of apostles) were left untranslated for some reason.
-\Fref{divny_wordnet} shows examples of WordNet synsets.
-
-\begin{figure*}[tb]
+\begin{figure}[tb]
 \begin{center}
+    \begin{tabular}{rl}
+    \toprule
+    \multicolumn{2}{c}{Czech WordNet paraphrases} \\
+    \midrule
+   \medskip
+       \begin{tabular}{r}
+          \foreign{monocykl} (0)  \\
+          \trans{unicycle}    \\ 
+        \end{tabular}
+    &  
+       \begin{tabular}{l}
+            \foreign{jednokolový velocipéd} (0)  \\
+            \trans{single-wheeled velocipede}   \\ 
+        \end{tabular}  \\
+     \midrule
+        \begin{tabular}{r}
+          \foreign{celeróza} (0)  \\
+          \trans{celerosis}    \\ 
+        \end{tabular}
+    &  
+       \begin{tabular}{l}
+            \foreign{kukuřičný cukr} (0)  \\
+            \trans{corn sugar}     \\ 
+        \end{tabular}  \\
+   \midrule
+         \begin{tabular}{r}
+           \foreign{cheeseburger} (59) \\
+           \trans{cheeseburger} \\ 
+        \end{tabular}  
+    &  
+       \begin{tabular}{l}
+            \foreign{smažený sýr v housce}  (1)  \\
+            \trans{fried cheese in a bread roll}     \\ 
+        \end{tabular}  \\
+     \midrule
 
-
-	  \begin{tabular}{rl}
-  	\textit{monocykl}/unicycle (0)  &  \textit{jednokolový velocipéd}/single-wheeled velocipede (0) \\
-  	\textit{celeróza}/? (0)  & \textit{kukuřičný cukr}/corn sugar (0) \\\
-    \textit{cheeseburger} (59) & \textit{smažený sýr v housce}/fried cheese in a bread roll (1) \\
-   	\textit{sponka}/clip (329) & \textit{hřebíček na papír}/small paper nail (0) \\ \todo{zkusit toto vypatrat}
-	\end{tabular} \\
+           \begin{tabular}{r}
+           \foreign{sponka} (329) \\
+           \trans{clip}    \\ 
+        \end{tabular}
+    &  
+       \begin{tabular}{l}
+            \foreign{hřebíček na papír} (0) \\
+            \trans{small paper nail}    \\ 
+        \end{tabular}  \\
+   \bottomrule 
+  	\end{tabular} \\
+\caption{Examples of the rare paraphrases in the Czech WordNet. The number in parentheses represents a frequency of the word or phrase in the Czech National Corpus SYN2020 \citep{syn2020}.}
+\label{divny_wordnet}
+\end{center}
+\end{figure}
 
 
 %ambulance (798'), sanitka (1295), pohotovost (1304), záchranka (957), sanita (138) 
@@ -146,125 +129,156 @@ This method has several disadvantages \citep{1489838} -- even though most of the
 %topinambur (39), jeruzalémský artyčok (2)
 %sponka (329), hřebíček na papír (0) 
 
-\caption{Example of the rare, archaic paraphrases in the Czech WordNet.
-The number in parentheses represents a frequency of the word or phrase in the Czech National Corpus Syn2020. \citep{syn2020}}
-\label{divny_wordnet}
-\end{center}
-\end{figure*}
+Due to its limited size and many rarely used words, Czech WordNet proves insufficient for automatic paraphrasing of reference sentences. In a simple experiment focused on identifying paraphrases between translation hypotheses and their corresponding reference sentences from WMT12 and WMT13, Czech WordNet produces, on average, only one paraphrase per four sentence pairs (see \Cref{number_of_substitutions}). To address this limitation, we turn to a larger, automatically created paraphrase database, namely \cmt.
 
-Czech WordNet is due to its size and infrequent words insufficient for automatic paraphrasing of reference sentence --
-\todo{see section X, where it find a paraphrase in every fifth sentence.}
-For that reason, we employ larger, automatically created paraphrase databases - Meteor tables and PPDB.
- 
-\subsection{Meteor tables} %two large-scale collections of paraphrases
-\label{meteori}
-Meteor tables were constructed as a part of machine translation evaluation metric METEOR-NEXT \citep{meteor-tables}. 
-Apart from Czech, they are available in other four other languages - English, German, French and Spanish. 
-They all were constructed automatically from parallel data via a pivot phrase method \citep{pivoting}, i.e, to put it simply --  
-the more often two phrases translate to a same foreign phrase often, the more likely they are paraphrases of each other. \todo{zminit skore a jak se pocita!!! - pouzivam dale}
-
-The Czech Meteor tables are significantly larger than Czech WordNet -- they contain 756,113 phrase pairs. 
-They were acquired pivoting through English on Europarl and CzEng \citep{czeng10:lrec2012}. 
-However, due to the automatic method of construction, they contain a lot of noise. 
-There are several methods how noise can be introduced -- it may exist already in the source data (wrongly aligned sentences), it may be introduced by phrase aligment method or it can be as simple as homonymy. 
-\todo{ukazat jak vznikaji chybne parafraze diky pivot metode}
-
-
-The noise is particularly apparent among paraphrases with low pivot score and among multi-word paraphrases. \Fref{meteor_noise} shows examples of noise in the Czech Meteor tables. 
-Among one-word paraphrases the noise is sparser, but there are still pairs like \textit{1873} - \textit{pijavice} (a leech) or \textit{afgh\'{a}nci} (Afghans) - \textit{š\v{t}astně} (happily) identified as synonyms. 
-Another disadvantage is that 28\% of all synonymous pairs were just different word forms of the same lemma.
-
-\begin{figure*}[tb]
+\begin{table}[tb]
 \begin{center}
-
-	  \begin{tabular}{rll}
-  	\textit{svého názoru}  & (its opinion) and \textit{šermovat rukama a mlátit neviditelného} (to flail one's arms and to beat the invisible one) & ?\\
-  	\textit{vědecký pracovník v} (researcher in)  & \textit{z vnitřku almary ozval zvuk} (there was a sound from inside of the wardrobe) & \\
-    \textit{nemoudré} (unwise) & \textit{okrouhlá skla} (round glasses) & 0.01\\
-   	\textit{důsledků takového} (implications of such an) & implications of such an & 0.4\\ 
-    \textit{na poloostrově} (in a peninsula) -- \textit{šimpanzím mlékem} (milk of a chimpanzee) & ? \\
-    \textit{gates} -- \textit{vrata} (gates)  & ? \\
-    \textit{1873} -- \textit{pijavice} (a leech) & ? \\ 
-    
-   \end{tabular}
-
-\caption{Example of the noise in the Czech Meteor Tables. The number represents the Meteor score of the phrase pair.}
-\label{meteor_noise}
+\begin{tabular}{lccc}
+\toprule
+& \textbf{WMT12} & \textbf{WMT13} & \textbf{average} \\
+\midrule
+Czech WordNet 1.9 PDT  &  0.26 &  0.22 & 0.23\\
+\fm   & 1.53 &  1.29 & 1.41\\
+their union  & 1.59 &  1.34 & 1.46\\
+\bottomrule
+\end{tabular}
+\caption{The average number of word pairs identified as~paraphrases per sentence pair consisting of a~hypothesis and a~corresponding reference sentence.
+}
+\label{number_of_substitutions}
 \end{center}
-\end{figure*}
+\end{table}
 
-We attempt to filter the noise from the Czech Meteor tables with two different methods. 
-The first one is based on manual error analysis, and it is applied to one-word pairs only. 
-The second method is fully automatic and can be implemented for all data; however its results are inconclusive. 
-Therefore, we employ only the first method in the rest of our experiments.
+\subsubsection{\meteor paraphrase tables} 
+\label{meteori}
+The \meteor paraphrase tables were created as a resource for the \mn machine translation evaluation metric \citep{meteor-tables}. They are available for five languages: Czech, English, German, French, and Spanish. For languages lacking direct support, \cite{denkowski-lavie-2014-meteor} introduced an automatic tool for extracting paraphrase tables from parallel corpora.
 
-\subsubsection{Filtered Meteor} 
+All \meteor paraphrase tables are automatically generated from parallel data via the \textit{pivot phrase method} \citep{pivoting}. This method is based on a simple principle: if two phrases in a source language ($s_1,s_2$) frequently translate to the same phrase ($f$) in a \textit{pivot language} (typically English), they likely share a similar meaning. The total probability of $s_2$ paraphrasing $s_1$, also called a \emph{pivot score} (PS), is given as the sum over all $f$:
 
-\paragraph{Error-analysis Based Filtering}
-During experiments with paraphrasing, we manually examined rephrased sentences and identified most common errors.
-Based on our observation, we perform the following operations on pairs of one-word paraphrases to from the Meteor tables:
+\begin{equation*}
+P(s_2 \mid s_1) = \sum_{f} P(f \mid s_1) \, P(s_2 \mid f), 
+\end{equation*}
+where the sum aggregates over all pivot phrases $f$ that co-occur with both source phrases in the parallel data. The individual probabilities are derived from phrase alignment frequencies in the training corpora, Europarl \citep{koehn-2005-europarl} and CzEng 1.0 \citep{czeng10:lrec2012}.
+
+All pairs of paraphrase candidates and their pivot scores are collected in the resulting tables. Higher scores indicate stronger evidence that the two phrases are valid paraphrases: the more frequently both $s_1$ and $s_2$ align to the same pivot phrase(s), and the more consistent these alignments are across the corpus, the higher the pivot score.
+
+While the original Czech \mpt introduced in \cite{meteor-tables} contains 756,113 paraphrase pairs, our experiments utilize a later release (version 1.3; \citealp{meteor-wmt:2011}), which introduces a more compact, filtered subset of 683,584 pairs. However, even with this internal filtering, considerable noise remains in the resulting pairs. For instance, 28\% of all entries consist merely of different word forms of the same lemma rather than true lexical alternatives. While this redundancy facilitates the \mn flexible matching, it also significantly limits the lexical diversity of the tables.
+
+Several factors contribute to this noise, including misaligned sentences in the source corpora, errors in phrase alignment, and semantic ambiguity. The last type is particularly evident in pairs such as \samppair{znásilnění}{rape; as a form of sexual assault} vs. \samppair{řepka}{rape; as a cultivated plant} or \samppair{netopýr}{bat; as a flying mammal} vs. \samppair{pálka}{bat; as a sport equipment}, where words with identical surface forms in the pivot language but distinct meanings are incorrectly identified as paraphrases. 
+
+Noise is most evident among low-pivot-score pairs and multi-word expressions; however, it also occur among one-word entries. We present examples in \Cref{meteor_noise}. 
+
+
+\begin{figure}[tb]
+\centering
+\resizebox{\textwidth}{!}{%
+	  \begin{tabular}{ccc}
+      \toprule
+      \multicolumn{2}{c}{\cmt paraphrases} & PS \\
+      \midrule
+     \begin{tabular}{c}
+          \foreign{svého názoru}  \\
+          \trans{its opinion}
+     \end{tabular}
+  	   & 
+       \begin{tabular}{c}
+         \foreign{šermovat rukama a mlátit neviditelného}  \\
+         \trans{to flail arms and to beat an invisible one}
+     \end{tabular}
+        & 
+        0.01\\
+    \midrule
+     \begin{tabular}{c}
+          \foreign{vědecký pracovník v oboru}  \\
+          \trans{researcher in a field}
+     \end{tabular}
+         &
+         \begin{tabular}{c}
+         \foreign{z vnitřku almary ozval zvuk}  \\
+         \trans{a sound came from the wardrobe}
+     \end{tabular} 
+     & 0.03 \\
+    \midrule
+     \begin{tabular}{c}
+          \foreign{nemoudré}  \\
+          \trans{unwise}  
+     \end{tabular}
+  	   & 
+       \begin{tabular}{c}
+         \foreign{okrouhlá skla}  \\
+         \trans{round glasses}
+     \end{tabular}
+         & 0.01\\
+     \midrule
+     \begin{tabular}{c}
+          \foreign{důsledků takového}  \\
+          \trans{implications of such}
+     \end{tabular}
+  	   & 
+       \trans{implications of such an}
+         & 0.4\\ 
+   \midrule
+    \begin{tabular}{c}
+          \foreign{na poloostrově}  \\
+          \trans{in a peninsula}
+     \end{tabular}
+  	   & 
+       \begin{tabular}{c}
+         \foreign{šimpanzím mlékem}  \\
+         \trans{with a milk of a chimpanzee}
+     \end{tabular} & 
+     0.01\\
+    \midrule
+    \begin{tabular}{c}
+          \foreign{1873}  \\
+     \end{tabular}
+  	   & 
+       \begin{tabular}{c}
+         \foreign{pijavice}  \\
+         \trans{leech}
+     \end{tabular} & 
+     0.02\\   
+    \midrule
+    \begin{tabular}{c}
+          \foreign{afghánci}  \\
+          \trans{Afghans}
+     \end{tabular}
+  	   & 
+       \begin{tabular}{c}
+         \foreign{šťastně}  \\
+         \trans{happily}
+     \end{tabular} & 
+     0.01\\   
+
+     \bottomrule
+   \end{tabular}
+}
+\caption{Example of the noise in \cmt. The PS column represents the pivot score.}
+\label{meteor_noise}
+\end{figure}
+
+We attempt to minimize non-paraphrastic pairs in \cmt using two different methods. The first one, applied specifically to pairs of one-word paraphrases, is based on manual error analysis, and we refer to the resulting tables as \fm. The second method is fully automatic and applicable to all data; however, its results are inconclusive. This automatic filtering method is detailed further in Appendix \nameref{filtering-section} as it depends on paraphrasing methods that need to be introduced first. 
+In this section, we present only the first method, which is applied consistently in all our experiments.
+
+\subsubsection{Filtered Meteor}
+\label{filtered_meteor}
+Based on our observations, we perform the following operations on pairs of one-word paraphrases from \mpt:
+
+\begin{enumerate}
+    \item \textbf{morphological analysis:} We perform morphological analysis using Morče \citep{morce:2007}, a tool for morphological disambiguation of Czech text, and replace word forms with their lemmas.
+    \item \textbf{identical lemmas removal:}  Pairs with identical lemmas are eliminated.
+    \item \textbf{different POS removal:}  Pairs with different parts of speech are removed.
+    \item \textbf{unknown words removal:}  Pairs involving words not known to the morphological analyzer, typically foreign words, are eliminated.
+\end{enumerate}
+
+However, an exception to the last two rules was made for paraphrases consisting of numerals and corresponding digits (e.g., \samppair{osmnáct} {eighteen} and \textit{18}). These pairs, denoted by the part of speech C for numerals and X for unknown words, were preserved due to their prevalence and quality as paraphrases.
+
+By applying these rules, we successfully reduced the initial pool of over 160,000 pairs of one-word paraphrases to a refined set of 32,154 pairs of lemmas, effectively addressing all examples of inadequate one-word paraphrases from \Cref{meteor_noise}.
+
+We use both filtered and unfiltered versions of the Czech \meteor paraphrase tables in our experiments. To avoid ambiguity, we adopt the following labelling throughout this work:
 
 \begin{itemize}
-\item morphological analysis using the Morče tool \citep{morce:2007} and replacing of word forms with their lemmas; 
-\item removing pairs of identical lemmas;
-\item removing pairs with a different part of speech;
-\item removing pairs of unknown words (typically foreign words).
+    \item \textbf{\wordnet{}:}  Czech WordNet 1.9 PDT. Used for both one-word and multi-word substitution experiments.
+    \item \textbf{\fm{}:} Lemmatized and filtered subset of \cmt containing 32k pairs of one-word paraphrases. Used exclusively in one-word paraphrasing experiments.
+    \item \textbf{\cmpt{}:} The original, unfiltered Czech \textsc{Meteor} paraphrase tables (684k pairs). Used for multi-word experiments. It is used in scenarios with multi-word paraphrases.
+    \item \textbf{\mn{}:} The machine translation evaluation metric. Unless otherwise specified, it utilizes its default \cmpt{} resource for internal matching.
 \end{itemize}
-
-The last two rules have a single exception -- paraphrases consisting of numeral and corresponding digits, e.g., \textit{osmnáct} (eighteen) and \textit{18}.\footnote{
-\textit{0smnáct} has the part of speech \textit{C}, which is designated for numerals, \textit{18} is marked with \textit{X} meaning it is an unknown word for the morphological analyzer.} 
-These paraphrases are very common in the data. 
-
-This way, we reduce more than 160,000 pairs of one-word paraphrases to only 32,154 pairs of lemmas using the error-analysis based filtering. 
-We call this lemmatized and reduced paraphrase tables  \emph{filter Meteor} from now on.
-All examples of bad one-word paraphrases described above are removed.
-
-
-\paragraph{Automatic Filtering}
-Filtering strategies described in~this section consist of assigning a~score to~each paraphrase pair. 
-We then gradually remove paraphrases with low scores and measure the correlation of~human judgment and BLEU computed on references created using the reduced paraphrase tables. 
-We use three different scores -- paraphrase scores from Meteor, lexical translation probabilities and random score as a~baseline.
-
-The first, straightforward approach is to use the paraphrase scores already provided in~Meteor. 
-They are based on~phrasal translation probabilities which correspond to~a~paraphrase probability in~the pivoting model.
-
-Second, we propose an alternative scoring based on pivoting and lexical translation scores:
-
-$$\text{lex\_p}(\mathbf{s},\mathbf{t}) = \sum_{s \in \mathbf{s}}\sum_{t \in\mathbf{t}}\sum_{pivot}\text{lex}(s|pivot)\text{lex}(pivot|t),$$
-
-where $\text{lex}$ are lexical translation probabilities computed using maximum likelihood estimation from single best word alignment computed on Czech-English parallel corpus Czeng 1.0 \citep{czeng10:lrec2012}, and pivots are all words aligned to both $s$ and $t$ in the parallel data. 
-We refer to this score as \emph{lexical pivoting}.
-
-As the third score, we use a random selection as the baseline -- paraphrases are shuffled and we then use the first 10, 20,$\ldots$ percent of them.
-
-We evaluate the filtering techniques on the WMT12 data using paraphrasing techniques \emph{one-word-only} and  \emph{multi-word-first}, which are described further in \Sref{substitution}.
-First, we attempt to filter one-word paraphrases and use the cleaner paraphrase table in the \emph{one-word-only} paraphrasing strategy. 
-Note that our paraphrase table has already been filtered using the error-analysis based filtering described above.
-
-\begin{figure}[tb]
-\begin{center}
-\includegraphics[scale=0.55]{../img/filtering-lexical-cropped.pdf}
-\caption{Comparison of automatic filtering techniques for~\emph{one-word} paraphrases on WMT12 data.}
-\label{fig:filtering-lexical}
-\end{center}
-\end{figure}
-
-\begin{figure}[tb]
-\begin{center}
-\includegraphics[scale=0.55]{../img/filtering-mwe-cropped.pdf}
-\caption{Automatic filtering of multi-word paraphrase for~the \textit{multi-word-first} scenario on WMT12 data.}
-\label{fig:filtering-mwe}
-\end{center}
-\end{figure}
-
-\Fref{fig:filtering-lexical} shows the performance of different filtering techniques for one-word paraphrases. 
-Relying on the Meteor scores proves worse than random selection. 
-Using lexical pivoting, we can keep a high correlation even if we throw away as much as 80\% of the paraphrases, however we do not improve (by~a~relevant margin) upon the baseline correlation of 0.802 achieved by \emph{one-word-only} paraphrasing with the full paraphrase table.
-
-We evaluate the best-performing technique also in the  \emph{multi-word-first} scenario where we use it for filtering multi-word paraphrases (see \Fref{fig:filtering-mwe}). 
-As we reduce the number of paraphrases, we observe a considerable improvement of~correlation, however we never outperform \textit{one-word-only} or \textit{one-word-first}. 
-In this case, the filtering simply mitigates the damage done by the multi-word paraphrases. 
-%We cannot hope to achieve a higher score without a~more fine-grained grip on what a~good multi-word paraphrase is.
-
-
-\subsection{PPDB} 

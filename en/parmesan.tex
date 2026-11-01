@@ -1,521 +1,352 @@
-\chapter{Parmesan}
+\section{\parmesan}
 \label{parmesan}
-\addcontentsline{toc}{chapter}{Parmesan}
+%\addcontentsline{toc}{section}{Parmesan}
 
-This chapter,\footnote{This chapter is based on the article \citep{parmesan:2014}}  describes Parmesan, our submission to~the 2014 Workshop on Statistical
-Machine Translation (WMT) metrics task for evaluation English-to-Czech translation. 
+%In preceding chapters, we have highlighted two key observations. Firstly, the adoption of a~straightforward greedy paraphrasing approach yields a substantial improvement in the correlation between BLEU and human judgment. Secondly, the Czech Meteor tables, due to their excessive noise,  have the potential to compromise the correlation of BLEU with human judgment when utilized for paraphrasing.
 
-The Parmesan\footnote{PARaphrasing for MEteor SANs paraphrases} metric is basically an adaptation of~the~Meteor metric to~higher quality paraphrases.
-As we showed previously \todo{kde? data, nebo }, the Czech Meteor Paraphrase tables are so noisy that they actually can harm the performance of the metric. 
-However, they can be very useful after extensive filtering in targeted paraphrasing of Czech reference sentences prior to the evaluation.
-Parmesan first performs targeted paraphrasing of reference sentences, then it computes the Meteor score using only the exact match on~these new reference sentences. 
-It shows significantly higher correlation with human judgment than Meteor on the WMT12 and WMT13 data. 
-%Using the reduced and modified Czech Meteor Paraphrase tables and WordNet, Parmesan first creates 
-%for every hypothesis a new reference sentence that is closer in~wording to the hypothesis, but 
-%keeps its original meaning and correctness. Then it computes the Meteor score using only the 
-%exact match on~these new reference sentences. 
+%This raises a fundamental questions - can the noisy nature of the Meteor tables detrimentally impact the performance of the metric? And furthermore - our methods is independent of the evaluation metric used, so why not to experiment with other metrics than BLEU?
 
-\section{Introduction}
+%We kept the best performing method from the previous section \emph{one-word only} with \emph{full Depfix} and evaluate it using three common evaluation metrics -- BLEU, Meteor and TER. Based on the results (see \Tref{choosing}), we decided to employ Meteor as our metric because it shows consistently highest correlations.
 
-The metric for automatic evaluation of machine translation (MT) Meteor\footnote{We use the 
-the version 1.4., which was recently outdated as the new version 1.5. was released for WMT14} 
-\cite{meteor-wmt:2011} has shown high correlation with human judgment since its appearance. It 
-outperforms traditional metrics like BLEU \cite{bleu} or NIST \cite{nist} as it explicitly addresses 
-their weaknesses -- it takes into account recall, distinguishes between functional and content words, 
-allows language-specific tuning of parameters and many others.
 
-Another important advantage of Meteor is that it supports not only exact word matches between a 
-hypothesis and its corresponding reference sentence, but also matches on the level of stems,
-synonyms and paraphrases. The Meteor Paraphrase tables \cite{meteor-tables} were created
-automatically using the \textit{pivot} method \cite{pivoting} for~six languages.
+In the preceding section, we demonstrated that targeted paraphrasing of reference sentences substantially improves the correlation between automatic evaluation metrics and human judgments when using simple string-based metrics such as \bleu. However, it remains unclear whether this improvement extends to evaluation metrics that already incorporate paraphrase matching internally.
 
-The basic setting of Meteor for evaluation of~Czech sentences offers two levels of matches - exact 
-and paraphrase. In this paper, we show the impact of the quality of paraphrases on the performance 
-of Meteor. We demonstrate that the Czech Meteor Paraphrase tables are full of noise and their 
-addition to the metric worsens its correlation with human judgment. However, they can be very useful
-(after extensive filtering) in creating new reference sentences by~targeted paraphrasing.
+\begin{mdframed}[
+    linecolor=gray,
+    linewidth=2pt,
+    roundcorner=5,
+    backgroundcolor=gray!5
+]
+\noindent This naturally raises two follow-up research questions: 
 
-Parmesan\footnote{PARaphrasing for MEteor SANs paraphrases} starts with a simple greedy algorithm for 
-substitution of synonymous words from a hypothesis in its corresponding reference sentence. Further, 
-we apply Depfix \cite{depfix} to fix grammar errors that might arise by the substitutions.
+\begin{itemize}
+    \item Does the improvement in correlation achieved by targeted paraphrasing of reference sentences for \bleu also generalize to other commonly used evaluation metrics, in particular \mn, which already incorporates paraphrase matching?
+    \item Does the inherent noise in \cmpt actually degrade the performance of the \mn metric itself?
+\end{itemize}
 
-Our method is independent of the evaluation metric used. % We achieve highest correlations with Meteor and 
-In this paper, we use Meteor for its consistently high correlation with human judgment and we 
-attempt to~tune it further by modifying its paraphrase tables. We show 
-that reducing the size of the Meteor Paraphrase tables is very beneficial. On the WMT12 and WMT13 data,
-the Meteor scores computed using only the exact match on our new references significantly outperform Meteor 
-with both exact and paraphrase match on original references. However, this result was not confirmed by this 
-year's data. %We discuss it in \ref{vysledky}.
+\end{mdframed}
 
-We perform our experiments on~English-to-Czech translations, but the method is largely language independent.
 
-\section{Related Work}
-Our paraphrasing work is inspired by \cite{kauchak}.
-They are trying to improve the accuracy of~MT evaluation of Chinese-to-English translation by targeted
-paraphrasing, i.e.~making a~reference closer in wording to a hypothesis (MT output) while keeping its
-meaning and correctness.
-
-Having a hypothesis $ H = h_1,...,h_n $ and its corresponding reference translation $ R =r_1, ...,r_m $,
-they select a~set of~candidates $ C = \lbrace \langle r_i,h_j \rangle  \vert r_i \in R \setminus H
- , h_j \in H \setminus R \rbrace $. 
-$ C $~is reduced to pairs of words appearing in~the~same WordNet \cite{wordnet} synset only. For every pair 
-$  \langle r_i,h_j \rangle \in C $, $ h_j $ is evaluated in the context $ r_1,...,r_{i-1},\square,r_{i+1},...,r_m $
-and if confirmed, the new reference sentence $ r_1,...,r_{i-1},h_j,r_{i+1},...,r_m $ is created.
-This way, several reference sentences might be created, all with a single changed word with respect
-to the original one.
-
-In \cite{barancikova:2014}, we experiment with several methods of paraphrasing of Czech sentences and
-filtering the Czech Meteor tables. We show that the amount of noise in the multi-word paraphrases is very high
-and no automatic filtering method we used outperforms omitting them completely. We present an error analysis 
-based method of filtering paraphrases consisting of pairs of single words, which is used in subsection 
-\ref{zdroje_parafrazi}. From several methods of paraphrasing, we achieved the best results a with simple greedy 
-method, which is presented in section \ref{creating_new_references}.
-
-\section{Data}
-We perform our experiments on data sets from the English-to-Czech translation task 
-of WMT12 \cite{wmt12}, WMT13 \cite{wmt13} and WMT14 \cite{wmt14}. The 
-data sets contain 13/14\footnote{We use only 12 of them because two of them (FDA.2878 
-and online-G) have no human judgments.}/10 files with Czech outputs of MT systems.
-In addition, each data set contains one file with corresponding reference sentences and one with original 
-English source sentences. We perform morphological analysis and tagging 
-of the hypotheses and the reference sentences using Morče \cite{morce:2007}.
-
-The human judgment of hypotheses is available as a relative ranking of performance of 
-five systems for~a~sentence. We calculated the score for every system by the “$ > $ others” 
-method \cite{bojar-grains}, which was the WMT12 official system score. It is computed 
-as $ \frac{wins}{wins+loses} $. We refer to this interpretation of human judgment as 
-\textit{silver standard} to distinguish it from the official system scores, which were 
-computed differently each year (here referred to as \textit{gold standard}).
-
-\subsection{Sources of Paraphrases}
-\label{zdroje_parafrazi}
-We use two available sources of Czech paraphrases -- the Czech WordNet 1.9 PDT 
-\cite{czech-wordnet} and the Meteor Paraphrase Tables \cite{meteor-tables}. 
-
-\begin{table}[tb]
-\begin{center}
-\scalebox{0.97}{
-\begin{tabular}{l|ccc}
-& WMT12 & WMT13 & WMT14\\
-\hline
-WordNet            & 0.26 & 0.22 & 0.24\\
-filtered Meteor    & 1.53 & 1.29 & 1.39\\
-together           & 1.59 & 1.34 & 1.44\\
-\end{tabular}}
-\caption{Average number of one-word paraphrases per sentence found in WordNet, 
-filtered Meteor tables and their union over all systems.}
-\label{number_of_substitutions}
-\end{center}
-\end{table}
-
-The Czech WordNet 1.9 PDT contains paraphrases of high quality, however, their amount is 
-insufficient for~our purposes. It contains 13k pairs of synonymous lemmas and only one 
-paraphrase per four sentences on~average is found in~the data (see \Tref{number_of_substitutions}).  
-For that reason, we employ the Czech Meteor Paraphrase tables, too. They are quite the 
-opposite of Czech WordNet -- they are large in size, but contain a lot of noise.
-
-We attempt to reduce the noise in the Czech Meteor Paraphrase tables in the following way. We 
-keep only pairs consisting of single words since we were not successful in reducing the noise
-effectively for the multi-word paraphrases \cite{barancikova-etal-2014-improving}. 
-
-Using Morče, we first perform morphological analysis of all one-word pairs and replace 
-the word forms with their lemmas.  We keep only pairs of different lemmas. Further, we
- dispose of pairs of words that differ in their parts of speech (POS) or~contain an 
-unknown word (typically a~foreign word). 
-
-In this way we have reduced 684k paraphrases in~the original Czech Meteor Paraphrase tables 
-to~only 32k pairs of lemmas. We refer to~this table as~filtered Meteor.
-
-\begin{figure*}[htb]
-\begin{center}
-\begin{tabular}{r|l}
- Source &  \begin{tabular}{l}
-  	\textit{The location alone is classic.} \\
-	\end{tabular} \\
- \hline
- 
- Hypothesis & \begin{tabular}{lllll}
- 			\textit{Samotné} & \textit{místo} & \textit{je} & \textit{klasické} & \textit{.} \\
- 			Actual & place$_{neut}$ & is & classic$_{neut}$ & . \\
-			\end{tabular} \\
- &  \begin{tabular}{l}
-  	The place alone is classic. \\
-	\end{tabular} \\
-
- \hline
- Reference & \begin{tabular}{lllll}
- 			\textit{Už} & \textit{poloha} & \textit{je} & \textit{klasická} & \textit{.} \\
- 			Already & position$_{fem}$ & is & classic$_{fem}$ & . \\
-			\end{tabular} \\
- &  \begin{tabular}{l}
-  	The position itself is classic. \\
-	\end{tabular}  \\ 
-
- \hline
-  Before Depfix & \begin{tabular}{lllll}
- 			\textit{Už} & \textit{místo} & \textit{je} & \textit{klasická} & \textit{.} \\
- 			Already & place$_{neut}$ & is & classic$_{fem}$ & . \\
-			\end{tabular} \\
- &  \begin{tabular}{l}
-  	*The place itself is classic. \\
-	\end{tabular} \\
- \hline 
-  New reference & \begin{tabular}{lllll}
- 			\textit{Už} & \textit{místo} & \textit{je} & \textit{klasické} & \textit{.} \\
- 			Already & place$_{neut}$ & is & classic$_{neut}$ & . \\
-			\end{tabular} \\
- &  \begin{tabular}{l}
-  	The place itself is classic. \\
-	\end{tabular} \\
-% \hline  
- 
-\end{tabular}
-\caption{Example of the targeted paraphrasing. The~hypothesis is grammatically 
-correct and has very similar meaning as the reference sentence. The new reference is closer 
-in wording to the hypothesis, but the agreement between the noun and the adjective is broken. 
-Depfix resolves the error and the final reference is correct. Number of overlapping unigrams
-increased from 2 to 4.}
-\label{example}
-\end{center}
-\end{figure*}
-
-\section{Creating New References}
-\label{creating_new_references}
-We create new references similarly to \cite{kauchak}. Let $ H_{L} $, $ R_{L} $ be 
-sets of lemmas from~a~hypothesis and a corresponding reference sentence, 
-respectively. Then we select candidates for paraphrasing in~the following way:
-%Then we select candidates for paraphrasing as pairs of lemmas wtih same that one
-% appears in $ H_{L} $ only and the other in $ R_{L} only $
-%$ C_{L} = \lbrace (r,h) | r \in R_{L} \smallsetminus H_{L}, h \in H_{L} 
-%\smallsetminus R_{L}, r_{POS}  = h_{POS} \rbrace $, where $ r_{POS} $ and 
-$ h_{POS} $ denote the part of~speech of~the respective lemma.
-
-Further, we restrict the set $ C_{L} $ to pairs appearing in our paraphrase tables only.
-If a word has several paraphrases in $ C_{L} $, we give preference to those found 
-in~WordNet or~even better in both WordNet and filtered Meteor.
-
-\begin{table}[tb]
-\begin{center}
+\begin{table}[b]
+\centering
 % \small
-\begin{tabular}{c|c|c|c}
-metric  & reference &  WMT12  &  WMT13 \\
-\hline
-\multirow{2}{*}{BLEU}   & original & 0.751 & 0.835 \\
-                        \cline{2-4}
-                        & new  & 0.834 & \textbf{0.891} \\
-\hline
-\multirow{2}{*}{METEOR} & original & 0.833 & 0.817 \\
-                        \cline{2-4}
-                        & new  & \textbf{0.927} & \textbf{0.891} \\
-\hline
-\multirow{2}{*}{1 - TER} & original & 0.274 & 0.760 \\
-                        \cline{2-4}
-                         & new  & 0.283 & 0.781 \\
+\begin{tabular}{cccc}
+\toprule
+Metric  & Reference &  \textbf{WMT12}  &  \textbf{WMT13} \\
+\midrule
+\multirow{2}{*}{\bleu}   & Original & 0.751 & 0.835 \\
+                        %\cline{2-4}
+                        & Paraphrased  & 0.834 & \textbf{0.891} \\
+\midrule
+\multirow{2}{*}{\mn}    & Original & 0.833 & 0.817 \\
+                        %\cline{2-4}
+                        & Paraphrased  & \textbf{0.927} & \textbf{0.891} \\
+\midrule
+\multirow{2}{*}{1 - TER} & Original & 0.274 & 0.760 \\
+                        %\cline{2-4}
+                         & Paraphrased  & 0.283 & 0.781 \\
+\bottomrule
 \end{tabular}
-\end{center}
-\caption{Pearson's correlation of different metrics with the silver standard.}
+
+\caption{Pearson's correlation between automatic evaluation metrics and the silver standard of human judgments. The Paraphrased references are created using the best performing method from the previous section -- \emph{one-word only} with \emph{full Depfix}. To ensure consistency across metrics where higher values indicate better performance, we report 1−TER instead of the raw error rate.}
 \label{choosing}
 \end{table}
- 
-We proceed word by word from the beginning of the reference sentence to~its end. If 
-a~lemma of~a~word appears as~the first member of~a~pair in~restricted $ C_{L} $, it is 
-replaced by~the word form from hypothesis that has its lemma as the second element of~that pair,
-i.e., by~the paraphrase from the hypothesis. Otherwise, the original word the reference 
-sentence is kept.
 
-When integrating paraphrases to the reference sentence, it may happen that the sentence
-becomes ungrammatical, e.g., due to a broken agreement (see \Fref{example}). Therefore, we apply
-Depfix \cite{depfix} -- a~system for automatic correction of~grammatical errors that 
-appear often in~English-to-Czech MT outputs. 
+As a first step, we compare the effect of using paraphrased references on three widely used metrics: \bleu, \mn, and \ter. The results presented in \Cref{choosing} show that paraphrased references consistently improve correlation with human judgments for \bleu, \ter, and \mn.  
+This improvement is somewhat unexpected, given that \mn internally integrates the same paraphrase table (\cmpt), whose subset (\fm) is used to generate our paraphrased references.
 
-Depfix analyses the input sentences using a~range of~natural language processing tools. It
-fixes errors using a~set of~linguistically-motivated rules and a~statistical component 
-it contains.
+We therefore formulate the following hypothesis: while paraphrases are useful for bringing reference sentences closer to valid system outputs, using noisy paraphrase tables directly inside the evaluation metric may reduce its ability to discriminate between systems.  Importantly, in our approach, paraphrased references are subsequently corrected using Depfix, which can resolve grammatical inconsistencies introduced by substitution. In contrast, when paraphrase tables are used internally by the metric (as in \mn), no such correction is applied, and noisy or ill-formed paraphrases may be rewarded directly. This asymmetry suggests that paraphrases are more effective when used to generate alternative, post-edited reference formulations prior to evaluation rather than being incorporated directly into the metric.
 
-\section{Choosing a metric}
-Our next step is choosing a metric that correlates well with human judgment.
-We experiment with three common metrics -- BLEU, Meteor and TER. Based on the results 
-(see \Tref{choosing}), we decided to employ Meteor in WMT14 as our metric because
-it shows consistently highest correlations.
+In this section,\footnote{This section is based on \cite{parmesan}.} we explore an alternative approach in which paraphrases are used to generate additional reference variants rather than being handled internally by the metric. This leads to the formulation of the \parmesan metric described later in the section.
 
-\section{Meteor settings} 
 
-\begin{table*}[htb]
-\begin{center}
+\subsection{Experimental Setup: Metric Configurations}
 
-\scalebox{0.99}{
-\begin{tabular}{r|c|l}
-setting & size & description of the paraphrase table \\
-\hline
-\textbf{Basic} & 684k & The original Meteor Paraphrase Tables \\
-\textbf{One-word} & 181k & \textbf{Basic} without multi-word pairs\\
-\textbf{Same POS} & 122k & \textbf{One-word} + only same part-of-speech pairs\\
-\textbf{Diff. Lemma} & 71k & \textbf{Same POS} + only forms of different lemma\\
-\textbf{Same Lemma} & 51k & \textbf{Same POS} + only forms of same lemma\\
-\textbf{No paraphr.} & 0 & No paraphrase tables, i.e., exact match only\\
-\textbf{WordNet} & 202k & Paraphrase tables generated from Czech WordNet\\
-\end{tabular}
+To test whether internal paraphrase matching is suboptimal, we evaluate \mn under several configurations that progressively reduce or entirely remove the internal paraphrase tables. These configurations are summarized in \Cref{parmesan:settings}.
+
+\begin{table}[tb]
+\centering
+\resizebox{\linewidth}{!}{
+\begin{tabular}{lrl}
+\toprule
+\mn setting & size & paraphrase table description \\
+\midrule
+\textbf{Original} & 684k & \cmpt \\
+\textbf{One word} & 181k & only one-word pairs from \cmpt \\
+\textbf{Same POS} & 122k & \textbf{One word}  with the same part-of-speech\\
+\textbf{Different Lemma} & 71k & \textbf{Same POS} in which the pairs have different lemmas\\
+\textbf{Same Lemma} & 51k & \textbf{Same POS} in which the pairs have the same lemma\\
+\textbf{No paraphrases} & 0 & no paraphrase tables, i.e., exact match only\\
+%\textbf{WordNet} & 202k & paraphrase tables generated from Czech WordNet\\
+\bottomrule
+\end{tabular}}
+\caption{Different paraphrase tables for the \mn metric and their size (number of paraphrase pairs). The \textbf{Original} configuration corresponds to the original \mn metric, i.e., using the full paraphrase table without filtering.  Conversely, \textbf{No paraphrases} correspond to an empty set, so the \mn metric has to rely solely on exact match. 
+% \ml{v pravém sloupci (popis tabulek) bych nepoužívala bold, mate to} 
+%PB: vsude ty settings oznacuji boldem, tak musim i tyto. Prijde mi, ze vic mate, kdyz to tam nebude.
 }
-\caption{Different paraphrase tables for Meteor and their size (number of paraphrase pairs).}
-\label{meteory}
-\end{center}
-\end{table*}
-
-Based on the positive impact of filtering Meteor Paraphrase Tables for targeted lexical paraphrasing of reference sentences
-(see the column \textbf{Basic} in \Tref{results:12:13}), we experiment with the 
-filtering them yet again, but this time as~an~inner part of~the Meteor evaluation metric (i.e. for the
-paraphrase match).
-
-%The filtering of~the paraphrase tables is performed analogically. 
-We experiment with seven different settings that are presented in~\Tref{meteory}. All of them are 
-created by reducing the original Meteor Paraphrase tables, except for the setting referred 
-to~as~\textbf{WordNet} in the table. In this case, the paraphrase table is generated from one-word paraphrases in 
-Czech WordNet to all their possible word forms found in~CzEng \cite{czeng10:lrec2012}.
-
-Prior paraphrasing reference sentences and using Meteor with the \textbf{No paraphr.} setting
-for computing scores constitutes Parmesan -- our submission to the WMT14 for evaluation English-to-Czech 
-translation. In the tables with results, Parmesan scores are highlighted by the box and the best scores
-are in bold. % \xxx{podle lopatkovy preformulovat}
-
-\begin{table*}[htb]
-\begin{center}
-\scalebox{0.95}{
-\begin{tabular}{l|ccccccc}
-\multicolumn{8}{c}{\textbf{WMT12}}\\
-\hline
-reference & Basic & One-word & Same POS & Same Lemma & Diff. Lemma & No paraphr. & WordNet \\
-\hline
-Original & 0.833 & 0.836 & 0.840 & 0.838 & 0.863 & 0.861 & 0.863 \\
-Before Depfix & 0.905 & 0.908 & 0.911 & 0.911 & 0.931 & 0.931 & 0.931 \\
-New & 0.927 & 0.930 & 0.931 & 0.932 & 0.950 & \boxed{\textbf{0.951}} & \textbf{0.951} \\
-%\hline
-\end{tabular}} 
-
-\vspace{10pt}
-
-\scalebox{0.95}{
-\begin{tabular}{l|ccccccc}
-\multicolumn{8}{c}{\textbf{WMT13}}\\
-\hline
-references & Basic & One-word & Same POS & Same Lemma & Diff. Lemma & No paraphr. & WordNet \\
-\hline
-Original & 0.817 & 0.820 & 0.823 & 0.821 & 0.850 & 0.848 & 0.850 \\
-Before Depfix  & 0.865 & 0.867 & 0.869 & 0.868 & 0.895 & 0.895 & 0.894 \\
-New  & 0.891 & 0.892 & 0.893 & 0.892 & \textbf{0.915} & \boxed{\textbf{0.915}} & \textbf{0.915} \\
-%\hline
-\end{tabular}
-}
-\caption{Pearson's correlation of Meteor and the silver standard.}
-\label{results:12:13}
-\end{center}
-\end{table*}
-
-
-\begin{table*}[htb]
-%\begin{center}
-\scalebox{0.95}{
-\begin{tabular}{l|ccccccc}
-\multicolumn{8}{c}{\textbf{WMT13}}\\
-\hline
-references & Basic & One-word & Same POS & Same Lemma & Diff. Lemma & No paraphr. & WordNet \\
-\hline
-Original & 0.856 & 0.859 & 0.862 & 0.860 & 0.885 & 0.883 & 0.884 \\
-Before Depfix  & 0.894 & 0.896 & 0.898 & 0.897 & 0.918 & 0.917 & 0.917 \\
-New  & 0.918 & 0.918 & 0.919 & 0.919 & \textbf{0.933} & \boxed{\textbf{0.933}} & \textbf{0.933} \\
-\end{tabular}
-}
-\caption{Pearson's correlation of Meteor and the gold standard -- \textit{Expected Wins} 
-\cite{wmt13}. The results corresponds very well with the silver standard in \Tref{results:12:13}.} 
-%korelace metrik - 0.981
-\label{results13-ew}
-%\end{center}
-\end{table*}
-
-\section{Results}
-\subsection{WMT12 and WMT13}
-The results of our experiments are presented in \Tref{results:12:13}\footnote{The results of WMT13 
-using the gold standard are in \Tref{results13-ew}.} 
-as Pearson’s correlation coefficient of~the Meteor scores and 
-the human judgment. The results in both tables are very consistent. There is a clear positive 
-impact of~the prior paraphrasing of~the reference sentences and of applying Depfix. The results 
-also show that independently of~a~reference sentence used, reducing the Meteor paraphrase tables in 
-evaluation is always beneficial.
-
-We use \cite{meng1992comparing} to determine whether the difference in~correlation 
-coefficients is statistically significant. The tests show that Parmesan performs better than
-original Meteor with 99\% certainty on the data from WMT12 and WMT13.
-
-\textbf{Diff. Lemma} and \textbf{WordNet} settings give the best results on the original reference sentences. 
-That is because they are basically a limited version of the paraphrase tables we use for creating our
-new references, which contain both all different lemmas of the same part of speech from Meteor Paraphrase
-tables and all lemmas from the WordNet.
-
-The main reason of the worse performance of the metric when employing the Meteor Paraphrase tables is
-the noise. It is especially apparent for multi-word paraphrases \cite{barancikova:2014}; however, there are problems among
-one-word paraphrases as well. Significant amount of them are pairs of different word forms of a 
-single lemma, which may award even completely non-grammatical sentences. This is reflected in the
-low correlation of~the \textbf{Same Lemma} setting.
-
-Even worse is the fact that the metric may award even parts of the hypothesis left 
-untranslated, as the original Meteor Paraphrase tables contain English words and their Czech 
-translations as paraphrases. There are for~example pairs: \textit{pšenice} - \textit{wheat}\footnote{In 
-all examples the Czech word is the correct translation of the English side.}, \textit{vůdce} - 
-\textit{leader}, \textit{vařit} -	\textit{cook}, \textit{poloostrov} - \textit{peninsula}. 
-For these reasons, the differences among the systems are more blurred and the metric performs worse 
-than without using the paraphrases. 
-
-\begin{table}[bt]
-\begin{center}
-\scalebox{0.95}{
-\begin{tabular}{l|c|cc}
-& frequency & Basic &  No paraphr. \\
-\hline
-WMT12    & 0.75 & 0.837 & 0.869  \\
-WMT13    & 0.61 & 0.818 & 0.852  \\
-\end{tabular}
-}
-\caption{The \textit{frequency} column shows average number of substitution 
-per sentence using the original Meteor Paraphrase tables only. The rest shows Pearson's correlation
-with the silver standard using these paraphrases.} 
-\label{unfiltred}
-\end{center}
+\label{parmesan:settings}
 \end{table}
 
-We also experimented with paraphrasing using the original Meteor Paraphrase tables for a comparison.
-We used the same pipeline as it is described in \Sref{creating_new_references}, but used only original 
-one-word paraphrases from the Meteor Paraphrase tables. Even though the paraphrase tables are much 
-larger than our filtered Meteor tables, the amount of substituted words is much smaller (see 
-\Tref{unfiltred}) due to not being lemmatized. The \textbf{Basic} setting in \Tref{unfiltred} 
-corresponds well with the setting \textbf{One-word} in \Tref{results:12:13} on~original 
-reference sentences. The results for \textbf{No paraphr.} setting in \Tref{unfiltred} outperforms 
-all correlations with original references but cannot compete with our new reference sentences created 
-by the filtered Meteor and WordNet.
+We test these \mn settings against three types of reference sentences:
+\begin{description}
+\item[Original:] original references provided by WMT for a particular year,
+\item[Paraphrased:] references paraphrased by our \emph{One-word only} greedy substitution method using \fm and \wordnet, without any postprocessing.
+\item[Depfixed:] \textbf{Paraphrased} references modified using \emph{full Depfix} for grammatical correction.
+\end{description}
 
-%
-%The impact of~the WordNet based paraphrase tables is rather expectable. It helps very slightly 
-%on~the original references, which only reflect rare occurrences of~WordNet paraphrases in~the data. 
-%All WordNet paraphrases are already used in the new references and therefore, it has the same 
-%result like using no paraphrases at~all.
+\subsection{Results on WMT12 and WMT13 Data}
+\label{results-12-13}
+We first report results on WMT12 and WMT13 in \Cref{tab:parmesan-results}. The results are consistent across both datasets. There is a notable positive impact of~the paraphrasing of~reference sentences and the application of Depfix. The strongest results are consistently obtained when paraphrases are used exclusively to generate paraphrased references, while the evaluation itself relies on exact matching.
 
+\begin{table}[htb!]
+\centering
+\begin{tabular}{l|ccc}
+%\multicolumn{7}{c}{One-word Only}\\
 
-\subsection{WMT14 \label{vysledky}}
-The WMT14 data did not follow similar patterns as data from two previous years. 
-The results are presented in \Tref{results14} (the silver standard) and in 
-\Tref{results14-ts} (the gold standard).
-
-While reducing the Meteor tables during the evaluation is still beneficial, %tu yapojit, ze to plati pro originalni reference??
-this is not 
-entirely valid about the prior paraphrasing of reference sentences. The baseline correlation 
-of Meteor is rather high and paraphrasing sometimes helps and sometimes harms the performance 
-of the metric. Nevertheless, the differences in correlation between the original references 
-and the new ones are very small (0.012 at most).
-
-In contrast to WMT12 and WMT13, the first phase of paraphrasing before applying Depfix causes
-a drop in correlation. On the other hand, applying Depfix is again always beneficial.
-
-With both standards, the best result is achieved on the original reference with 
-the \textbf{No paraphr.} and the \textbf{WordNet} setting. Parmesan outperforms Meteor 
-by a marginal difference (0.005) on the silver standard, whereas using the gold standard, 
-Meteor is better by exactly the same margin. However, the correlation of the two standards 
-is 0.997.
-
-\begin{table*}[htb]
-\begin{center}
-
-\scalebox{0.95}{
-\begin{tabular}{l|ccccccc}
-\multicolumn{8}{c}{\textbf{WMT14}}\\
-\hline
-reference & Basic & One-word & Same POS & Same Lemma & Diff. Lemma & No paraphr. & WordNet \\
-\hline
-Original & 0.963 & 0.967 & 0.965 & 0.968 & 0.970 & \textbf{0.973} & 0.973 \\
-Before Depfix & 0.957 & 0.958 & 0.959 & 0.959 & 0.965 & 0.965 & 0.965 \\
-New  & 0.968 & 0.965 & 0.969 & 0.969 & 0.968 & \boxed{0.968} & 0.968 \\
-\end{tabular}}
-\caption{Pearson's correlation of Meteor and the silver standard.}
-\label{results14}
+\multicolumn{4}{c}{\textbf{WMT12, silver standard}}  \\
+\toprule
+ & \multicolumn{3}{c}{\textbf{References}} \\
+\mn setting & Original  & Paraphrased  & Depfixed \\
+\midrule
+\textbf{Original}     & \underline{0.833} & 0.905 & 0.927 \\
+\textbf{One-word}      & 0.836 & 0.908 & 0.930  \\
+\textbf{Same POS}      & 0.840 & 0.911 & 0.931  \\
+\textbf{Same Lemma}     & 0.838 & 0.911 & 0.932 \\
+\textbf{Different Lemma}    & 0.863 & 0.931 & 0.950  \\
+\textbf{No paraphrases}     & 0.861 & 0.931 & \boxed{\textbf{0.951}}  \\
+%\textbf{WordNet }        & 0.863 & 0.931 & \textbf{0.951} \\
+\bottomrule
+\end{tabular} 
 
 \vspace{10pt}
 
-\scalebox{0.95}{
-\begin{tabular}{l|ccccccc}
-\multicolumn{8}{c}{\textbf{WMT14}}\\
-\hline
-reference & Basic & One-word & Same POS & Same Lemma & Diff. Lemma & No paraphr. & WordNet \\
-\hline
-Original & 0.967 & 0.968 & 0.969 & 0.972 & 0.972 & \textbf{0.974} & \textbf{0.974} \\
-Before Depfix & 0.958 & 0.959 & 0.959 & 0.960 & 0.963 & 0.963 & 0.963 \\
-New  & 0.966 & 0.966 & 0.966 & 0.967 & 0.962 & \boxed{0.962} & 0.962 \\
+\begin{tabular}{l|ccc}
+%\multicolumn{7}{c}{One-word Only}\\
+\multicolumn{4}{c}{\textbf{WMT13, silver standard} } \\
+\toprule
+ & \multicolumn{3}{c}{\textbf{References}} \\
+\mn setting  & Original  & Paraphrased  & Depfixed\\
+\midrule
+\textbf{Original}        & \underline{0.817} & 0.865 & 0.891\\
+\textbf{One-word }       & 0.820 & 0.867 & 0.892  \\
+\textbf{Same POS}        & 0.823 & 0.869 & 0.893 \\
+\textbf{Same Lemma }     & 0.821 & 0.868 & 0.892 \\
+\textbf{Different Lemma }& 0.850 & 0.895  & \textbf{0.915}\\
+\textbf{No paraphrases}  & 0.848 & 0.895 & \boxed{\textbf{0.915}} \\
+%\textbf{WordNet }        & 0.850 & 0.894 & \textbf{0.915}\\
+\bottomrule
 \end{tabular}
-}
-\caption{Pearson's correlation of Meteor and the gold standard -- \textit{TrueSkill} \cite{wmt14}. 
-Note that as opposed to official WMT14 results, the version 1.4 of Meteor is still used in this table.}
-\label{results14-ts}
-\end{center}
-\end{table*}
-
-There is a distinctive difference between the data from previous years and this one. In the WMT14,
-the English source data for translating to Czech are sentences originally English or professionally
-translated from Czech to English. In the previous years, on the other hand, the source data were equally composed from all 
-competing languages, i.e., only fifth/sixth of data is originally English. 
-%and the other $ \frac{4}{5} $/$ \frac{5}{6} $ are translations from the remaining languages.
-
-%For WMT12 and WMT13, the English source data were equally composed from all competing languages, 
-%i.e., $ \frac{1}{5} $/$ \frac{1}{6} $ of data is originally English and the other $ \frac{4}{5} $/$ \frac{5}{6} $
-%are translations from the remaining languages. On the other hand, only English and Czech sentences
-%were used to create the English source file for translating to Czech in the WMT14.
-
-One more language involved in the translation seems as a possible ground for the beneficial effect of 
-prior paraphrasing of reference sentences. Therefore, we experiment with limiting the WMT12 and WMT13
-data to only sentences that are originally Czech or English. However, Parmesan on this limited translations
-again significantly outperforms %zkontrolovat!!
-Meteor and the results (see \Tref{limited}) follow similar patterns as on the whole data sets. 
-
-\begin{table*}[htb]
-\begin{center}
-
-\scalebox{0.95}{
-\begin{tabular}{l|ccccccc}
-\multicolumn{8}{c}{\textbf{WMT12}}\\
-\hline
-reference & Basic & One-word & Same POS & Same Lemma & Diff. Lemma & No paraphr. & WordNet \\
-\hline
-Original & 0.781 & 0.779 & 0.782 & 0.772 & 0.807 & 0.798 & 0.801\\
-Before Depfix & 0.872 & 0.872 & 0.874 & 0.874 & 0.898 & 0.899 & 0.899  \\
-New  & 0.897 & 0.897 & 0.897 & 0.897 & \textbf{0.923} & \boxed{\textbf{0.923}} & \textbf{0.923}  \\
-\end{tabular}}
 
 \vspace{10pt}
 
-\scalebox{0.95}{
-\begin{tabular}{l|ccccccc}
-\multicolumn{8}{c}{\textbf{WMT13}}\\
-\hline
-reference & Basic & One-word & Same POS & Same Lemma & Diff. Lemma & No paraphr. & WordNet \\
-\hline
-Original & 0.805 & 0.810 & 0.813 & 0.813 & 0.842 & 0.840 & 0.844 \\
-Before Depfix & 0.843 & 0.846 & 0.849 & 0.848 & 0.879 & 0.877 & 0.877 \\
-New  & 0.874 & 0.877 & 0.878 & 0.877 & 0.877 & \boxed{\textbf{0.902}} & \textbf{0.902} \\
-\end{tabular}} 
+\begin{tabular}{l|ccc}
+ \multicolumn{4}{c}{\textbf{WMT13, gold standard}} \\
+\toprule
+ & \multicolumn{3}{c}{\textbf{References}} \\
+\mn setting & Original  & Paraphrased & Depfixed\\
+\midrule
+\textbf{Original}           & \underline{0.856} & 0.894 & 0.918 \\
+\textbf{One-word}        & 0.859 & 0.896 & 0.918 \\
+\textbf{Same POS}        & 0.862 & 0.898 & 0.919 \\
+\textbf{Same Lemma}      & 0.860 & 0.897 & 0.919 \\
+\textbf{Different Lemma} & 0.885 & 0.918 & \textbf{0.933}\\
+\textbf{No paraphrases}  & 0.883 & 0.917 & \boxed{\textbf{0.933}} \\
+%\textbf{WordNet}         & 0.884 & 0.917 &  \textbf{0.933}\\
+\bottomrule
+\end{tabular}
+\caption{Pearson's correlation between \mn and human judgments. For WMT12, the gold standard results are identical to the silver standard.} 
+%korelace metrik - 0.981
+\label{tab:parmesan-results}
+\end{table}
 
-\caption{Pearson's correlation of Meteor and the silver standard on sentences originally Czech
-or English only. In this case, the interpretation of human judgment was computed only on those 
-sentences as well.}
+The original \mn metric (i.e. the \textbf{Original} \mn setting with original references, underscored) shows the weakest performance for both WMT12 and WMT13. 
+
+Filtering the paraphrase tables used within \mn consistently improves its performance, regardless of the reference sentence type. On the original reference sentences, \textbf{Different Lemma} setting yields the best results, as it effectively corresponds to the \fm tables.
+
+We hypothesize that the main reason for the poorer performance of \mn when using \cmpt is the high level of noise in the paraphrase table. A substantial portion of this noise consists of pairs  corresponding to different inflectional forms of the same lemma. Such pairs can lead the metric to reward ungrammatical outputs, which is reflected in the low correlation observed for the \textbf{Same Lemma} setting.
+
+An additional issue is that the metric may reward untranslated segments, as \cmpt contains English words and their Czech translations as paraphrase pairs (see \Cref{meteori}). As a result, differences between systems become less distinct, and the metric performs worse than when paraphrase matching is not used.
+
+We also perform a control experiment in which reference sentences are paraphrased using the \emph{one-word only} method with word pairs from \cmpt (instead of \fm and \wordnet). Despite being much larger, \cmpt results in roughly half as many substitutions because it is not lemmatized (see \Cref{substitution_frequency}). The resulting correlations with the silver standard (0.869 and 0.852 for WMT12 and WMT13) are lower than those obtained using paraphrases from \fm and \wordnet (See the Paraphrased column in \Cref{tab:parmesan-results}). This confirms that the quality of the paraphrase tables plays an important role when generating alternative reference formulations.
+
+\begin{table}[tb]
+\centering
+\begin{tabular}{cccc}
+\toprule
+paraphrases & \textbf{WMT12} & \textbf{WMT13} \\
+\midrule
+\wordnet & 0.26 & 0.22  \\
+\fm &  1.53 & 1.29  \\
+\wordnet $+$ \fm & 1.59 & 1.34  \\
+\midrule
+\cmpt &  0.75 & 0.61 \\
+\bottomrule
+\end{tabular}
+\caption{Average number of one-word paraphrases per sentence.} 
+\label{substitution_frequency}
+\end{table}
+
+
+\subsection{Defining the \parmesan Metric}
+Based on our observations, we propose the \parmesan metric, our submission to the WMT14 Metrics Shared Task to evaluate English-to-Czech translation.
+
+\parmesan (PARaphrasing for MEteor SANs paraphrases) operates in a two-stage process:
+\begin{enumerate}
+\item Reference sentences are paraphrased via the \emph{one-word only} greedy substitution method using \fm, followed by \emph{full Depfix}.
+\item The resulting paraphrased references are evaluated using \mn without paraphrase matching, relying solely on exact matching.
+\end{enumerate}
+
+Unlike internal paraphrase matching, which applies uniformly, targeted paraphrasing operates asymmetrically and is guided by specific hypotheses, allowing it to introduce beneficial variation while avoiding excessive noise. In \Cref{tab:parmesan-results}, \parmesan scores are highlighted by enclosing them within a box, while the original \mn is underscored. The best scores are shown in bold. 
+
+We use methods for comparing correlation coefficients \cite{meng1992comparing} to determine the statistical significance of~differences between metrics. The tests indicate that \parmesan outperforms \mn with 99\% certainty. 
+%\ml{tenhle odstavec asi patří do předchozí sekce, příml k \Cref{tab:parmesan-results}??}
+% PB: tam jeste neni definovany parmesan
+
+%\scalebox{0.97}{
+%\begin{tabular}{|l|ccc|ccc|}
+%\hline
+% & \multicolumn{3}{c|}{\textbf{WMT12} reference} &  \multicolumn{3}{c|}{\textbf{WMT13} reference} \\
+%\hline
+%\mn setting & Original  & Paraphr.  & Depfix.  & Original  & Paraphr.  & Depfix.\\
+%\hline
+%\textbf{Original}           & \underline{0.833} & 0.905 & 0.927 & \underline{0.817} & 0.865 & 0.891\\
+%\textbf{One-word }       & 0.836 & 0.908 & 0.930 & 0.820 & 0.867 & 0.892  \\
+%\textbf{Same POS}        & 0.840 & 0.911 & 0.931 & 0.823 & 0.869 & 0.893 \\
+%\textbf{Same Lemma }     & 0.838 & 0.911 & 0.932 & 0.821 & 0.868 & 0.892 \\
+%\textbf{Different Lemma }    & 0.863 & 0.931 & 0.950 & 0.850 & 0.895  & \textbf{0.915}\\
+%\textbf{No paraphrases}     & 0.861 & 0.931 & \boxed{\textbf{0.951}} & 0.848 & 0.895 & \boxed{\textbf{0.915}} \\
+%\textbf{WordNet }        & 0.863 & 0.931 & \textbf{0.951} & 0.850 & 0.894 & \textbf{0.915}\\
+%\hline
+%\end{tabular}} 
+
+\subsection{Results on WMT14 data}
+\label{vysledky}
+
+\begin{table}[tb!]
+\centering
+
+\begin{tabular}{lccc}
+%\multicolumn{7}{c}{One-word Only}\\
+\multicolumn{4}{c}{\textbf{WMT14, silver standard}} \\
+\toprule
+\mn setting & Original  & Paraphrased & Depfixed \\
+\midrule
+\textbf{Original}        & \underline{0.963} & 0.957 & 0.968 \\
+\textbf{One-word}        & 0.967 & 0.958 & 0.965 \\
+\textbf{Same POS}        & 0.965 & 0.959 & 0.969 \\
+\textbf{Same Lemma}      & 0.968 & 0.959 & 0.969  \\
+\textbf{Different Lemma} & 0.970 & 0.965 & 0.968 \\
+\textbf{No paraphrases}  & \textbf{0.973} & 0.965 & \boxed{0.968} \\
+%\textbf{WordNet}         & \textbf{0.973} & 0.965 & 0.968 \\
+\bottomrule
+\end{tabular}
+
+\vspace{10pt}
+
+\begin{tabular}{lccc}
+%\multicolumn{7}{c}{One-word Only}\\
+\multicolumn{4}{c}{\textbf{WMT14, gold standard}} \\
+\toprule
+\mn setting & Original  & Paraphrased & Depfixed \\
+\midrule
+\textbf{Original}        & \underline{0.967} & 0.958 & 0.966\\
+\textbf{One-word}        & 0.968 & 0.959 & 0.966\\
+\textbf{Same POS}        & 0.969 & 0.959 & 0.966\\
+\textbf{Same Lemma}      & 0.972 & 0.960 & 0.967 \\
+\textbf{Different Lemma} & 0.972 & 0.963 & 0.962\\
+\textbf{No paraphrases}  & \textbf{0.974} &  0.963 & \boxed{0.962}\\
+%\textbf{WordNet}         & \textbf{0.973} & 0.965 & 0.968 & \textbf{0.974} & 0.963  & 0.962 \\
+\bottomrule
+\end{tabular}
+
+\caption{Pearson's correlation of \mn and the silver, respectively, the gold 
+standard -- \textit{TrueSkill} \citep{NIPS2006_f44ee263}. Note that as opposed to official WMT14 
+results \citep{wmt14}, the version 1.4 of \mn is still used in this table.}
+\label{results14}
+\end{table}
+
+The WMT14 results, presented in \Cref{results14}, show distinct patterns compared to the preceding two years. \parmesan still outperforms \mn on the silver standard, but only by a marginal difference (0.005). However, when using the gold standard, \mn performs better by precisely the same margin. In particular, Pearson's correlation between the two standards remains exceptionally high at 0.997.
+
+In contrast to previous years, paraphrased reference sentences are detrimental to the performance of \mn on the WMT14 dataset. Applying Depfix to paraphrased references is beneficial but does not outperform the original references. However, the observed differences are minimal (up to 0.012).
+
+Similarly as in WMT12 and WMT13, reducing the paraphrase tables in \mn remains beneficial for both original and paraphrased reference sentences. The best results are achieved with the \textbf{No paraphrases} configuration on the original references, i.e., no paraphrases are used. 
+
+Notably, the highest correlations (up to 0.973) are obtained without using any paraphrases at all, indicating that in this setting any form of paraphrasing does not provide benefits and may be even slightly detrimental. This observation is consistent with the official results of the WMT14 metrics task \citep{machacek-bojar-2014-results}, where simple string-matching metrics outperform more complex ones for English-to-Czech evaluation. In particular, \mn is outperformed by TER, NIST \citep{nist}, and CDER \citep{leusch-etal-2006-cder}.
+
+\subsection{Effect of Data Composition and Ceiling Effects}
+We examine factors that could explain the discrepancy in performance of the \parmesan metric observed in the WMT14 results compared to WMT12 and WMT13. A plausible explanation concerns the composition of the source-language data. In WMT12 and WMT13, the source sentences are drawn evenly from all competing languages;
+meaning only a~fifth or sixth of the data, respectively, is originally written in English and the remaining $ \frac{4}{5} $, respectively, $\frac{5}{6} $ are translations from the other languages. 
+
+In contrast, the WMT14 English–Czech dataset was constructed exclusively from sentences originally written in either English or Czech. These sentences therefore may exhibit different lexical variability than the mixed translated data used in previous years.
+
+Translating sentences from another source language into English and subsequently into Czech might be a contributing factor to the beneficial effect of prior reference sentences paraphrasing. To test whether this difference explains the behavior observed on WMT14, we repeat the experiments on a restricted subset of WMT12 and WMT13 containing only sentences originally written in English or Czech. The results are shown in Table~\ref{limited}.
+
+However, even under this restriction, \parmesan continues to outperform the original \mn metric, and the overall trends remain consistent with the results obtained on the full datasets. This suggests that the presence of translation chains in the source data does not explain the different behavior observed for WMT14.
+
+\begin{table}[tb]
+\centering
+
+\begin{tabular}{lccc}
+\multicolumn{4}{c}{\textbf{WMT12, silver standard, Cz and En original sentences}} \\
+\toprule
+Reference & Original  & Paraphrased  & Depfixed \\
+\midrule
+\textbf{Original}           & \underline{0.781} & 0.872 & 0.897 \\
+\textbf{One-word}        & 0.779 & 0.872 & 0.897  \\
+\textbf{Same POS}        & 0.782 & 0.874 & 0.897 \\
+\textbf{Same Lemma}      & 0.772 & 0.874 & 0.897  \\
+\textbf{Different Lemma} & 0.807 & 0.898 & \textbf{0.923} \\
+\textbf{No paraphrases} & 0.798 & 0.899 & \boxed{\textbf{0.923}}  \\
+%\textbf{WordNet}         & 0.801 & 0.899 & \textbf{0.923} & 0.844 & 0.877 & \textbf{0.902}\\
+\bottomrule
+\end{tabular}
+
+\vspace{10pt}
+
+\begin{tabular}{lccc}
+\multicolumn{4}{c}{\textbf{WMT13, silver standard, Cz and En original sentences}} \\
+\toprule
+Reference & Original  & Paraphrased  & Depfixed \\
+\midrule
+\textbf{Original}        & \underline{0.805} & 0.843 & 0.874\\
+\textbf{One-word}        & 0.810 & 0.846 & 0.877  \\
+\textbf{Same POS}        & 0.813 & 0.849 & 0.878 \\
+\textbf{Same Lemma}      & 0.813 & 0.848 & 0.877 \\
+\textbf{Different Lemma} & 0.842 & 0.879  & 0.877\\
+\textbf{No paraphrases}  & 0.840 & 0.877 & \boxed{\textbf{0.902}} \\
+%\textbf{WordNet}         & 0.801 & 0.899 & \textbf{0.923} & 0.844 & 0.877 & \textbf{0.902}\\
+\bottomrule
+\end{tabular} 
+ 
+\caption{Pearson's correlation of \mn and the silver standard on sentences originally Czech or English only. Human judgments are computed only on those sentences as well.}
 \label{limited}
+\end{table} 
 
-\end{center}
-\end{table*} 
+The more likely explanation is a \emph{ceiling effect}. Correlation on WMT14 is already exceptionally high ($\approx 0.97$). In such a high-accuracy environment, the baseline metric leaves almost no room for improvement, and the introduction of any transformation (even high-quality paraphrasing) may introduce more statistical noise than signal.
 
-\section{Conclusion and Future Work}
-We have demonstrated a negative effect of noise in~the Czech Meteor Paraphrase tables to the performance 
-of~Meteor. We have shown that large-scale reduction of the paraphrase tables can be very beneficial for targeted 
-paraphrasing of reference sentences. The Meteor scores computed without the Czech Meteor Paraphrase tables 
-on these new reference sentences correlates significantly better with the human judgment than original Meteor
-on the WMT12 and WMT13 data. However, the WMT14 data has not confirmed this result and the improvement was very
-small. Furthermore, Parmesan performs even worse than Meteor on the gold standard.
+\subsection{Conclusion}
+In summary, we highlight the adverse impact of noise in~\cmpt on the performance of~the \mn metric. We demonstrate that substantial reduction of the paraphrase tables can be beneficial for targeted paraphrasing of reference sentences. The \mn scores computed without paraphrase support, when applied to these new reference sentences, exhibit a significantly improved correlation with human judgments compared to the original \mn scores, particularly on the WMT12 and WMT13 data. 
 
-In the future, we plan to thoroughly examine the reason for the different performance on WMT14 data. We also 
-intend to make more sophisticated paraphrases including word order changes and other transformation that cannot 
-be expressed by simple substitution of two words. %We also intend to create our 
-%own database of~paraphrases with a special attention to the quality of~multi-word paraphrases. 
-We are also considering extending Parmesan to more languages.
+The results on the WMT14 data do not support the findings from the two previous years and the observed improvement  was marginal. Variations in data composition do not provide a sufficient explanation for the differing behavior observed on the WMT14 dataset. However, one important observation is that the correlation between automatic metrics and human judgments on WMT14 is already extremely high $(\approx 0.97)$. In such a setting, even small changes to the evaluation procedure may have little effect or may slightly reduce correlation due to statistical variance.
+
+This suggests that the benefits of paraphrased reference sentences are most apparent in evaluation scenarios with substantial surface variation between hypotheses and references, where the baseline metric struggles to capture valid translation variation.
+
+
+
+\begin{mdframed}[
+    linecolor=gray,
+    linewidth=2pt,
+    roundcorner=5,
+    backgroundcolor=gray!5
+]
+\noindent 
+We answer the following research questions:
+
+\paragraph{Does the improvement in correlation achieved by targeted paraphrasing of reference sentences for \bleu also generalize to other commonly used evaluation metrics, in particular \mn, which already incorporates paraphrase matching?}
+Yes, but not universally. On WMT12 and WMT13, targeted paraphrasing of reference sentences significantly improves the correlation of \mn with human judgments. However, the improvement in correlation is not confirmed by the WMT14 results.
+
+\paragraph{Does the inherent noise in \cmpt actually degrade the performance of the \mn metric itself?}
+Yes, our results provide strong evidence that noise in \cmpt harms the performance of the \mn metric. Across multiple experiments, we observe that entirely removing paraphrase matching within \mn consistently leads to the highest correlations with human judgments. The original \mn configuration, which relies on the full paraphrase tables, has the weakest performance on WMT12 and WMT13. 
+
+\end{mdframed}
+

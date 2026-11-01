@@ -1,344 +1,385 @@
-\chapter{Paraphrasing using phrase-based machine translation}
-\addcontentsline{toc}{chapter}{moses}
+\section{Paraphrasing using phrase-based machine translation}
+\label{moses}
+%\addcontentsline{toc}{chapter}{moses}
 
-In the following two chapters,\footnote{This chapter is based on the article \citep{barancikova:itat2014}, which is a joint work with Aleš Tamchyna. 
-Aleš was in charge of training and tuning Moses. My responsibilities included data preparation, paraphrasing and evaluation of experiments.} 
-we present a method of targeted paraphrasing of using machine translation itself. 
+In this and the following sections,\footnote{This section is based on the article \citep{barancikova:itat2014}, which is a joint work with Aleš Tamchyna. Aleš was responsible for training and tuning Moses, while my contributions included data preparation, paraphrasing and experimental evaluation.} we investigate targeted paraphrasing using machine translation techniques. Since both machine translation and paraphrasing aim to preserve meaning, differing primarily in whether the output language changes or remains the same, it is natural to consider adapting translation systems for monolingual paraphrasing.
 
-There is a strong resemblance between translation and paraphrasing -- they both strive to preserve the meaning of a sentence.  While translation focuses on converting text from one language to another, paraphrasing achieves the same objective within a single language by using a different choice of words.  %\cite{madnani:2010}  
-Both processes require a deep understanding of the original content and the ability to convey the intended message accurately while considering linguistic nuances, cultural context, and the target audience. 
+Machine translation benefits from a well-established set of tools and resources, whereas dedicated paraphrasing systems remain comparatively scarce. This motivates the following research question: how can existing machine translation frameworks be adapted to enable targeted paraphrasing within a single language? We address this question by exploring modifications required to generate Czech targeted paraphrases.
 
-Interestingly, machine translation has a wide array of tools and resources available compared to the relatively limited availability of paraphrasing tools. Given this disparity, it appears only logical to leverage existing machine translation engines and adapt them for the purpose of targeted paraphrasing within a single language.
- 
-We describe this attempt on two types of MT systems -- phrase-based and rule-based. 
-Initially, we experiment with the freely available SMT system Moses.
-We create its translation model from  Czech paraphrase tables and added a new feature to make the translation targeted.
-However, the results of this method are inconclusive. 
-In the view of errors appearing in the new paraphrased sentences, we propose another solution -- targeted paraphrasing using parts of a rule-based translation system included in the NLP framework Treex, which easily overcomes some of the problems of Moses. \Sref{treex}
-%ing the analysis, we get a representation of the sentence
-%on tectogrammatical layer, where we can swap a word and its grammatems for its paraphrase. 
-%Then using the synthesis back to the word layer.
+This section focuses on phrase-based machine translation using Moses, while the following section examines the rule-based system Treex. Moses \citep{moses} was one of the most widely used open-source frameworks for statistical machine translation (SMT) for more than a decade until the rise of neural machine translation (NMT). The introduction of the Transformer \citep{attention} architecture and pre-trained models has led to substantial improvements in translation quality and made NMT the prevailing approach for machine translation.
 
-%todo
+Despite NMT rendering SMT obsolete in recent years, we continue to utilize Moses. The reason is partly historical: our research began prior to the widespread adoption of NMT, situating our experiments within the context of SMT's prevailing technologies at the time.  More importantly, phrase-based SMT provides a transparent log-linear modeling framework in which individual features can be explicitly inspected and controlled. This level of interpretability is particularly useful for targeted paraphrasing, where we aim to manipulate specific aspects of the generated output. In contrast, neural models typically operate as black-box systems with limited direct control over intermediate decisions.
 
-\section{Data} 
-We perform our experiments on data from the English-to-Czech translation task 
-of WMT12 \cite{wmt12}. 
+In our approach, Moses is repurposed as a monolingual translation system that generates paraphrases of reference sentences. The original reference sentence is treated as the source, and the system produces alternative Czech formulations using paraphrase phrase tables. During decoding, an additional feature guides the system to generate paraphrases that maximize lexical overlap with a given translation hypothesis, thereby enabling targeted paraphrasing.
 
-\section{Moses}
-Moses \citep{moses} is a widely recognized open-source statistical machine translation (SMT) engine. It has been a prominent tool in the field of machine translation for several years.
-The advancements in neural machine translation (NMT), particularly with the introduction of the Transformer architecture and pre-trained models, have led to significant improvements in translation quality and made NMT the preferred approach for many translation tasks.
+This chapter first introduces necessary components of phrase-based SMT, then describes our adaptations for monolingual paraphrasing, and finally evaluates their effectiveness on the WMT12 dataset \citep{wmt12}. 
 
-Moses generates translatations using statistical models. The translation process involves the following phases: creating language and translation models, parameter tuning and decoding. We use Moses in the phrase-based setting.
+\pagebreak
+\begin{mdframed}[
+    linecolor=gray,
+    linewidth=2pt,
+    roundcorner=5,
+    backgroundcolor=gray!5
+]
+\noindent We address the following research question:
+\begin{itemize}
+    \item Can phrase-based SMT be adapted for targeted monolingual paraphrasing?
+    \item Can synthetic paraphrase tables replace translation tables automatically derived from parallel corpora?
+    \item Can an additional decoding feature guide phrase-based SMT to generate effective targeted paraphrases?
+\end{itemize}
 
-The first phase in statistical machine translation is creating language and translation models. 
-A language model is responsible for a correct word order and grammatical correctness 
-of the translated sentence. A translation model (phrase table) supplies all possible 
-translations of a word or a phrase. Models are assigned weights which are learned 
-during the parameter tuning phase.
+\end{mdframed}
 
-During the decoding phase, all these models are combined to maximize 
-$ \sum_i \lambda_i \phi_i (\bar{f},\bar{e}) $, where  $ \lambda_i $ is a weight 
-of a the sub-model $ \phi_i $ and $ \bar{f},\bar{e} $ is a hypothesis and source 
-sentence, respectively. In our case, we want to make a reference sentence closer
-to a corresponding machine translation output -- $ \bar{e} $ is the reference 
-sentence and $ \bar{f} $ is a new synthetic reference.
+\subsection{Moses overview}
+The Moses system generates translations using statistical models. The translation process involves the following phases: creating language and translation models, parameter tuning, and the decoding process. 
 
-On its own, this setting could create paraphrases, but they would be just random
-paraphrases of the reference sentence -- their similarity in wording to our original 
-hypotheses would not be guaranteed. Therefore, we also add a new feature for targeted 
-paraphrasing to Moses.
+The language model is responsible for ensuring syntactic correctness and grammatical integrity of the translated sentence. The translation model (also referred to as a phrase table) provides all possible translations for a given word or phrase. 
+
+Following the construction of the models, the next phase consists of parameter tuning. During this step, the model weights are optimized to maximize translation quality on a development set. Various optimization techniques, such as minimum error rate training (MERT) or~maximum likelihood estimation, are applied to fine-tune the statistical models.
+
+During decoding, the final phase, a beam search algorithm is employed to~efficiently find the best translation among potentially numerous candidates generated from a source sentence.  More specifically, an input sentence is divided into smaller units, words and phrases, and they are translated largely independently. The algorithm keeps only a limited number of hypotheses (partial translations), focusing only on the most promising ones based on their cumulative scores. These scores are computed as a combination of different model scores and their corresponding weights, which are learned during the training process. 
+
+\begin{figure}
+    \centering
+    \includegraphics[scale=0.65]{../img/moses_diagram_new.pdf}
+    \caption{The schema of the Moses translation system, employing a~color-coded scheme to denote the languages associated with various models and datasets. The blue color is used to highlight the source language, whereas yellow designates the target language. Green represents parallel data or models, i.e., those incorporating both the target and source languages.}
+    \label{fig:moses_diagram}
+\end{figure}
+
+A simplified representation of the Moses translation engine is shown in \Fref{fig:moses_diagram}. In the remainder of this section we introduce some of the components in more detail.
+
+\subsubsection{Language Model}
+\label{sect-LanguageModel}
+The language model (LM) is essential to ensure that translations are not only grammatically correct but also fluent in the target language. It plays an important role~in resolving ambiguities and ensuring the contextual integrity of the translated text. 
+
+To adapt Moses to produce paraphrases, the construction of a language model does not require modifications, since it is based solely on monolingual data. We created our language model using the SRILM toolkit \citep{srilm} with data from the Czech component of the Czech-English parallel corpus CzEng \citep{czeng10:lrec2012}.
+
+\subsubsection{Translation model}
+\label{sect-TranslationModel}
+The translation model is responsible for generating possible translations of a~source language sentence into a~ target language. This model identifies the most probable translations of individual words or phrases and then combines them to~form complete sentences in the target language. 
+
+Fundamentally, a translation model (or phrase table) is structured as an extensive lookup table. Each entry in this table consists of a source phrase and its corresponding translation. To help the decoder choose the best candidates, each entry includes several additional components:
+
+\begin{itemize}
+    \item Feature Scores: These typically include translation probabilities (the likelihood that phrase A translates to phrase B and vice versa) and lexical weights.
+    \item Translation Frequencies: The model also tracks the frequencies of these possible translations as observed in the original training corpus.
+    \item Phrase Alignment: Optionally, the table may include specific word-level alignments between the phrases in the two languages to show which words correspond to each other.
+\end{itemize}
+
+Feature scores, alignment and frequencies are automatically learned by analyzing large parallel datasets using tools such as GIZA++ \citep{gizapp}. It estimates translation probabilities, focusing on how words and phrases in a source language correspond to those in the target language. The effectiveness of the phrase table depends on the quality and volume of the bilingual corpora used for training. 
 
 
-After building the models, the next phase is parameter tuning. This step involves adjusting the model parameters to optimize the translation quality. Various optimization techniques, such as minimum error rate training or maximum likelihood estimation, are employed to fine-tune the statistical models.
+\subsection{Paraphrase tables for Moses}
+\label{sect-PhraseModel}
+To adapt Moses for monolingual paraphrasing, we need data consisting of sentence pairs in the same language that express equivalent meanings, i.e., paraphrases. Such data would play a role analogous to parallel corpora in standard machine translation. However, large-scale Czech datasets of this kind, containing aligned paraphrastic sentence pairs, are not available.
 
-Finally, the decoding phase takes place. In this stage, the models are used to generate translations for input sentences. The input sentence is segmented into phrases, and the translation model scores different translation options for each phrase. The decoding algorithm then searches for the most probable translation by considering both the translation model scores and the language model probabilities. The resulting translation is the output of the decoding process.
+In view of this, we adopt an alternative approach to constructing the translation model. Instead of relying on sentence-aligned paraphrase data, we utilize existing Czech paraphrase tables, which provide pairs of semantically related expressions. While these resources do not constitute parallel corpora in the traditional bilingual sense, they can be interpreted as a form of alignment at the phrase level.
 
-When it comes to Moses, it is specifically used in the phrase-based setting. The phrase-based approach to machine translation divides the input sentence into smaller units, or phrases, and translates them independently. These translated phrases are then recombined to form the final translation. Moses excels in this setting, providing efficient and effective translation capabilities.
+We construct two complementary phrase tables: an enhanced version of the \cmpt table and a \owpt derived from lexical resources and the CzEng corpus.
+
+\subsubsection{\enhanedmeteor tables}
+
+The \enhanedmeteor table is derived from the \cmpt (as described in \Cref{meteori}). Each paraphrase pair has a pivot score that we repurpose as a~feature in our phrase table. However, our analysis in Section \nameref{filtering-section} in~the Appendix shows that this score performs worse than random selection. To compensate for this limitation, we introduce additional feature scores based on distributional semantics \citep{miller-91}. This approach is based on the hypothesis that words or phrases that occur in similar contexts tend to have similar meanings. This principle is often summarized by the aphorism ``You shall know a word by the company it keeps'' \citep{firth1957}. 
+
+Distributional similarity has previously been used to re-rank automatically extracted paraphrases, notably by \cite{chan-etal-2011-reranking} and \cite{ppdb}, who applied it to paraphrases obtained from parallel bilingual corpora. Distributional semantics is efficient in eliminating incorrect paraphrases generated by lexical ambiguity, as such words rarely occur in similar contexts. Given that \cmpt was also constructed automatically from parallel corpora (as detailed in \cref{meteori}), it is reasonable to incorporate distributional similarity scores as additional features into our translation model.
+
+To compute these similarity scores, we extract contextual occurrences of paraphrases from \cmpt in~the Czech National Corpus \citep{SYN2010}. Contexts are defined as words occurring within a fixed window around the target phrase. The window size parameter specifies how many words are considered on each side; for example, a window size of~1 includes only immediately adjacent words, whereas a window size of~3 includes three words to the left and three words to the right.
+
+For each paraphrase pair, we represent the contexts in which the phrases occur as context-frequency vectors and compute their cosine similarity. This provides a graded estimate of how similar the contexts of the two phrases are, helping us distinguish genuine paraphrases from false pairs.  A worked example of the cosine similarity computation on a toy corpus is provided in the Appendix \nameref{app:distributional}.
+
+Using this procedure, we add six contextual similarity features to each paraphrase pair in \cmpt. These scores vary according to (i) the context window size and (ii) whether word order within the window is preserved. We use window sizes of 1–3 to capture both local and slightly broader contextual information, while distinguishing between ordered and unordered contexts allows us to model both strict syntactic patterns and more flexible co-occurrence signals. Together with the original pivot score, the resulting \enhanedmeteor phrase table contains the following seven features: 
+
+\begin{enumerate}
+\item \textbf{pivot score}: the score adopted from \cmpt
+\item \textbf{context similarity (window size 1, ordered)},
+\item \textbf{context similarity (window size 2, ordered)},
+\item \textbf{context similarity (window size 3, ordered)},
+\item \textbf{context similarity (window size 1, unordered)},
+\item \textbf{context similarity (window size 2, unordered)},
+\item \textbf{context similarity (window size 3, unordered)}.
+\end{enumerate}
 
 
-\subsection{Language model}
-We create the language model (LM) using the SRILM toolkit \cite{srilm} on the 
-data from the Czech part of the Czech-English parallel corpus CzEng \cite{czeng10:lrec2012}. 
+\subsubsection{\owpt}
 
-\subsection{Phrase models}
+Our second phrase table is a one-word paraphrase table created from CzEng 1.0, a sentence-parallel Czech-English  corpus \citep{czeng10:lrec2012}. As a preliminary step, we created a~candidate set by compiling all words from the Czech part of CzEng. We set a frequency threshold to at least five occurrences in the corpus to filter out rare words and potential typographical errors. This set was further expanded with words from the WMT12 hypotheses and references, totaling 447,540 words.  Morphological analysis was performed using the Morče tool \citep{morce:2007} to obtain lemmas and POS tags.
 
-\begin{table*}[ht]
-%\begin{center}
-\begin{tabular}{r|l|c|c}
-setting & reference sentence used & correlation & avg. BLEU \\
-\hline
-\textbf{Baseline} & original reference sentence, no paraphrasing & \textbf{0.75} & 12.8 \\
-\textbf{Paraphrased} & paraphrased by Moses using MERT-learned weights  & 0.50  & 15.8 \\
-\textbf{LM+0.2}  & paraphrased by Moses with LM weight increased by 0.2  & 0.24 & 9.1 \\
-\textbf{LM+0.4} & paraphrased by Moses with LM weight increased by 0.4  & 0.22 & 6.7 \\
-\end{tabular}
-\caption{Description of basic settings and the results - Pearson's correlation of BLEU and the
-human judgment, the average BLEU scores.} 
-%korelace metrik - 0.981
-\label{settings}
-%\end{center}
-\end{table*}
-\begin{figure*}[htb]
+The \owpt  includes word pairs $(x, y)$ from the list of candidate words satisfying any of the following:
+
+\begin{itemize}
+\item $x = y$ (identity, because not every word should be paraphrased);
+\item $x, y$ share the same lemma (inflectional variants, because a word can be in a different inflected form in a paraphrased sentence);
+\item lemmas of $ x,y $ are paraphrases in \wordnet or \fm.
+\end{itemize}
+
+% 1,121,988
+This phrase table contains over 1.1 million pairs. For each pair of words $ x,y $, we add five feature scores that primarily function as binary indicators specifying whether a given relationship holds between the two words (e.g., identity, shared lemma, or membership in an external lexical resource). Rather than representing probabilities, these features simply activate specific signals that can be weighted during model tuning. For each pair of words $ x,y $, we add the following five feature scores:
+
+\begin{itemize}
+\item \textbf{identity:} $ e^1 $ if  $ x = y $, $e^0$ otherwise,
+\item \textbf{same lemmas:} $ e^1$ if  $ x $ and $ y $ have the same lemma, $e^0$ otherwise,
+\item \textbf{WordNet:} $e^1$ if  lemmas of $ x $ and $ y $ are paraphrases according to the Czech WordNet, $e^0$ otherwise,
+\item \textbf{\fm:} $ e^1$ if  lemmas of $ x $ and $ y $ are paraphrases according to \fm, $e^0$ otherwise,
+\item \textbf{POS similarity:} $ e^{\frac{1}{a+1}}$, where $ a $ represents the minimal Hamming distance between the positional morphological tags of the two words, i.e., the number of positions at which the tags differ. We use a positional tagset in which each position encodes a specific morphological category (such as part of speech, gender, number, or case), rather than a single coarse POS label. For example, a tag such as \texttt{NNMS1-----A----} represents a noun (N), masculine (M), singular (S), in nominative case (1), followed by additional morphological features.
+\end{itemize}
+
+The \textbf{POS similarity} feature is intended to capture the morphological similarity between candidate paraphrases, reflecting how closely they align in grammatical function and inflectional properties. It should be noted, however, that all tag mismatches are treated uniformly in the Hamming distance. In particular, the absence of a morphological feature (typically marked by ``-'') is treated the same as a mismatch between two explicitly specified values. Linguistically, this may underestimate certain differences, as the absence of a feature can signal a stronger divergence than differing values of the same category. Nevertheless, this simplified formulation allows the feature to be efficiently incorporated into the model.
+
+\begin{figure}[!tb]
+    \centering
+    \includegraphics[scale=0.35]{moses_phrase_table.png}
+    \caption{In the \owpt, each entry follows the standard Moses phrase table format and is divided into five sections, separated by the delimiter $ ||| $. The first block contains a source phrase, and the second block presents a target phrase (its corresponding translation, or a paraphrase, in our context). The third block contains all feature scores associated with the phrase pair. The fourth and fifth blocks are reserved for word alignment information and phrase pair counts, respectively, as defined by the Moses framework. In our case, these fields are left empty because the table is constructed from lexical resources rather than extracted from parallel training data, and alignment information is not applicable for one-word pairs. This example is reprinted from \cite{barancikova:itat2014}.}
+    \label{fig:moses_phrase_table}
+\end{figure}
+
+An example of our phrase table is presented in~\Fref{fig:moses_phrase_table}.
+
+Since Moses internally operates in log space, these exponential values ($e^1, e^0$) are transformed into 1 and 0 during decoding. This representation allows the features to function as binary activations rather than probabilities, avoiding numerical issues with zero values while allowing the model to learn appropriate weights for each signal.
+
+Taken together, the \enhanedmeteor table and the \owpt aim to balance semantic coverage and lexical control.
+
+%During the decoding phase, all these models are combined to maximize $$ \sum_i \lambda_i \phi_i (\bar{f},\bar{e}), $$ where  $ \lambda_i $ represents a weight of a sub-model $ \phi_i $ and $ \bar{f},\bar{e} $ denotes a hypothesis and a source sentence, respectively. In the context of our study,  the objective is to bring a reference sentence closer to its corresponding machine translation output, with $ \bar{e} $ being the reference sentence and $ \bar{f} $ representing a newly generated synthetic reference.
+
+
+
+\subsection{CoveredReferenceFeature}
+\label{sect-CoveredReferenceFeature}
+
+Using  \enhanedmeteor and \owpt as phrase tables, Moses can already generate Czech-to-Czech translations. However, such paraphrasing would be unconstrained, as the system simply produces the most probable output according to the translation model. 
+
+To enable targeted paraphrasing, we introduce a novel feature  into the Moses translation engine that guides the decoder towards outputs with a higher degree of similarity to a given translation hypothesis.
+
+This feature, called \textbf{CoveredReferenceFeature}, measures the lexical overlap between each candidate paraphrase and the evaluated hypothesis. The objective of this feature is to prioritize candidate paraphrases that are closer to the evaluated system output. 
+
+The overlap is defined as the number of words in the candidate paraphrase that also appear in the evaluated hypothesis. This computation is intentionally simple and computationally efficient. More complex overlap measures were avoided, as they would significantly increase the computational cost of beam search.
+
+The integration of this feature into Moses' beam search algorithm, used in the phrase-based decoding phase, requires tracking the feature state. The feature state tracks which words from the evaluated hypothesis have already been covered by the candidate paraphrase. This state tracking is essential for accurate hypothesis recombination, as it allows the beam search algorithm to maintain a comprehensive understanding of which parts of the reference translation have been covered. 
+
+Furthermore, we implement an estimator that predicts the potential of a given phrase to cover additional words from the reference translation. It is defined as the number of reference translation words covered by the given phrase. 
+
+The code for \textbf{CoveredReferenceFeature} was written by Aleš Tamchyna and it is included in the Moses GitHub repository.\footurl{https://github.com/moses-smt/mosesdecoder/} 
+
+
+\subsection{Additional Features}
+\label{sect-OtherFeatures}
+In addition to the already mentioned language model (\cref{sect-LanguageModel}), the features of the translation models (\cref{sect-PhraseModel}), and \textbf{CoveredReferenceFeature} (\cref{sect-CoveredReferenceFeature}), the Moses decoder also originally incorporates three additional features that influence hypothesis scoring:
+
+\begin{itemize}
+    \item \textbf{Distortion:} This feature measures the cost associated with reordering phrases from their positions in the source sentence to their positions in the translated sentence. A higher distortion cost penalizes more significant rearrangements, encouraging the translation to preserve the original order of the source sentence as much as possible.
+
+    \item \textbf{WordPenalty:} This feature controls the length of the output translation. Typically, it penalizes translations for each word produced, encouraging the model to generate more concise translations. This feature helps to balance the length of the translation, preventing too long or too brief translations.
+    
+    \item \textbf{PhrasePenalty:} Similar to the \textbf{WordPenalty}, the \textbf{PhrasePenalty} 
+    feature is concerned with the number of phrases in the translation. This penalty is applied for each phrase used in the translation, influencing the model to prefer translations with an optimal number of phrases. A low \textbf{PhrasePenalty} (close to 0) means little to no discouragement for using multiple phrases, potentially leading to more detailed, possibly fragmented translations.
+\end{itemize}
+
+\begin{figure}[t!]
+    \centering
+   % \hspace*{-0.5cm}     
+    \includegraphics[scale=0.65]{../img/moses_paraphrasing_diagram_new.pdf}
+    \caption{The schema of the Moses translation system, as adapted for the specific requirements of targeted paraphrasing and the constraints posed  by the unavailability of parallel monolingual data. Due to the fact that only Czech data was used, we employ dual-color coding to distinguish new and original parts of the engine. Components retained from the original configuration of the Moses system, as depicted in \Fref{fig:moses_diagram}, are blue. Modifications introduced to address the challenges of targeted paraphrasing are marked in red.}
+    \label{fig:moses_paraphrasing_diagram}
+\end{figure}
+
+The diagram of Moses translation engine adjusted for paraphrasing is presented in \Fref{fig:moses_paraphrasing_diagram}.
+
+\subsection{Parameter tuning using MERT}
+\label{sect-ParameterTuning}
+
+We use the minimum error rate training (MERT) \citep{mert} to find the optimal weights for our models to minimize the error rate on a development dataset. In the original setting, these validation datasets consist of parallel data: source sentences, and their professional translations. Within the original MT task, MERT learns the weights by iteratively translating each source sentence from the validation dataset, calculating an error metric (such as \bleu) by comparing it to the reference translation, and adjusting the model weights to minimize average error across all candidates until the error rate stops improving significantly.
+
+\begin{table}[!tb]
 \begin{center}
-\begin{tabular}{l|r}
- \textbf{Source } &  \textit{Paclík claims he would dare to manage the association.} \\
- \hline
+\begin{tabular}{lr}
+\toprule
+\textbf{Feature} & \textbf{Weight} \\
+\midrule
+Language Model & 0.016 \\
+\midrule
+\textbf{\enhanedmeteor } & \\
+Pivot Score & 0.010 \\
+context similarity (window size 1, ordered) & -0.021 \\
+context similarity (window size 2, ordered) & 0.009 \\
+context similarity (window size 3, ordered) & 0.006 \\
+context similarity (window size 1, unordered) & -0.004 \\
+context similarity (window size 2, unordered)& 0.011 \\
+context similarity (window size 3, unordered) & 0.002 \\
+\midrule
+\textbf{\owpt} & \\
+Identity & 0.025 \\
+Same Lemmas & -0.003 \\
+WordNet & 0.021 \\
+FM & 0.003 \\
+POS Similarity & 0.031 \\
+\midrule
+CoveredReferenceFeature & 0.513 \\
+\midrule
+Distortion & 0.026 \\
+Word Penalty & 0.291 \\
+Phrase Penalty & 0.006 \\
+\bottomrule
+\end{tabular}
+
+\caption{Weights learned in the optimization process using MERT.}
+\label{table:weights}
+\end{center}
+\end{table}
+
+In the paraphrasing setting, suitable parallel validation data is not readily available. We briefly experimented with Many Czech References dataset \citep{bojar-scratching}, which contains human-created paraphrases of 50 sentences. Despite the high quality of these paraphrases, the dataset is very limited in its size and variability.
+
+Therefore, due to the absence of more suitable datasets, we instead construct a development set from the WMT13 dataset \citep{wmt13}, pairing reference sentences with the highest-ranked system hypothesis according to human evaluation. Although this setup differs from the traditional machine translation setting, it provides a practical approximation for learning model weights that encourage lexical similarity between references and hypotheses.
+
+The learned feature weights (\Cref{table:weights}) provide important insight into the behavior of the system. The \textbf{CoveredReferenceFeature} receives by far the highest weight (0.513), indicating that the optimization process is dominated by the objective of maximizing lexical overlap with the evaluated hypothesis. This behavior is, in fact, consistent with our goal of targeted paraphrasing: we explicitly aim to generate reference variants that are lexically closer to system outputs.
+
+However, the combination of this feature with \bleu-based optimization leads to an unintended consequence. Because \bleu directly rewards n-gram overlap, the \textbf{CoveredReferenceFeature} becomes an extremely strong signal, effectively encouraging the system to reproduce the hypothesis as closely as possible. Instead of guiding paraphrasing in a controlled manner, it maximizes the lexical overlap at all costs.
+
+\textbf{Word Penalty} has the second highest weight (0.291), giving high importance to penalizing overly long outputs. Together with the \textbf{CoveredReferenceFeature}, it creates a trade-off between maximizing lexical overlap and controlling sentence length. In other words, \textbf{CoveredReferenceFeature} pushes Moses to copy the hypothesis, while Word Penalty prevents it from copying too much — but neither enforces grammaticality or meaning. 
+
+In contrast, the \textbf{Language Model} receives a very small weight (0.016), suggesting that grammaticality and fluency contribute little to the optimized objective. As a result, the system frequently generates ungrammatical paraphrases that nevertheless achieve high \bleu scores due to increased lexical overlap.
+
+Similarly, features derived from the paraphrase tables, including the pivot score and distributional similarity measures in the \textbf{\enhanedmeteor} table, receive negligible weights. This indicates that these features do not contribute meaningfully to \bleu optimization, as they capture semantic similarity rather than exact surface overlap. The features of the \textbf{\owpt} have slightly higher weights, particularly POS similarity, but remain marginal compared to the dominant targeting feature.
+
+Overall, these results highlight a fundamental mismatch between the optimization objective and the intended task. While the goal of targeted paraphrasing is to generate grammatical and semantically equivalent variants of the reference sentence, the \bleu-driven optimization instead encourages the system to approximate the hypothesis as closely as possible at the surface level. Consequently, the model behaves more like a guided copying mechanism than a true paraphrasing system, prioritizing lexical overlap over fluency and meaning preservation.
+
+
+\subsection{Results of paraphrasing via Moses}
+
+\subsubsection{Default Settings}
+
+\begin{table}[b!]
+\centering
+\begin{tabular}{rcc}
+\toprule
+configuration & correlation & average \bleu \\
+\midrule
+\textbf{Baseline} & \textbf{0.75} & 12.8 \\
+\textbf{Paraphrased} & 0.50  & 15.8 \\
+\textbf{LM+0.2}  &  0.24 & 9.1 \\
+\textbf{LM+0.4} &  0.22 & 6.7 \\
+\end{tabular}
+\caption{Description of basic settings and the results --- Pearson's correlation of \bleu and the
+human judgment, the average \bleu scores.} 
+%korelace metrik - 0.981
+\label{tab:moses_paraphrasing_result}
+\end{table}
+
+The results are presented in \Tref{tab:moses_paraphrasing_result} as the Pearson’s correlation coefficient between \bleu and the silver standard of human judgment computed on the WMT12 evaluation dataset using the following four configurations: 
+\begin{itemize}
+    \item \textbf{Baseline:} original reference sentences are used, no paraphrasing 
+    \item \textbf{Paraphrased:} paraphrased reference sentences generated by Moses, using weights learned via MERT.
+    \item \textbf{LM+0.2:}  paraphrased reference sentences generated by Moses, using weights learned via MERT with an incremental adjustment of 0.2 to the weight of the language model.
+    \item \textbf{LM+0.4:} paraphrased reference sentences generated by Moses, using weights learned via MERT with an incremental adjustment of 0.4 to the weight of the language model.
+\end{itemize}
+
+\begin{figure}[tb]
+\centering
+\includegraphics[scale=0.7]{../img/moses_multigraf.pdf}
+\caption{Visualization of \bleu scores plotted against the silver standard of human judgment, derived from the WMT12 manual evaluation rankings. The four configurations—\textbf{Baseline}, \textbf{Paraphrased}, \textbf{LM+0.2}, and \textbf{LM+0.4}—are shown with linear regression lines illustrating the correlation between \bleu and human judgment. The figure is adopted from \cite{barancikova:itat2014}.}
+\label{visualization}
+\end{figure}
  
- \textbf{Baseline} & Paclík tvrdí , že by si na vedení asociace troufl.\\
-           & \textit{Paclík claims he would dare to lead the association.} \\
+\Fref{visualization} provides a visual overview of our findings. The graphs demonstrate that while paraphrasing via Moses with MERT-learned weights consistently increases \bleu scores, it fails to improve the correlation with human judgment. In fact, it is substantially degraded. Increasing the weights of the language model, intended to improve grammatical accuracy, instead contributed to unpredictability and decreased coherence between \bleu scores and human judgment. 
 
- \hline
- \textbf{Hypothesis} & Paclík tvrdí, že by se odvážil k řízení komory. \\
-            & \textit{Paclík claims he would find the courage to control the chamber.}  \\ 
+Importantly, none of the paraphrasing configurations surpasses the baseline correlation obtained using the original, non-paraphrased reference sentences. This contrasts with the simpler paraphrasing approach discussed in \Cref{substitution}, where targeted lexical variation yielded consistent gains.
 
- \hline
- \textbf{Paraphrased} & Paclík tvrdí, že by se na řízení organizace troufl. \\
-             & \textit{*Paclík claims he would dare to control the organization.}\\
- \hline 
- \textbf{LM+0.2} & Paclík tvrdí, že by si troufl na řízení ekonomiky. \\
-               &\textit{ Paclík claims he would dare to control the economy.} \\
-  
-\hline 
- \textbf{LM+0.4} & Říká se, že Paclík si troufl na řídící rady. \\
-               & \textit{They say that Paclík ventured to governing boards.} \\
+The observed degradation can be attributed to several interacting factors. First, MERT optimization against \bleu disproportionately rewards lexical overlap, causing the \textbf{CoveredReferenceFeature} to dominate the model. As a consequence, other components—most notably the language model—receive negligible weights. Specifically, the paraphrases generated by the \textbf{Paraphrased} setting, despite achieving a significantly higher \bleu score, were mostly ungrammatical, which negatively affected the correlation of our metric.
+
+Second, manually increasing the weight of the language model paradoxically introduces new complications. This adjustment produces grammatically correct references that, regrettably, tend to have little or no relevance to the original source sentence. This observation indicates that the noise inherent in the automatically constructed paraphrase tables outweighed the corrective capacity of the language model, leading to fluent but semantically disconnected outputs.
+
+Finally, the design of the targeting feature itself contributes to the problem. Operating purely at the word level and ignoring word order or syntactic structure, it permits translations with scrambled structure as long as lexical overlap is maintained. As a result, the feature acts as a strong oracle for word coverage but provides no guarantees with respect to fluency or syntactic adequacy.
+
+These effects are further reflected in the learned feature weights. All features of both translation models---the \owpt and \enhanedmeteor---receive very small weights, with the highest assigned to POS similarity. This indicates that neither the pivot score nor the distributional semantic features are effective in distinguishing valid paraphrases from noise.
+
+\Fref{fig:moses_sentences_example} illustrates these failure modes. While the hypothesis is fluent and semantically appropriate, the paraphrased reference generated under the default setting contains grammatical errors. Increasing the language model weight yields fluent outputs, but at the cost of semantic drift, resulting in references that no longer correspond to the source sentence.
+
+
+\begin{figure}[htb]
+\begin{center}
+\scalebox{0.92}{
+\begin{tabular}{ll}
+\toprule
+ \textbf{Source} &  \trans{Paclík claims he would dare to manage the association.} \\
+  \textbf{sentence} &   \\
+ \midrule
+ 
+ \textbf{Original} & \foreign{Paclík tvrdí, že by si na vedení asociace troufl.}\\
+\textbf{reference}  & \trans{Paclík claims he would dare to lead the association.} \\
+ \midrule
+ \textbf{Hypothesis} & \foreign{Paclík tvrdí, že by se odvážil k řízení komory.} \\
+            & \trans{Paclík claims he would find the courage to control the chamber.}  \\ 
+ \midrule
+ \textbf{Paraphrased} & *\foreign{Paclík tvrdí, že by \textbf{se} na řízení organizace troufl.}\\
+\textbf{reference}  & *\trans{Paclík claims he would dare to control the organization.}\\
+ \midrule
+ \textbf{LM+0.2} &  \#\foreign{Paclík tvrdí, že by si troufl na řízení \textbf{ekonomiky}.}\\
+\textbf{reference} & \# \trans{Paclík claims he would dare to control the economy.}\\
+   \midrule
+ \textbf{LM+0.4} & \#\foreign{\textbf{Říká se, že Paclík si troufl na řídící rady.}} \\
+\textbf{reference} & \#\trans{They say that Paclík ventured to governing boards.} \\
+\bottomrule
 %Lexical & Paclík tvrdí , že by se na řízení asociace troufl .\\
 %Lexical boosted by 20 & Paclík tvrdí , že by si troufl na řízení ekonomiky .\\
 %asociace, komora nikde nejsou jako parafraze
 
-\end{tabular}
-\caption{Example of the targeted paraphrasing. The~hypothesis is grammatically 
-correct and has very similar meaning as the source sentence. The new reference 
-is closer in wording to the hypothesis, but there is an error in a word choice. 
-The sentences created with increased weights of the language model are both 
-grammatically correct, but the sentence lost its original meaning.}
-\label{example}
+\end{tabular}}
+\caption{An illustrative example of the targeted paraphrasing. The~hypothesis is grammatically correct and has very similar meaning to the source sentence. The paraphrased reference more closely matches the hypothesis in terms of wording; however, there is a grammatical error. Specifically, the reflexive verb \samppair{troufnout}{to dare} requires pairing with the reflexive pronoun \samppair{si}{oneself [in dative]}, but the paraphrase sentence incorrectly employs the reflexive pronoun \samppair{se} {oneself [in accusative]} instead.  The reference sentences generated with increased weights of the language model are both grammatically correct, but they both significantly deviated from the meaning of the original reference sentence (marked with \#, with errors highlighted in bold). In the \textbf{LM+0.4} setting, the reference also differs a lot in wording from both the hypothesis and the reference sentence.}
+\label{fig:moses_sentences_example}
 \end{center}
-\end{figure*}
+\end{figure}
 
-Each entry in Moses phrase tables contains a phrase, its translation, several
-feature scores (translation probability, lexical weight etc.), and optionally
-also alignment within the phrase and frequencies of phrases in the training data.
-The phrase tables are learned automatically from large parallel data.
-As we do not have any large corpora of Czech-Czech parallel data, we create the 
-following two ``fake'' translation models for paraphrasing from our paraphrase 
-tables. 
+\subsubsection{Monotone decoding}
+
+Given the unsatisfactory results, we experimented with three additional configurations: 
 
 \begin{itemize}
-\item \textbf{Enhanced Meteor tables}\\
-This table was created from the Czech Paraphrase Meteor table. It was constructed
-via \textit{pivoting}. \cite{pivoting} The pivot method is an inexpensive way of 
-acquiring paraphrases from large parallel corpora. It is based on the assumption 
-that two phrases that share a meaning may have a same translation in a foreign 
-language. \cite{dyvik}
-
-Each paraphrase pair comes with a pivoting score which we adapt as a feature in 
-out phrase table. However, this score turns out to be even worse then random 
-selection \cite{barancikova:2014}, so we do not expect it to get a high weight 
-in tuning.
-
-For that reason, we add our own paraphrase scores, acquired by \textit{distributional
-semantics}. Distributional semantics assumes that two phrases are semantically 
-similar if their contextual representations are similar. \cite{miller-91}
-
-We collect all contexts (words in a window of limited size) in which Meteor 
-paraphrases occur in the Czech National Corpus \cite{SYN2010} and then measure 
-context similarity (cosine distance, taking into account the number of word 
-occurrences) for each pair of paraphrases. 
-
-We add six scores for each pair of paraphrases according to the size of the 
-context window used (1-3 words) and whether word order played a role in the 
-context. 
-
-\item\textbf{One-word paraphrase table}\\
-We first create a set of all words from Czech side of CzEng appearing at least
-five times to exclude rare words and possible typos. We also add all words appearing 
-in the MT outputs and the reference sentences. Morphological analysis of the words was
-then performed using Morče. 
-
-For every word $ x $ from this set, we add to this translation table every pair of 
-words that fulfills at least on of the following requirements:
-
-\begin{itemize}
-\item $ x,x $ (not every word should be paraphrased)
-\item $ x,y $, if lemma of $ x $ is lemma of $ y $ (some word 
-might have different morphology in the paraphrased sentence)
-\item $ x,y $, if lemma of $ x $ and lemma of $ y $ are paraphrases according 
-to Czech WordNet PDT 1.9.
-\item $ x,y $, if lemma of $ x $ and lemma of $ y $ are paraphrases according 
-to the filtered Meteor.
+    \item \textbf{Lexical:}  This setting is based on the basic \textbf{Paraphrased} setting, the only difference is utilizing only one translation model -- the \owpt, focusing on lexical substitutions without considering the \enhanedmeteor table. 
+    \item \textbf{Lexical \& LM+0.2:} This setting combines the lexical approach with an increment of 0.2 in the language model weight, aiming to enhance grammatical accuracy while maintaining a focus on simple lexical paraphrases.
+    \item \textbf{Lexical \& Monotone:}  This configuration applies lexical paraphrasing within a monotone translation framework, i.e., explicitly disabling reordering to address issues related to scrambled word order.
 \end{itemize}
 
-These categories constitute the first four scores in the phrase table. A pair of 
-words gets score $ e $ if they fall in a given category, 1
-($e^0$) otherwise.\footnote{Phrase-table scores are considered log-probabilities.} 
-This phrase table contains more than 1,100k pairs of words.
 
-We add another score expressing POS tag similarity between the two words. It is computed 
-$ e^{\frac{1}{a+1}}$, where $ a $ is the minimal Hamming distance between tags of the
-words. This probability should reflect how morphologically distant the paraphrases are. 
-\end{itemize}
-
-\subsection{Feature for targeted paraphrasing}
-In order to steer the MT decoder (translation engine) in the direction of the
-hypotheses, we implemented an additional feature for Moses which
-measures the overlap with the hypothesis. In order to keep its computation
-tractable during search, the overlap is defined simply as the number of words
-from the hypothesis confirmed by the reference translation.
-
-Integration into the beam search algorithm used in phrase-based decoding
-requires us to keep track of feature state (i.e. reference words covered) to
-allow for correct hypothesis recombination. We also implemented an estimator of
-future phrase score, defined as the number of reference translation words
-covered by the given phrase. Our code is included in
-Moses.\footurl{https://github.com/moses-smt/mosesdecoder/}
-
-\subsection{Parameter tuning}
-We use the minimum error rate training (MERT) \cite{mert} to find the optimal 
-weights for our models. MERT asserts the weights to maximize the translation 
-quality, which is measured with BLEU. We employ the reference sentences and the 
-highest rated MT output as the parallel data for tuning. 
-
-This method, however, turned out not to be optimal for our setting. Our feature for 
-targeted paraphrasing naturally obtains the highest weight as it provides an oracle 
-guide towards the hypothesis.
-
-Other important models, e.g. the language model, get comparably very small weights. The 
-paraphrased sentences tend to be closer to the hypothesis, but not grammatically correct. 
-Therefore, we experiment with increasing the weight of the language model manually. 
-
-\begin{table*}[tb]
+\begin{table}[tb!]
 \begin{center}
-\begin{tabular}{r|l|c|c}
+\begin{tabular}{rcc}
+\toprule
+setting & correlation & avg. \bleu \\
+\midrule
+\color{gray} \textbf{Baseline} & \color{gray} 0.75 & \color{gray} 12.8 \\
+\color{gray} \textbf{Paraphrased} & \color{gray} 0.50  & \color{gray} 15.8 \\
+\color{gray} \textbf{LM+0.2}  & \color{gray} 0.24 & \color{gray} 9.1 \\
+\color{gray} \textbf{LM+0.4} & \color{gray} 0.22 & \color{gray} 6.7 \\
+\textbf{Lexical} &  0.56 & 15.1 \\
+\textbf{Lexical \& LM+0.2} & 0.33  & 9.5 \\
+\textbf{Lexical \& Monotone}  & \textbf{0.61} & 18.1 \\
 \hline
-setting & reference sentence used & correlation & avg. BLEU \\
-\hline
-\textbf{Lexical} &  Only one-word paraphrase table & 0.56 & 15.1 \\
-\textbf{Lexical \& LM+0.2}  & \textbf{Lexical} and LM weight increased by 0.2 & 0.33  & 9.5 \\
-\textbf{Monotone}  & \textbf{Lexical} and monotone translation & \textbf{0.61} & 18.1 \\
 \end{tabular}
-\caption{Additional settings and the results -- Pearson's correlation and the average BLEU scores.} 
-\label{settings2}
+\caption{Results for the additional settings, showing Pearson’s correlation between \bleu and the silver standard, as well as the average \bleu scores. Results from \Cref{tab:moses_paraphrasing_result} are highlighted in gray for easier comparison.} 
+\label{tab:settings2}
 \end{center}
-\end{table*}
+\end{table}
 
-%Vahy
-%Distortion0= 0.0263445
-%LM0= 0.0159449
-%CoveredReferenceFeature0= 0.513121
-%WordPenalty0= 0.291437
-%PhrasePenalty0= 0.00566341
-%TranslationModel0= 0.024998 -0.00344275 0.0206294 0.00278498 0.0305869
-%TranslationModel1= 0.010452 -0.0219544 0.00883162 0.00627672 -0.00401715 0.0111173 0.00239786
+The results of these new settings are presented in \Tref{tab:settings2}. To reduce noise in the translation process, we excluded the \enhanedmeteor table from our experiments. This decision proved to be reasonable as the correlation between \bleu scores and human judgment in the \textbf{Lexical} setting showed an improvement of 0.06 compared to the \textbf{Paraphrased} setting. The idea to explore monotone translation 
+was motivated by the frequent occurrence of disordered word sequences and misplaced punctuation in the \textbf{Paraphrased} setting. The \textbf{Lexical \& Monotone} setting yielded the best results among all paraphrased hypotheses tested.
 
-%\xxx{tu je mnoho uzitecneho!/home/barancikova/WORK/moses/tables }
+Despite these modifications leading to an improved correlation with human judgment, they did not surpass the baseline results. We observed a noticeable improvement in the \bleu score, suggesting a greater overlap between the newly generated references and the hypotheses. Interestingly, this increase was even higher when  monotone decoding was added --- indicating that disabling reordering helped to cover longer n-grams that were previously 
+shuffled. 
 
-\section{Results}
+This suggests that while targeting specific areas of improvement such as lexical choice and sentence structure can yield positive changes, achieving an overall translation quality that exceeds the baseline using Moses remains a challenge. These findings show the complexity of phrase-based machine translation and the difficulty of balancing its individual components to produce paraphrases that are both accurate and grammatical.
 
-We compare four different basic settings, the results are presented in \Tref{settings}
-as the Pearson’s correlation coefficient of BLEU and the human judgment. 
-A visualization of the results is shown in \Fref{visualization}. The baseline
-score is not exceeded by any of our paraphrasing methods, in contrast to  our previous 
-results (\cite{parmesan}, \cite{barancikova:2014}). 
+\begin{mdframed}[
+    linecolor=gray,
+    linewidth=2pt,
+    roundcorner=5,
+    backgroundcolor=gray!5
+]
+\noindent 
+In conclusion, we answered the following research questions:
+\paragraph{Can a phrase-based SMT system be adapted for targeted monolingual paraphrasing?}
+Yes, we demonstrate that Moses, traditionally used for machine translation, can be technically adapted for targeted monolingual paraphrasing by employing monolingual resources and task-specific features. However, our adaptation of Moses enables the generation of paraphrases that are lexically similar to given hypotheses, although grammatical and semantic fidelity are not consistently preserved.
 
-There are several reasons for the clear decrease in correlation with paraphrased 
-references. Hypotheses generated by the \textbf{Paraphrased} setting, while obtaining 
-a significantly higher BLEU score, were mostly ungrammatical and reduced the 
-correlation of our metric.
+\paragraph{ Can synthetic paraphrase tables replace translation tables automatically derived from parallel corpora?}
+Partially, synthetic paraphrase tables provide partial coverage in the absence of monolingual parallel corpora but introduce substantial noise. Consequently, they cannot fully substitute for large-scale, high-quality monolingual parallel data in paraphrasing tasks.
 
-The small weight of the language model seems to be the problem, but its increase brings
-even more chaos. It creates hypotheses which are nice and grammatically correct 
-but often wholly unrelated to the source sentence.
-
-This shows that our paraphrase table noise filtering was by no means sufficient and
-there is still a lot of noise in our phrase tables. Furthermore, the MT output
-might be far from being a correct sentence -- given the high weight for the targeted 
-paraphrase feature, we essentially transform the correct reference 
-sentences to incorrect hypotheses at all cost, using our noisy phrase tables.
-
-Our targeting feature is also not ideal -- it ignores word order and operates
-only on the word level (it does not model phrases). Ungrammatical translations
-with scrambled word order are considered perfectly fine so long as the
-translation contains the same words as the reference. So while the feature does
-provide a kind of oracle, it does not guarantee reaching the best possible
-translation in terms of BLEU score, let alone a grammatical translation.
-
-Another problem is illustrated by very small weights assigned to our translation
-models. In fact, the highest weight was assigned to the tag similarity feature.
-This shows that our model features (Meteor score and distributional
-similarity scores) fail to distinguish good paraphrases from the noise. 
-
-The combination of noise in the translation tables and the boosted language
-model then caused that during the decoding phase, the most common paraphrase
-according to the language model with a similar tag got the preference. 
-
-\Fref{example} represents an example of our paraphrasing method. The~hypothesis is 
-grammatically correct and has a very similar meaning as the reference sentence. The 
-new paraphrased reference is slightly closer in wording to the hypothesis, but there 
-is an error due to a bad word choice. The boosted language model reduces errors, 
-however the meaning of the sentences is shifted. In the \textbf{LM+0.4} setting, 
-they also differ a lot in wording from both the hypothesis and the reference sentence.
-
-
-\begin{figure*}[htb]
-\begin{center}
-\includegraphics[scale=0.6]{../img/moses_multigraf.pdf}
-\caption{Visualization of BLEU and human judgment for the four basic settings. 
-We add the linear regression lines to better demonstrate the linear correlation.}
-\label{visualization}
-\end{center}
-\end{figure*}
- 
-Based on such poor results, we decided to experiment with three more settings 
-(see \Tref{settings2}). We omit the Enhanced Meteor tables as they brought
-most of the noise to the translation. One of the common errors using the 
-\textbf{Paraphrased} setting is scrambled word order (often, punctuation
-appeared in the middle of the sentences).
-We attempt to fix that by using monotone translation (i.e. by disabling reordering).
-
-These constraints improve the correlation with human judgment. However, they still
-do not overcome the baseline results.
-
-\section{Conclusion}
-We experiment with paraphrasing using the phrase-based machine translation system 
-Moses. We show that it is a universal tool that can be used for other purposes than
-machine translation directly. Within Moses, we introduced a new feature for targeted 
-paraphrasing and artificial phrase tables for paraphrasing. 
-
-However, our results are inconclusive and the correlation with human judgment
-drops. It is caused mainly by the high amount of noise in our translation tables and
-not well balanced trade-off between paraphrasing and the language model.
-
-
-\section{Future Work}
-% better setting of weights
-Based on our results, Moses does not seem to be the optimal tool for our task, especially
-unless we have at our disposal better paraphrasing tables. A new paraphrase database 
-PPDB \cite{ppdb} for Czech language should be released any time now. \todo{pred 10 lety}
-
-Furthermore, there may be a better solution than a phrase-based translation
-system, namely Treex \cite{treex}, a highly modular NLP software system. Treex
-was developed for TectoMT, which is a rule-based machine translation system that
-operates on deep syntactic layer.
-
-Treex implements the stratificational approach to language, adopted from the 
-Functional Generative Description theory \cite{FGP} and its later extension by the 
-Prague Dependency Treebank \cite{PDT3.0}. It represents sentences in four layers:
-word layer, morphological layer, shallow-syntax layer and deep-syntax layer 
-(tectogrammatical layer).
-
-We can transfer both hypothesis and reference sentence to the morphological layer, 
-where we can extract lemmas that appear in only one of the sentences. Those after
-filtering according to our paraphrase tables represent candidates for substitution.
-Furthermore, we are able to transfer a reference sentence to a tectogrammatical 
-layer, where we can replace individual lemmas from the hypothesis with their paraphrases 
-and corresponding grammatemes. Then we transfer the altered reference sentence back to 
-the word layer.
-
-This way should easily overcome some of the problems that appear when paraphrasing using 
-Moses. First of all, we only compare two sentences and there is less space for %neni treba stavet tabulky
-the noise to interfere. Also there is highly developed machinery to avoid ungrammatical 
-sentences. We can change only parts of sentences that are dependent on the changed 
-word, thus keeping the rest of the sentence correct and creating more conservative 
-reference sentences.
-
+\paragraph{Can task-specific features enable effective targeted paraphrasing?}
+Yes, we introduce a novel feature that guides the decoder toward paraphrases with higher lexical overlap with the evaluated hypothesis. The \textbf{Cove\-red\-Re\-ference\-Feature} successfully enforces lexical targeting during decoding. However, because the feature operates only at the word level, it does not guarantee grammatical correctness or semantic adequacy.
+\end{mdframed}

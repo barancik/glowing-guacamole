@@ -1,0 +1,118 @@
+Unfortunately, the correlation between human assessment and BLEU score
+at sentence level is extremely low (Liu et al., 2005,2006)
+
+
+
+
+
+TODO:
+
+- proverit ze je vsechno v biblio
+- appendix se vsema clanky (vcetne Seznamovyho)
+- 
+
+MT SUmmit 2025
+
+Context-aware Monolingual Context evaluation of MT
+Silvio Picciny
+- anotatori hodnoti jen vysledny text, vypada to na dost podobne vysledky, ale rychlejsi a anotatori si mysli, ze je to rychlejsi (v podstate jen fluency)
+
+Speech-to-Speech Translation Pipelines forr Conversation in Low-Resource Languages
+Andrei Popescu-Belis
+- paralelni data od tlumocniku
+
+Ricardo REI!!!
+
+
+Pitch:
+- LEAVING BLEU: Finally we are moving from BLEU to better performing metrics based on neural networks and contextualized embeddings such a COMET or BLEURT.
+- POOL IS LARGE: However, there is so much of them! So which one to use? 
+- TRAINING IS SLOW: The pool from which you can choose is large and training/fine-tuning metric is quite slow and resource-demanding process.
+- SHORTCUT: So we thought of a shortcut. Why not use STS - it is basically very similar task as machine translation evaluation - in both you compare two sentences to see how semantically their are similar.
+- PRESELECT: So the idea was - to preselect the embeddings using STS and see whether the performance would reflect in MTE.
+- RESULTS:p0 Well, it doesn't. We found some negative correlation between the to task. But for more detail please see my poster.
+
+
+
+
+------------------------
+
+There is no strict definition 
+of a paraphrase \citep{Bhagat2013}, it is most often characterized by as an
+approximate equivalence of meanings across phrases, resp. sentences. 
+
+Idioms  pose  a  great  challenge  to  many  NLP
+tasks, such as machine translation, word sense dis-
+ambiguation,  and  sentiment  analysis  (Volk,  1998;
+Korkontzelos  et  al.,  2013;  Zanzotto  et  al.,  2010;
+Williams  et  al.,  2015).
+-------------------
+
+
+
+
+Unfortunately, the correlation between human assessment and BLEU score at sentence level is extremely low \citep{liu-gildea-2005-syntactic, liu-gildea-2006-stochastic}
+
+\cite{graham_2017}  found that crowd workers were less reliable in ranking translations, leading to inconsistencies.
+
+---------------------
+\citep{{freitag-experts}
+Surprisingly, we also find that automatic metrics based on pre-trained embeddings can outperform human crowd workers. We make our corpus publicly available for further research. 
+We further
+show that many automatic metrics, and in partic-
+ular embedding-based ones, already outperform
+crowd-worker human evaluation. Unlike ratings
+acquired by crowd-worker and ratings acquired
+by professional translators with simpler human
+evaluation methodologies, MQM labels acquired
+with professional translators show a large gap be-
+tween the quality of human and machine generated
+translations. This demonstrates that profession-
+ally generated human translations still outperform
+machine generated translations.
+
+Recent papers have argued that poor human evaluation practices have led to misleading results, including erroneous claims that MT has achieved human parity (Toral, 2020; L¨aubliet al., 2018)
+
+
+
+Graham et al. (2013) compared human assessor consistency levels for judgments collected on a five-point interval-level scale to those collected on a 1–100 continuous scale, using machine translation fluency as a test case. They claim that the use of a continuous scale eliminates individual judge preferences, resulting in higher levels of inter-annotator consistency.
+
+Bojar et al. (2016) came to the conclusion that fluency evaluation is highly correlated to adequacy evaluation. As a consequence of the latter
+two papers, continuous direct assessment focusing on adequacy has been the official WMT metric since 2017 (Bojar et al., 2017). Due to budget
+constraints, WMT understandably conducts its human evaluation mostly with researchers and/or crowd workers/
+
+
+
+Fomicheva (2017) and Bentivogli et al. (2018)
+raised the concern that reference-based human
+evaluation might penalize correct translations that
+diverge too much from the reference. The litera-
+ture mostly agrees that source-based rather than
+reference-based evaluation should be conducted
+(L¨aubli et al., 2020). The impact of translationese
+(Koppel and Ordan, 2011) on human evaluation
+of MT has recently received attention (Toral et
+al., 2018; Zhang and Toral, 2019; Freitag et al.,
+2019; Graham et al., 2020). These papers show
+that only natural source sentences should be used
+for human evaluation.
+
+
+The Multidimensional Quality Metrics (MQM)
+framework was developed in the EU QT-
+LaunchPad and QT21 projects (2012–2018)
+(www.qt21.eu) to address the shortcomings of pre-
+vious quality evaluation methods (Lommel et al.,
+2014). MQM provides a generic methodology for
+assessing translation quality that can be adapted to
+a wide range of evaluation needs. Klubiˇcka et al.
+(2018) designed an MQM-compliant error tax-
+onomy for Slavic languages to run a case
+study for 3 MT systems for English→Croatian.
+
+Rei et al. (2020) used MQM labels to fine-tune
+COMET for automatic evaluation. Thomson
+and Reiter (2020) designed an error annotation
+schema based on pre-defined error categories for
+table-to-text tasks
+--------------------

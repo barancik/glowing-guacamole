@@ -1,0 +1,17 @@
+The evolution of automatic MT evaluation can be categorized into three historical paradigms:
+ (1) \textit{lexical overlap} metrics (e.g., \bleu), which dominated the statistical MT era;
+ (2) \textit{neural encoder-based} metrics (e.g., \comet), which aligned with the rise of Transformers; and 
+ (3) \textit{generative LLM-based} evaluators (e.g., \textsc{MetricX}), which represent the current 2026 state-of-the-art. While lexical metrics provided the foundation, the field has decisively moved toward modeling semantic adequacy through high-capacity language models.
+
+ \subsection{Feature-Engineered Paraphrase Metrics}
+Before the advent of deep contextual embeddings, "second-generation" metrics like \mn \citep{denkowski-lavie-2014-meteor} and \terp \citep{terp} attempted to bridge the gap between
+string matching and semantic adequacy. These metrics utilized explicit linguistic resources 
+such as WordNet synsets or Porter stemmers. While historically significant for introducing 
+recall and semantic variation into evaluation, these methods are largely considered legacy 
+in 2026, having been superseded by the implicit semantic modeling of neural architectures.
+
+\subsection{LLM as Judge and Explainable Evaluation}
+By 2026, the paradigm has shifted from providing a single scalar score to \textit{explainable evaluation}. Modern iterations of \textsc{MetricX-24} and agentic frameworks now provide error taxonomies (Auto-MQM) alongside scores, identifying specific mistranslations or hallucinations. While early LLM-metrics faced reproducibility issues due to proprietary API shifts, the current standard relies on distilled, open-weight "judge models" that provide stable, deterministic evaluations equivalent to human expert MQM annotations \citep{cui2025llmsscorersrethinkingmt}.
+
+\subsection{LLM-Driven Reference Augmentation}
+The traditional difficulty of obtaining multiple human references has been mitigated in recent years through LLM-based augmentation. Rather than the rule-based synonym substitution seen in earlier works \citep{kauchak}, modern approaches use high-capacity models to generate "synthetic reference bundles." These bundles represent the valid paraphrastic space of a translation, allowing metrics to distinguish between stylistic variation and semantic error more effectively than single-reference evaluation.
