@@ -8,6 +8,8 @@ Institute of Formal and Applied Linguistics (ÚFAL), Faculty of Mathematics and 
 - **Consultant:** doc. RNDr. Ondřej Bojar, Ph.D.
 - **Year:** 2026
 
+📄 **[Submitted thesis (PDF)](submitted_thesis.pdf)**
+
 ## Abstract
 
 Automatic evaluation of machine translation remains challenging, as commonly used metrics correlate
@@ -23,53 +25,19 @@ It introduces a new dataset of complex sentence transformations for Czech (Costr
 sentence embedding models rely heavily on surface similarity, and that strong performance on intrinsic
 evaluation tasks does not reliably predict effectiveness in machine translation evaluation.
 
-**Keywords:** machine translation evaluation, automatic evaluation metrics, paraphrasing, sentence embeddings
-
-## Repository structure
-
-```
-en/             thesis source (English)
-  thesis.tex      main file – metadata, abstract, chapter list
-  autoreferat.tex stand-alone thesis summary (autoreferát), built separately
-  bibliography.bib
-  macros.tex      custom commands
-  Makefile
-img/            figures (PNG, PDF, SVG sources)
-tex/            additional TeX macros (searched via TEXINPUTS)
-```
-
-### Thesis outline
-
-| Chapter | Files |
-|---|---|
-| Introduction | `preface.tex` |
-| Machine Translation Evaluation | `evaluation.tex`, `rw.tex` |
-| Targeted Sentence Paraphrasing for MT Evaluation (incl. Parmesan) | `data.tex`, `substitution.tex`, `parmesan.tex`, `moses.tex`, `treex_paraphrasing.tex` |
-| Sentence Embedding Evaluation | `second_part.tex`, `linear_relations.tex`, `costra.tex`, `extrinsic.tex` |
-| Conclusion | `epilog.tex` |
-| Appendix | `appendix.tex` |
-
-Files not included in the build: `rw2.tex`, `todo.tex`, `notes.txt` (drafts and working notes).
-
 ## Building
 
 Requires a TeX distribution (TeX Live or MiKTeX) with `pdflatex` and `bibtex`.
 
-**Linux / macOS**
-
 ```sh
 cd en
 make            # produces thesis.pdf
-make clean
 ```
 
-**Windows / any platform with latexmk**
+Alternatively, with `latexmk` (also works on Windows):
 
 ```powershell
 cd en
 $env:TEXINPUTS = "../tex//;"
 latexmk -pdf thesis.tex
-latexmk -pdf autoreferat.tex
 ```
-
-The thesis can also be compiled on Overleaf (set `en/thesis.tex` as the main document).
